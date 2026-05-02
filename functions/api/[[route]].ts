@@ -12,6 +12,7 @@ import type { LibSQLDatabase } from "drizzle-orm/libsql";
 type Bindings = {
   TURSO_URL: string;
   TURSO_AUTH_TOKEN: string;
+  ADMIN_API_KEY: string;
 };
 
 type Variables = {
@@ -22,6 +23,32 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>().basePath("/
 
 app.use("*", logger());
 app.use("*", cors());
+
+// ─── AUTH MIDDLEWARE ──────────────────────────────────────
+const authMiddleware = async (c: any, next: any) => {
+  const method = c.req.method;
+  const path = c.req.path;
+  
+  // Only protect destructive/admin routes
+  const isPublic = method === 'GET' || path.includes('/health');
+  if (isPublic) return await next();
+
+  const authHeader = c.req.header("Authorization");
+  const apiKey = c.env.ADMIN_API_KEY;
+
+  if (!apiKey) {
+    console.warn("ADMIN_API_KEY not set in environment.");
+    return c.json({ error: "Authentication Configuration Error", message: "API security not configured" }, 500);
+  }
+
+  if (authHeader !== `Bearer ${apiKey}`) {
+    return c.json({ error: "Unauthorized", message: "Invalid or missing API key" }, 401);
+  }
+
+  await next();
+};
+
+app.use("*", authMiddleware);
 
 // ─── HEALTH CHECK (No DB needed) ──────────────────────────
 app.get("/health", (c) => {
@@ -35,7 +62,9 @@ app.use("*", async (c, next) => {
     const authToken = c.env.TURSO_AUTH_TOKEN;
 
     if (!url || url.includes("your-db-url")) {
-      console.warn("TURSO_URL is missing or using placeholder. Database features will be unavailable.");
+      console.warn("TURSO_URL is missing or using placeholder.");
+      // We don't block next() here so /health works, 
+      // but individual routes will check if db is set.
       return await next();
     }
     
@@ -55,15 +84,26 @@ app.use("*", async (c, next) => {
 app.onError((err, c) => {
   console.error("Global API Error:", err);
   
-  const isDbError = err.message.includes("Database client not initialized") || 
-                    err.message.includes("TURSO_URL");
+  const isDbInitError = err.message.includes("Database client not initialized") || 
+                        err.message.includes("TURSO_URL");
+  
+  // Check if it's a validation error (we'll throw these manually)
+  if (err.message.startsWith("VALIDATION_ERROR:")) {
+    return c.json({
+      error: "Validation Error",
+      message: err.message.replace("VALIDATION_ERROR:", "").trim()
+    }, 422);
+  }
 
+  const statusCode = isDbInitError ? 503 : 500;
+  
   return c.json({ 
-    error: isDbError ? "Database Configuration Error" : "Internal Server Error", 
-    message: err.message,
-    hint: isDbError ? "Please check your .dev.vars file (local) or Cloudflare Dashboard (prod) for TURSO_URL and TURSO_AUTH_TOKEN." : undefined,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
-  }, 500);
+    error: isDbInitError ? "Database Configuration Error" : "Internal Server Error", 
+    message: isDbInitError ? "The server is not correctly connected to the database." : "An unexpected error occurred.",
+    hint: isDbInitError ? "Please check your environment variables for TURSO_URL and TURSO_AUTH_TOKEN." : undefined,
+    // Only show real error message in dev
+    details: process.env.NODE_ENV === 'development' ? err.message : undefined
+  }, statusCode);
 });
 
 // ─── BANNER ROUTES ───────────────────────────────────────
@@ -81,7 +121,7 @@ app.get("/banners", async (c) => {
     return c.json(rows);
   } catch (error: any) {
     console.error("Fetch banners error:", error);
-    return c.json({ error: "Failed to fetch banners", details: error.message }, 500);
+    return c.json({ error: "Failed to fetch banners" }, 500);
   }
 });
 
@@ -89,22 +129,32 @@ app.post("/banners", async (c) => {
   try {
     const db = c.get("db");
     if (!db) throw new Error("Database client not initialized");
-    const body = await c.req.json();
+    
+    const body = await c.req.json().catch(() => null);
+    if (!body) throw new Error("VALIDATION_ERROR: Missing or invalid JSON body");
+
+    // Basic validation
+    if (!body.image) throw new Error("VALIDATION_ERROR: Image URL is required");
+    if (!body.position) throw new Error("VALIDATION_ERROR: Position is required");
+
     const id = crypto.randomUUID();
     
     await db.insert(schema.banners).values({
       id,
       image: body.image,
-      link: body.link,
+      link: body.link || null,
       position: body.position,
-      order: body.order || 0,
+      order: Number(body.order) || 0,
       isActive: 1,
     });
     
     return c.json({ id, success: true }, 201);
   } catch (error: any) {
+    // Re-throw validation errors to be caught by onError
+    if (error.message.startsWith("VALIDATION_ERROR:")) throw error;
+    
     console.error("Create banner error:", error);
-    return c.json({ error: "Failed to create banner", details: error.message }, 500);
+    throw error; // Let global handler handle it
   }
 });
 

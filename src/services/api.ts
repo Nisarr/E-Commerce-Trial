@@ -8,6 +8,15 @@ const api = axios.create({
   timeout: 8000,
 });
 
+// Add request interceptor for auth
+api.interceptors.request.use((config) => {
+  const apiKey = import.meta.env.VITE_ADMIN_API_KEY;
+  if (apiKey) {
+    config.headers.Authorization = `Bearer ${apiKey}`;
+  }
+  return config;
+});
+
 export const getBanners = (position?: string) =>
   api.get(`/banners${position ? `?position=${position}` : ""}`);
 
