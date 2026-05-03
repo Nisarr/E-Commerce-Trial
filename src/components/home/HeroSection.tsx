@@ -37,9 +37,10 @@ export const HeroSection: React.FC = () => {
   useEffect(() => {
     const fetchBanners = async () => {
       try {
-        const { data } = await getBanners('hero');
-        setBanners(data.length > 0 ? data : FALLBACK_BANNERS);
+        const bannersData = await getBanners('hero');
+        setBanners(bannersData.length > 0 ? bannersData : FALLBACK_BANNERS);
       } catch (error) {
+
         console.error('Failed to fetch hero banners:', error);
         setBanners(FALLBACK_BANNERS);
       } finally {
@@ -77,14 +78,14 @@ export const HeroSection: React.FC = () => {
     return (
       <div className="bg-white py-12">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center gap-8 min-h-[400px]">
+          <div className="flex flex-col md:flex-row items-center gap-8 min-h-[350px]">
             <div className="w-full md:w-1/2 space-y-6">
               <Skeleton className="w-3/4 h-12" />
               <Skeleton className="w-full h-20" />
               <Skeleton className="w-40 h-12 rounded-xl" />
             </div>
             <div className="w-full md:w-1/2">
-              <Skeleton className="w-full h-[250px] rounded-2xl" />
+              <Skeleton className="w-full h-[300px] rounded-2xl" />
             </div>
           </div>
         </div>
@@ -104,19 +105,19 @@ export const HeroSection: React.FC = () => {
       <div className="absolute top-0 right-0 w-full md:w-2/3 h-full bg-gradient-to-l from-gray-50/50 to-transparent pointer-events-none" />
 
       <div className="container relative z-10 mx-auto px-4">
-        <div className="flex flex-col md:flex-row items-stretch min-h-[600px] lg:min-h-[700px] gap-12 py-12 md:py-16">
+        <div className="flex flex-col md:flex-row items-center min-h-[500px] lg:min-h-[600px] gap-12 pt-12 md:pt-16 pb-0">
           {/* Left Text Part */}
           <div className="w-full md:w-1/2 flex flex-col justify-between py-2 animate-in fade-in slide-in-from-left-8 duration-1000">
             <div className="space-y-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/10 rounded-full text-accent font-black text-xs uppercase tracking-widest">
-                <span className="relative flex h-2 w-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent/10 rounded-full text-accent font-black text-[10px] uppercase tracking-widest">
+                <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent"></span>
                 </span>
                 Premium Quality Guaranteed
               </div>
               
-              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold leading-[0.95] tracking-tight font-garamond">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[0.95] tracking-tight font-garamond">
                 The <span className="text-accent italic">Ultimate</span> <br /> 
                 Comfort for <br /> 
                 Your <span className="text-primary underline decoration-accent/30 decoration-8 underline-offset-4">Angel</span>
@@ -127,34 +128,34 @@ export const HeroSection: React.FC = () => {
               </p>
             </div>
             
-            <div className="flex flex-wrap items-center gap-8 mt-10">
+            <div className="flex flex-wrap items-center gap-6 mt-8">
               <button 
-                className="relative overflow-hidden group bg-primary text-white rounded-2xl px-12 py-6 text-2xl font-bold shadow-[0_20px_50px_rgba(15,23,42,0.3)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_25px_60px_rgba(15,23,42,0.4)] active:scale-95 flex items-center gap-3"
+                className="relative overflow-hidden group bg-primary text-white rounded-xl px-8 py-4 text-lg font-bold shadow-[0_15px_35px_rgba(15,23,42,0.2)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(15,23,42,0.3)] active:scale-95 flex items-center gap-2"
                 onClick={() => window.location.href = banner.link || '/category/all'}
               >
                 <span className="relative z-10">Start Shopping</span>
-                <ArrowRight className="group-hover:translate-x-2 transition-transform duration-500" size={24} />
+                <ArrowRight className="group-hover:translate-x-2 transition-transform duration-500" size={20} />
                 <div className="absolute inset-0 bg-gradient-to-r from-accent to-accent-light translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
               </button>
               
-              <div className="flex -space-x-3 items-center">
+              <div className="flex -space-x-2 items-center">
                 {[1,2,3,4].map(i => (
-                  <div key={i} className="w-12 h-12 rounded-full border-4 border-white bg-gray-100 overflow-hidden shadow-md">
+                  <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-100 overflow-hidden shadow-sm">
                     <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="user" />
                   </div>
                 ))}
-                <div className="pl-6">
-                  <div className="text-lg font-black text-primary">4.9/5 Trust Score</div>
-                  <div className="text-xs text-muted font-bold uppercase tracking-wider">Trusted by 5k+ Parents</div>
+                <div className="pl-4">
+                  <div className="text-base font-black text-primary">4.9/5 Trust Score</div>
+                  <div className="text-[10px] text-muted font-bold uppercase tracking-wider">Trusted by 5k+ Parents</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Right Image Part & Trust Badges */}
-          <div className="w-full md:w-1/2 flex flex-col justify-between py-2 animate-in fade-in slide-in-from-right-8 duration-1000">
-            {/* Taller Image Aspect Ratio */}
-            <div className="relative aspect-[4/5] md:aspect-auto md:flex-grow rounded-[3rem] overflow-hidden shadow-[0_40px_80px_-20px_rgba(0,0,0,0.2)] border-4 border-white group mb-8">
+          <div className="w-full md:w-1/2 flex flex-col justify-center py-2 animate-in fade-in slide-in-from-right-8 duration-1000">
+            {/* Wider Image Aspect Ratio */}
+            <div className="relative aspect-[16/10] md:aspect-[4/3] rounded-[3rem] overflow-hidden shadow-[0_40px_80px_-20px_rgba(0,0,0,0.2)] border-4 border-white group mb-8">
               <img 
                 key={currentIndex}
                 src={banner.image} 

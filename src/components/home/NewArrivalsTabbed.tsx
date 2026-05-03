@@ -24,8 +24,9 @@ export const NewArrivalsTabbed: React.FC = () => {
         if (activeTab !== 'all') {
           params.category = activeTab;
         }
-        const { data } = await getProducts(params);
-        setProducts(data);
+        const response = await getProducts(params);
+        setProducts(response.items);
+
       } catch (error) {
         console.error('Failed to fetch new arrivals:', error);
       } finally {

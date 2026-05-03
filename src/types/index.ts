@@ -18,6 +18,7 @@ export interface Product {
   id: string;
   title: string;
   slug: string;
+  categoryId: string | null;
   brand: string;
   price: number;
   salePrice: number | null;
@@ -26,4 +27,6 @@ export interface Product {
   reviewCount: number;
   stock: number;
   tags: string;            // parse JSON → string[]
+  isActive: number;
+  createdAt?: Date;
 }

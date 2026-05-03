@@ -11,9 +11,10 @@ export const BestSelling: React.FC = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const { data } = await getProducts({ sort: 'best-selling', limit: 8 });
-        setProducts(data);
+        const response = await getProducts({ sort: 'best-selling', limit: 8 });
+        setProducts(response.items);
       } catch (error) {
+
         console.error('Failed to fetch best selling products:', error);
       } finally {
         setLoading(false);

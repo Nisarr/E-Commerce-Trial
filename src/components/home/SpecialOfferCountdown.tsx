@@ -17,9 +17,10 @@ export const SpecialOfferCountdown: React.FC = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const { data } = await getProducts({ tag: 'special-offer', limit: 4 });
-        setProducts(data);
+        const response = await getProducts({ tag: 'special-offer', limit: 4 });
+        setProducts(response.items);
       } catch (error) {
+
         console.error('Failed to fetch special offers:', error);
       } finally {
         setLoading(false);

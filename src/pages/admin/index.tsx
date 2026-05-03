@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
-import { getProducts, getCategories, getBanners, createBanner, updateBanner, deleteBanner } from '../../services/api';
+import { getProducts, getCategories, getBanners, createBanner, updateBanner, deleteBanner, createProduct, updateProduct, deleteProduct } from '../../services/api';
 import type { Product, Category, Banner } from '../../types';
 import { Sidebar } from './Sidebar';
 import { BannerManager } from './BannerManager';
@@ -10,6 +10,7 @@ import { AdminSettings } from './Settings';
 import { AdminLogin } from './Login';
 import { useAuthStore } from '../../store/authStore';
 import { BannerModal } from '../../components/admin/BannerModal';
+import { ProductModal } from '../../components/admin/ProductModal';
 
 export const AdminIndex: React.FC = () => {
   const { isAuthenticated, user } = useAuthStore();
@@ -27,19 +28,21 @@ export const AdminIndex: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const fetchData = async () => {
     try {
-      const [bannersRes, categoriesRes, productsRes] = await Promise.all([
+      const [banners, categories, productsResponse] = await Promise.all([
         getBanners(),
         getCategories(),
         getProducts({})
       ]);
       setData({
-        banners: bannersRes.data,
-        categories: categoriesRes.data,
-        products: productsRes.data
+        banners: banners,
+        categories: categories,
+        products: productsResponse.items
       });
+
     } catch (error) {
       console.error('Failed to fetch admin data:', error);
     } finally {
@@ -70,13 +73,42 @@ export const AdminIndex: React.FC = () => {
     }
   };
 
+  const handleSaveProduct = async (productData: Partial<Product>) => {
+    try {
+      if (editingProduct) {
+        await updateProduct(editingProduct.id, productData);
+      } else {
+        await createProduct(productData);
+      }
+      await fetchData();
+    } catch (error) {
+      console.error('Save product failed:', error);
+      alert('Failed to save product');
+    }
+  };
+
+  const handleDeleteProduct = async (id: string) => {
+    try {
+      await deleteProduct(id);
+      await fetchData();
+    } catch (error) {
+      alert('Failed to delete product');
+    }
+  };
+
   const openAddModal = () => {
     setEditingBanner(null);
+    setEditingProduct(null);
     setIsModalOpen(true);
   };
 
-  const openEditModal = (banner: Banner) => {
+  const openEditBannerModal = (banner: Banner) => {
     setEditingBanner(banner);
+    setIsModalOpen(true);
+  };
+
+  const openEditProductModal = (product: Product) => {
+    setEditingProduct(product);
     setIsModalOpen(true);
   };
 
@@ -98,9 +130,9 @@ export const AdminIndex: React.FC = () => {
             <p className="text-muted font-medium">Manage your website content and inventory</p>
           </div>
           <button 
-            onClick={activeTab === 'banners' ? openAddModal : undefined}
-            disabled={activeTab !== 'banners'}
-            className={`flex items-center gap-2 px-6 py-3 bg-white text-primary border-2 border-gray-100 rounded-xl font-bold transition-all shadow-sm ${activeTab === 'banners' ? 'hover:border-primary hover:shadow-md' : 'opacity-50 cursor-not-allowed'}`}
+            onClick={openAddModal}
+            disabled={activeTab !== 'banners' && activeTab !== 'products'}
+            className={`flex items-center gap-2 px-6 py-3 bg-white text-primary border-2 border-gray-100 rounded-xl font-bold transition-all shadow-sm ${ (activeTab === 'banners' || activeTab === 'products') ? 'hover:border-primary hover:shadow-md' : 'opacity-50 cursor-not-allowed'}`}
           >
             <Plus size={20} /> Add New
           </button>
@@ -113,12 +145,18 @@ export const AdminIndex: React.FC = () => {
             {activeTab === 'banners' && (
               <BannerManager 
                 banners={data.banners} 
-                onEdit={openEditModal}
+                onEdit={openEditBannerModal}
                 onDelete={handleDeleteBanner}
               />
             )}
             {activeTab === 'categories' && <CategoryManager categories={data.categories} />}
-            {activeTab === 'products' && <ProductManager products={data.products} />}
+            {activeTab === 'products' && (
+              <ProductManager 
+                products={data.products} 
+                onEdit={openEditProductModal}
+                onDelete={handleDeleteProduct}
+              />
+            )}
             {activeTab === 'settings' && <AdminSettings />}
           </>
         )}
@@ -128,6 +166,14 @@ export const AdminIndex: React.FC = () => {
             banner={editingBanner}
             onClose={() => setIsModalOpen(false)}
             onSave={handleSaveBanner}
+          />
+        )}
+
+        {isModalOpen && activeTab === 'products' && (
+          <ProductModal 
+            product={editingProduct}
+            onClose={() => setIsModalOpen(false)}
+            onSave={handleSaveProduct}
           />
         )}
       </main>

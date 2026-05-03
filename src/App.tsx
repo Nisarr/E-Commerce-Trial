@@ -8,6 +8,9 @@ import { Home } from './pages/Home';
 import { AdminIndex } from './pages/admin/index';
 import { UserLogin } from './pages/UserLogin';
 import { Account } from './pages/Account';
+import { ProductDetails } from './pages/ProductDetails';
+import { ShopPage } from './pages/ShopPage';
+import { CategoryPage } from './pages/CategoryPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 // Placeholder pages
@@ -30,9 +33,10 @@ function App() {
           {/* Admin Routes */}
           <Route path="/adm" element={<AdminIndex />} />
           
-          <Route path="/category/:slug" element={<Placeholder title="Category" />} />
-          <Route path="/product/:slug" element={<Placeholder title="Product Details" />} />
-          <Route path="/search" element={<Placeholder title="Search Results" />} />
+          <Route path="/category/:slug" element={<CategoryPage />} />
+          <Route path="/product/:slug" element={<ProductDetails />} />
+          <Route path="/shop" element={<ShopPage />} />
+          <Route path="/search" element={<ShopPage />} />
           <Route path="/cart" element={<Placeholder title="Cart" />} />
           <Route path="/wishlist" element={<Placeholder title="Wishlist" />} />
           

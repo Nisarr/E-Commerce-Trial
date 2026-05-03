@@ -5,9 +5,10 @@ import { uploadImage } from '../../services/imgbb';
 interface ImageUploadProps {
   onUploadSuccess: (url: string) => void;
   label?: string;
+  compact?: boolean;
 }
 
-export const ImageUpload: React.FC<ImageUploadProps> = ({ onUploadSuccess, label = 'Upload Image' }) => {
+export const ImageUpload: React.FC<ImageUploadProps> = ({ onUploadSuccess, label = 'Upload Image', compact = false }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -27,6 +28,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onUploadSuccess, label
     try {
       const url = await uploadImage(file);
       onUploadSuccess(url);
+      if (compact) setPreview(null); // Clear preview for multiple uploads
     } catch (error) {
       alert('Upload failed. Please check your API key or connection.');
       setPreview(null);
@@ -34,6 +36,28 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onUploadSuccess, label
       setIsUploading(false);
     }
   };
+
+  if (compact) {
+    return (
+      <div 
+        onClick={() => fileInputRef.current?.click()}
+        className={`relative w-full h-full rounded-xl border-2 border-dashed border-gray-100 flex flex-col items-center justify-center cursor-pointer hover:border-accent hover:bg-accent/5 transition-all group overflow-hidden ${isUploading ? 'pointer-events-none' : ''}`}
+      >
+        {isUploading ? (
+          <Loader2 size={16} className="text-accent animate-spin" />
+        ) : (
+          <Upload size={16} className="text-gray-400 group-hover:text-accent" />
+        )}
+        <input 
+          type="file" 
+          ref={fileInputRef} 
+          onChange={handleFileChange} 
+          className="hidden" 
+          accept="image/*"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2">

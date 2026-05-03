@@ -14,11 +14,12 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({ position }) => {
   useEffect(() => {
     const fetchBanner = async () => {
       try {
-        const { data } = await getBanners(position);
-        if (data && data.length > 0) {
-          setBanner(data[0]);
+        const bannersData = await getBanners(position);
+        if (bannersData && bannersData.length > 0) {
+          setBanner(bannersData[0]);
         }
       } catch (error) {
+
         console.error(`Failed to fetch banner ${position}:`, error);
       } finally {
         setLoading(false);

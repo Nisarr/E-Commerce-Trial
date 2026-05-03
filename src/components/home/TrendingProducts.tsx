@@ -11,9 +11,10 @@ export const TrendingProducts: React.FC = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const { data } = await getProducts({ sort: 'trending', limit: 10 });
-        setProducts(data);
+        const response = await getProducts({ sort: 'trending', limit: 10 });
+        setProducts(response.items);
       } catch (error) {
+
         console.error('Failed to fetch trending products:', error);
       } finally {
         setLoading(false);
