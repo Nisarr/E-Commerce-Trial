@@ -32,8 +32,8 @@ export const Invoice: React.FC<InvoiceProps> = ({ order, onClose }) => {
         <div className="p-8 overflow-y-auto flex-grow printable-invoice">
           <div className="flex justify-between items-start mb-12">
             <div>
-              <h1 className="text-3xl font-black font-garamond text-primary mb-2">PlayHouse</h1>
-              <p className="text-gray-500 text-sm">123 PlayHouse St.<br/>Toy City, TC 12345<br/>support@playhouse.com</p>
+              <h1 className="text-3xl font-black font-garamond text-primary mb-2">PlayPen House</h1>
+              <p className="text-gray-500 text-sm">Dhaka, Bangladesh<br/>support@playpenhouse.com<br/>+880 1XXX-XXXXXX</p>
             </div>
             <div className="text-right">
               <h2 className="text-2xl font-black text-gray-300 mb-2">INVOICE</h2>
@@ -67,10 +67,10 @@ export const Invoice: React.FC<InvoiceProps> = ({ order, onClose }) => {
             <tbody>
               {order.items?.map((item: any, idx: number) => (
                 <tr key={idx} className="border-b border-gray-50">
-                  <td className="py-4 text-primary font-medium">Product ID: {item.productId.slice(0, 8)}</td>
+                  <td className="py-4 text-primary font-medium">{item.productName || `Product ID: ${item.productId.slice(0, 8)}`}</td>
                   <td className="py-4 text-center text-gray-600">{item.quantity}</td>
-                  <td className="py-4 text-right text-gray-600">${item.price.toFixed(2)}</td>
-                  <td className="py-4 text-right text-primary font-bold">${(item.quantity * item.price).toFixed(2)}</td>
+                  <td className="py-4 text-right text-gray-600">৳{item.price.toLocaleString()}</td>
+                  <td className="py-4 text-right text-primary font-bold">৳{(item.quantity * item.price).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -79,22 +79,22 @@ export const Invoice: React.FC<InvoiceProps> = ({ order, onClose }) => {
           <div className="flex justify-end">
             <div className="w-64 space-y-3">
               <div className="flex justify-between text-sm text-gray-500">
-                <span>Subtotal</span>
-                <span>${order.totalAmount.toFixed(2)}</span>
+                <span>Subtotal (Items)</span>
+                <span>৳{(order.items?.reduce((sum:number, item:any) => sum + (item.quantity * item.price), 0) || 0).toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm text-gray-500 border-b border-gray-100 pb-3">
-                <span>Shipping</span>
-                <span>$15.00</span>
+                <span>Shipping & Adjustments</span>
+                <span>৳{(order.totalAmount - (order.items?.reduce((sum:number, item:any) => sum + (item.quantity * item.price), 0) || 0)).toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-lg font-black text-primary pt-1">
                 <span>Total</span>
-                <span>${(order.totalAmount + 15).toFixed(2)}</span>
+                <span>৳{order.totalAmount.toLocaleString()}</span>
               </div>
             </div>
           </div>
 
           <div className="mt-16 text-center text-gray-400 text-sm font-medium">
-            <p>Thank you for shopping with PlayHouse!</p>
+            <p>Thank you for shopping with PlayPen House!</p>
           </div>
         </div>
 

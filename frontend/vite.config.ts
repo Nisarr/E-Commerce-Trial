@@ -7,6 +7,9 @@ export default defineConfig(({ mode }) => {
   return {
     envDir: '../',
     plugins: [react(), tailwindcss()],
+    resolve: {
+      dedupe: ['react', 'react-dom'],
+    },
     server: {
       proxy: {
         "/api": {

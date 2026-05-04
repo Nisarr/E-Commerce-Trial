@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Mail, ArrowRight, MapPin, Phone, Heart } from 'lucide-react';
 import { getCategories } from '../../services/api';
 import type { Category } from '../../types';
@@ -10,7 +10,23 @@ const ItemDivider = () => (
 );
 
 export const Footer: React.FC = () => {
+  const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
+  const [logoClicks, setLogoClicks] = useState(0);
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const newClicks = logoClicks + 1;
+    setLogoClicks(newClicks);
+    
+    if (newClicks === 10) {
+      navigate('/adm');
+      setLogoClicks(0);
+    } else if (newClicks === 1) {
+      // Reset clicks after 2 seconds of inactivity
+      setTimeout(() => setLogoClicks(0), 2000);
+    }
+  };
 
   useEffect(() => {
     getCategories().then(setCategories).catch(console.error);
@@ -33,7 +49,12 @@ export const Footer: React.FC = () => {
           <div className="md:col-span-5 bg-black/[0.02] border border-[#FF4500]/15 rounded-2xl p-5 flex flex-col justify-between group hover:border-[#FF4500]/40 transition-all duration-300 shadow-sm">
             <div>
               <div className="flex items-center gap-3 mb-3">
-                <img src="/logo.png" alt="PlayPen House" className="w-8 h-8 object-contain rounded-lg" />
+                <img 
+                  src="/logo.png" 
+                  alt="PlayPen House" 
+                  className="h-8 w-auto object-contain rounded-lg shadow-sm cursor-pointer" 
+                  onClick={handleLogoClick}
+                />
                 <h2 className="text-xl font-bold text-gray-900 font-garamond tracking-tight">PlayPen House</h2>
               </div>
               <p className="text-gray-600 text-xs leading-relaxed mb-4">

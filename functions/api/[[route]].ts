@@ -11,6 +11,16 @@ import { bannersRouter } from "./routes/banners";
 import { categoriesRouter } from "./routes/categories";
 import { productsRouter } from "./routes/products";
 import { ordersRouter } from "./routes/orders";
+import { authRouter } from "./routes/auth";
+import { usersRouter } from "./routes/users";
+import { addressesRouter } from "./routes/addresses";
+import { reviewsRouter } from "./routes/reviews";
+import { returnsRouter } from "./routes/returns";
+import { settingsRouter } from "./routes/settings";
+import { couponsRouter } from "./routes/coupons";
+import { dashboardRouter } from "./routes/dashboard";
+import { walletRouter } from "./routes/wallet";
+import { notificationsRouter } from "./routes/notifications";
 
 // ─── API APP ──────────────────────────────────────────────
 
@@ -85,9 +95,17 @@ app.get("/api/health", (c) => c.json({ status: "ok", version: "v1" }));
 const v1 = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 // Auth Middleware for V1 (Destructive operations only)
+// Customer-facing endpoints (auth, orders, reviews, returns, addresses) are exempt
+// from admin API key requirement for write operations.
 v1.use("*", async (c, next) => {
   const method = c.req.method;
   if (method === 'GET') return await next();
+
+  // Public write routes that customers can access without admin API key
+  const path = c.req.path;
+  const publicPaths = ["/api/v1/auth/", "/api/v1/orders", "/api/v1/reviews", "/api/v1/returns", "/api/v1/addresses", "/api/v1/users/"];
+  const isPublic = publicPaths.some(p => path.startsWith(p));
+  if (isPublic) return await next();
 
   const authHeader = c.req.header("Authorization");
   const apiKey = c.env.ADMIN_API_KEY;
@@ -101,11 +119,23 @@ v1.use("*", async (c, next) => {
   await next();
 });
 
-// Mount Routes
+// Mount Routes — Admin
 v1.route("/banners", bannersRouter);
 v1.route("/categories", categoriesRouter);
 v1.route("/products", productsRouter);
 v1.route("/orders", ordersRouter);
+
+// Mount Routes — Customer
+v1.route("/auth", authRouter);
+v1.route("/users", usersRouter);
+v1.route("/addresses", addressesRouter);
+v1.route("/reviews", reviewsRouter);
+v1.route("/returns", returnsRouter);
+v1.route("/settings", settingsRouter);
+v1.route("/coupons", couponsRouter);
+v1.route("/dashboard", dashboardRouter);
+v1.route("/wallet", walletRouter);
+v1.route("/notifications", notificationsRouter);
 
 app.route("/api/v1", v1);
 

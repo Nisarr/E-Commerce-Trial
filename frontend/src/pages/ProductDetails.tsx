@@ -6,6 +6,8 @@ import api from '../services/api';
 import type { Product } from '../types';
 import { useCart } from '../hooks/useCart';
 import { useWishlist } from '../hooks/useWishlist';
+import { useRecentlyViewedStore } from '../store/recentlyViewedStore';
+import { RecentlyViewed } from '../components/RecentlyViewed';
 
 export const ProductDetails: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -15,6 +17,7 @@ export const ProductDetails: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const { addItem } = useCart();
   const { toggleItem, isInWishlist } = useWishlist();
+  const addRecentlyViewed = useRecentlyViewedStore((s) => s.addItem);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -33,6 +36,11 @@ export const ProductDetails: React.FC = () => {
     };
     fetchProduct();
   }, [slug]);
+
+  // Track recently viewed
+  useEffect(() => {
+    if (product) addRecentlyViewed(product);
+  }, [product?.id]);
 
   if (loading) return <div className="p-20 text-center font-black text-primary">LOADING PREMIUM EXPERIENCE...</div>;
   if (!product) return <div className="p-20 text-center font-black text-red-500">PRODUCT NOT FOUND</div>;
@@ -211,6 +219,9 @@ export const ProductDetails: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Recently Viewed */}
+      <RecentlyViewed />
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../store/authStore';
-import { User, Package, Heart, Settings, LogOut, ChevronRight, Loader2, ArrowRight } from 'lucide-react';
+import { User, Package, Heart, Settings, LogOut, ChevronRight, ArrowRight } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { UserOrderDetailsModal } from '../components/ui/UserOrderDetailsModal';
 
@@ -108,10 +108,15 @@ export const Account: React.FC = () => {
           <div className="mt-12 p-8 bg-accent/5 rounded-[2rem] border border-accent/10">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-black text-primary font-garamond">Recent Orders</h3>
-              {loading && <Loader2 className="animate-spin text-accent" size={20} />}
             </div>
 
-            {!loading && orders.length === 0 ? (
+            {loading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="skeleton-order-card shimmer-skeleton" style={{ height: '88px', borderRadius: '1rem' }} />
+                ))}
+              </div>
+            ) : orders.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <Package size={48} className="text-accent/20 mb-4" />
                 <p className="text-muted font-bold">You haven't placed any orders yet.</p>

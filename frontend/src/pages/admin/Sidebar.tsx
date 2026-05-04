@@ -12,7 +12,8 @@ import {
   LogOut,
   ChevronLeft,
   ShoppingBasket,
-  ChevronDown
+  ChevronDown,
+  Bell
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -41,9 +42,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
         { id: 'categories', icon: ClipboardList, label: 'Category', hasSub: true },
         { id: 'inventory', icon: Box, label: 'Inventory', hasSub: true },
         { id: 'orders', icon: ShoppingBag, label: 'Orders', hasSub: true },
-        { id: 'purchases', icon: CreditCard, label: 'Purchases', hasSub: true },
-        { id: 'attributes', icon: PartyPopper, label: 'Attributes', hasSub: true },
-        { id: 'invoices', icon: ReceiptText, label: 'Invoices', hasSub: true },
+        { id: 'customers', icon: CreditCard, label: 'Customers' },
+        { id: 'notifications', icon: Bell, label: 'Notifications' },
+        { id: 'reviews', icon: PartyPopper, label: 'Reviews' },
+        { id: 'returns', icon: Box, label: 'Returns' },
+        { id: 'coupons', icon: ReceiptText, label: 'Coupons' },
         { id: 'settings', icon: Settings, label: 'Settings' },
       ]
     }

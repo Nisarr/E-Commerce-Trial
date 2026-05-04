@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useAuthStore } from '../../store/authStore';
-import { Package, Search, Eye, Edit, MapPin, Truck, CheckCircle, Clock } from 'lucide-react';
+import { Search, Eye, Truck } from 'lucide-react';
 import { Invoice } from '../../components/ui/Invoice';
 
 export const OrderManager: React.FC = () => {
-  const { user } = useAuthStore();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -140,7 +138,7 @@ export const OrderManager: React.FC = () => {
                         {order.status}
                       </span>
                     </td>
-                    <td className="p-4 text-right font-bold text-primary">${(order.totalAmount + 15).toFixed(2)}</td>
+                    <td className="p-4 text-right font-bold text-primary">৳{(order.totalAmount).toLocaleString()}</td>
                     <td className="p-4">
                       <div className="flex items-center justify-center gap-2">
                         <button 
@@ -193,6 +191,33 @@ export const OrderManager: React.FC = () => {
                     <h3 className="text-lg font-black text-primary mb-2">Shipping Address</h3>
                     <p className="text-sm text-gray-600 whitespace-pre-line">{selectedOrder.shippingAddress}</p>
                   </div>
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <h3 className="text-lg font-black text-primary mb-2 flex items-center justify-between">
+                      Payment Details
+                      <span className={`text-xs px-2 py-1 rounded-lg uppercase tracking-wider ${
+                        selectedOrder.paymentMethod === 'bkash' ? 'bg-[#e2136e]/10 text-[#e2136e]' :
+                        selectedOrder.paymentMethod === 'nagad' ? 'bg-[#f7941d]/10 text-[#f7941d]' :
+                        selectedOrder.paymentMethod === 'wallet' ? 'bg-purple-100 text-purple-700' :
+                        'bg-gray-200 text-gray-700'
+                      }`}>
+                        {selectedOrder.paymentMethod || 'COD'}
+                      </span>
+                    </h3>
+                    {selectedOrder.paymentMethod && selectedOrder.paymentMethod !== 'cod' && selectedOrder.paymentMethod !== 'wallet' ? (
+                      <div className="grid grid-cols-2 gap-4 mt-3">
+                        <div className="bg-white p-3 rounded-xl border border-gray-100">
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">MFS Number</p>
+                          <p className="font-bold text-primary font-mono">{selectedOrder.paymentPhone}</p>
+                        </div>
+                        <div className="bg-white p-3 rounded-xl border border-gray-100">
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">TrxID</p>
+                          <p className="font-bold text-primary font-mono">{selectedOrder.paymentTrxId}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 mt-2">Cash on Delivery / Wallet balance used.</p>
+                    )}
+                  </div>
                 </div>
 
                 <div>
@@ -200,8 +225,8 @@ export const OrderManager: React.FC = () => {
                   <div className="space-y-2">
                     {selectedOrder.items?.map((item: any, idx: number) => (
                       <div key={idx} className="flex justify-between p-3 bg-white border border-gray-100 rounded-xl shadow-sm">
-                        <span className="font-medium text-primary text-sm">Product ID: {item.productId.slice(0,8)}... x{item.quantity}</span>
-                        <span className="font-bold text-accent">${(item.price * item.quantity).toFixed(2)}</span>
+                        <span className="font-medium text-primary text-sm">{item.productName || `Product ID: ${item.productId.slice(0,8)}`} x{item.quantity}</span>
+                        <span className="font-bold text-accent">৳{(item.price * item.quantity).toLocaleString()}</span>
                       </div>
                     ))}
                   </div>
@@ -222,7 +247,9 @@ export const OrderManager: React.FC = () => {
                         onChange={(e) => setTrackingForm({...trackingForm, status: e.target.value})}
                         className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 focus:border-accent outline-none"
                       >
-                        <option value="Processing">Processing</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Pending Verification">Pending Verification (MFS)</option>
+                        <option value="Processing">Processing (Payment Verified)</option>
                         <option value="Shipped">Shipped</option>
                         <option value="Out for Delivery">Out for Delivery</option>
                         <option value="Delivered">Delivered</option>

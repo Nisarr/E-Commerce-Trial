@@ -11,6 +11,7 @@ import {
 import { getBanners } from '../../services/api';
 import type { Banner } from '../../types';
 import { Skeleton } from '../ui/Skeleton';
+import heroFallback from '../../assets/hero.png';
 
 export const HeroSection: React.FC = () => {
   const [banners, setBanners] = useState<Banner[]>([]);
@@ -75,9 +76,15 @@ export const HeroSection: React.FC = () => {
     );
   }
 
-  const banner = banners[currentIndex];
+  const fallbackBanner: Banner = {
+    id: 'fallback',
+    image: heroFallback,
+    link: '/shop',
+    position: 'hero',
+    order: 0,
+  };
 
-  if (!banner) return null;
+  const banner = banners[currentIndex] || fallbackBanner;
 
   return (
     <section className="relative bg-white text-primary overflow-hidden">

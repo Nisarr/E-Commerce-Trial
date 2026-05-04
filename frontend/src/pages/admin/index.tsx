@@ -10,6 +10,11 @@ import { OrderManager } from './OrderManager';
 import { AdminSettings } from './Settings';
 import { AdminLogin } from './Login';
 import { AdminDashboard } from './Dashboard';
+import { CustomerManager } from './CustomerManager';
+import { ReviewModeration } from './ReviewModeration';
+import { CouponManager } from './CouponManager';
+import { ReturnManager } from './ReturnManager';
+import { NotificationManager } from './NotificationManager';
 import { useAuthStore } from '../../store/authStore';
 import { BannerModal } from '../../components/admin/BannerModal';
 import { ProductModal } from '../../components/admin/ProductModal';
@@ -219,6 +224,11 @@ export const AdminIndex: React.FC = () => {
               {activeTab === 'orders' && (
                 <OrderManager />
               )}
+              {activeTab === 'customers' && <CustomerManager />}
+              {activeTab === 'notifications' && <NotificationManager />}
+              {activeTab === 'reviews' && <ReviewModeration />}
+              {activeTab === 'coupons' && <CouponManager />}
+              {activeTab === 'returns' && <ReturnManager />}
               {activeTab === 'settings' && <AdminSettings />}
             </div>
           )}
