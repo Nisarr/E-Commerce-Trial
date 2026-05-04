@@ -8,7 +8,7 @@
     "dev:frontend": "cd frontend && vite",
     "dev:backend": "wrangler pages dev . --port 8788",
     "dev:full": "concurrently -n \"frontend,backend\" -c \"blue,green\" \"npm run dev:frontend\" \"npm run dev:backend\"",
-    "build": "cd frontend && tsc -b && vite build",
+    "build": "tsc -b && cd frontend && vite build",
     "preview": "wrangler pages dev ./frontend/dist",
     "deploy": "npm run build && wrangler pages deploy ./frontend/dist",
     "lint": "cd frontend && eslint .",

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { AccountSidebar } from './AccountSidebar';
 import { Menu, X } from 'lucide-react';
-import { Breadcrumbs } from '../../components/layout/Breadcrumbs';
+
 
 export const AccountLayout: React.FC = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
