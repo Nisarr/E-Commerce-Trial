@@ -1,6 +1,6 @@
 name = "baby-pen-house"
 compatibility_date = "2024-09-23"
-pages_build_output_dir = "dist"
+pages_build_output_dir = "frontend/dist"
 
 [vars]
 # non-secret vars here
