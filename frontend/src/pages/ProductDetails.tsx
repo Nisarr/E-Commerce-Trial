@@ -17,7 +17,10 @@ import { RecentlyViewed } from '../components/RecentlyViewed';
 export const ProductDetails: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [product, setProduct] = useState<Product | null>(null);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviewStats, setReviewStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingReviews, setLoadingReviews] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews'>('description');
@@ -31,7 +34,7 @@ export const ProductDetails: React.FC = () => {
     const fetchProduct = async () => {
       setLoading(true);
       try {
-        const res = await api.get('/products');
+        const res = await api.get(`/products?limit=100`);
         const p = res.data.items.find((item: Product) => item.slug === slug);
         if (p) setProduct(p);
       } catch (err) {
@@ -42,6 +45,23 @@ export const ProductDetails: React.FC = () => {
     };
     fetchProduct();
   }, [slug]);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!product?.id) return;
+      setLoadingReviews(true);
+      try {
+        const res = await api.get(`/reviews?productId=${product.id}`);
+        setReviews(res.data.items || []);
+        setReviewStats(res.data.stats || null);
+      } catch (err) {
+        console.error('Failed to fetch reviews');
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+    fetchReviews();
+  }, [product?.id]);
 
   useEffect(() => {
     if (product) {
@@ -168,7 +188,7 @@ export const ProductDetails: React.FC = () => {
                   <span className="ml-1.5 text-sm font-black text-gray-900">{product.rating ? Number(product.rating).toFixed(1) : '5.0'}</span>
                 </div>
                 <div className="h-3 w-px bg-gray-200" />
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">248 Reviews</span>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{product.reviewCount || 0} Reviews</span>
               </div>
             </div>
 
@@ -310,18 +330,83 @@ export const ProductDetails: React.FC = () => {
             )}
 
             {activeTab === 'reviews' && (
-              <div className="space-y-8 text-center py-10">
-                <div className="w-20 h-20 bg-primary/5 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Sparkles size={32} />
-                </div>
-                <h3 className="text-2xl font-black text-gray-900 tracking-tight">Real Feedback from Real Parents</h3>
-                <p className="text-gray-500 font-medium max-w-xl mx-auto">
-                  Our community of thousands of parents trust us with their most precious gift. 
-                  Read why they choose PlayPen House for their baby's safe space.
-                </p>
-                <button className="bg-white border-2 border-primary text-primary px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-lg shadow-primary/10">
-                  Read All 248 Reviews
-                </button>
+              <div className="space-y-10">
+                {loadingReviews ? (
+                  <div className="py-20 flex justify-center">
+                    <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                  </div>
+                ) : reviews.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-8">
+                    {/* Stats Header */}
+                    {reviewStats && (
+                      <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-center gap-10">
+                        <div className="text-center md:border-r border-gray-100 md:pr-10">
+                          <div className="text-5xl font-black text-gray-900 mb-2">{reviewStats.averageRating}</div>
+                          <div className="flex items-center justify-center gap-1 mb-2">
+                            {[1, 2, 3, 4, 5].map(i => (
+                              <Star key={i} size={16} className={`${i <= Math.round(reviewStats.averageRating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`} />
+                            ))}
+                          </div>
+                          <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">{reviewStats.totalReviews} Reviews</div>
+                        </div>
+                        <div className="flex-grow space-y-2 w-full">
+                          {reviewStats.distribution.slice().reverse().map((d: any) => (
+                            <div key={d.stars} className="flex items-center gap-4">
+                              <span className="text-[10px] font-black text-gray-400 w-4">{d.stars}</span>
+                              <div className="flex-grow h-2 bg-gray-50 rounded-full overflow-hidden">
+                                <div className="h-full bg-amber-400 rounded-full" style={{ width: `${d.percentage}%` }} />
+                              </div>
+                              <span className="text-[10px] font-black text-gray-900 w-8">{d.percentage}%</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Review List */}
+                    <div className="space-y-6">
+                      {reviews.map((review) => (
+                        <div key={review.id} className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+                          <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary font-black text-sm uppercase">
+                                {review.username[0]}
+                              </div>
+                              <div>
+                                <div className="text-sm font-black text-gray-900">{review.username}</div>
+                                <div className="flex items-center gap-1 mt-0.5">
+                                  {[1, 2, 3, 4, 5].map(i => (
+                                    <Star key={i} size={10} className={`${i <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`} />
+                                  ))}
+                                  {review.isVerified === 1 && (
+                                    <span className="ml-2 flex items-center gap-1 text-[8px] font-black text-green-500 uppercase tracking-widest">
+                                      <ShieldCheck size={10} /> Verified Purchase
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-[10px] font-bold text-gray-300 uppercase">
+                              {new Date(review.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                            </div>
+                          </div>
+                          {review.title && <h4 className="font-black text-gray-900 text-base">{review.title}</h4>}
+                          <p className="text-sm text-gray-500 leading-relaxed font-medium">{review.content}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-20 bg-white rounded-[3rem] border-2 border-dashed border-gray-100">
+                    <div className="w-16 h-16 bg-gray-50 text-gray-300 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Sparkles size={24} />
+                    </div>
+                    <h3 className="text-xl font-black text-gray-900 tracking-tight">No Reviews Yet</h3>
+                    <p className="text-gray-400 font-medium max-w-xs mx-auto mt-2">
+                      Be the first to share your experience with this premium product.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>

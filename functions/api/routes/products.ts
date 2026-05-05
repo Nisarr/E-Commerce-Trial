@@ -44,7 +44,9 @@ productsRouter.get("/", async (c) => {
         if (sort === "newest") return [desc(p.createdAt)];
         if (sort === "price-low") return [asc(p.price)];
         if (sort === "price-high") return [desc(p.price)];
-        return [desc(p.rating)]; // trending/default
+        if (sort === "best-selling") return [desc(p.soldCount)];
+        if (sort === "trending") return [desc(p.rating)];
+        return [desc(p.createdAt)]; // default to newest
       }
     });
 

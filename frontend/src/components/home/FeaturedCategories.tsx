@@ -90,7 +90,7 @@ export const FeaturedCategories: React.FC = () => {
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <div className="relative w-full h-full flex items-center justify-center">
                     <img 
-                      src={category.image || '/catagory/diapers.png'} 
+                      src={category.image || 'https://placehold.co/400x500/f8fafc/64748b?text=' + category.name} 
                       alt={category.name} 
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                       onError={(e) => {

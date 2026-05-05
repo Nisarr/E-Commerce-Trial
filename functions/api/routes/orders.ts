@@ -86,11 +86,14 @@ ordersRouter.post("/", async (c) => {
     }
   }
 
-  // ── Deduct stock ──────────────────────────────────────
+  // ── Deduct stock & Increment Sold Count ────────────────
   for (const item of body.items) {
     const [product] = await db.select().from(schema.products).where(eq(schema.products.id, item.productId));
     await db.update(schema.products)
-      .set({ stock: (product!.stock ?? 0) - item.quantity })
+      .set({ 
+        stock: (product!.stock ?? 0) - item.quantity,
+        soldCount: (product!.soldCount ?? 0) + item.quantity
+      })
       .where(eq(schema.products.id, item.productId));
   }
 
@@ -332,13 +335,16 @@ ordersRouter.post("/:id/cancel", async (c) => {
     createdAt: new Date(),
   });
 
-  // Restore stock for cancelled items
+  // Restore stock & Decrement Sold Count for cancelled items
   const orderItems = await db.select().from(schema.orderItems).where(eq(schema.orderItems.orderId, id));
   for (const item of orderItems) {
     const [product] = await db.select().from(schema.products).where(eq(schema.products.id, item.productId));
     if (product) {
       await db.update(schema.products)
-        .set({ stock: (product.stock ?? 0) + item.quantity })
+        .set({ 
+          stock: (product.stock ?? 0) + item.quantity,
+          soldCount: Math.max(0, (product.soldCount ?? 0) - item.quantity)
+        })
         .where(eq(schema.products.id, item.productId));
     }
   }
