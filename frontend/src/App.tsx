@@ -3,8 +3,8 @@ import { Popup } from './components/layout/Popup';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
-import { Breadcrumbs } from './components/layout/Breadcrumbs';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import ScrollToTop from './components/ScrollToTop';
 import { Home } from './pages/Home';
 import { AdminIndex } from './pages/admin/index';
 import { UserLogin } from './pages/UserLogin';
@@ -34,11 +34,10 @@ import { ResetPassword } from './pages/account/ResetPassword';
 function App() {
   const location = useLocation();
   const isAdminPath = location.pathname.startsWith('/adm');
-  const isHomePath = location.pathname === '/';
-  const isAccountPath = location.pathname.startsWith('/account');
 
   return (
     <ErrorBoundary>
+      <ScrollToTop />
       <div className="flex flex-col min-h-screen">
         {!isAdminPath && <Popup />}
         {!isAdminPath && <Navbar />}
