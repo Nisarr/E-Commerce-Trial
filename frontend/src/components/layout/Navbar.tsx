@@ -88,7 +88,7 @@ export const Navbar: React.FC = () => {
   return (
     <header className="sticky top-0 z-40 w-full">
       {/* Main Navbar */}
-      <div className="glass shadow-lg border-b-2 border-[#FF4500] rounded-b-[2rem] w-full">
+      <div className="glass border-b-2 border-[#FF4500] rounded-b-[2rem] w-full">
         <div className="container mx-auto px-4">
           <div className="flex h-14 md:h-16 items-center justify-between gap-4">
             <div className="flex items-center gap-4">

@@ -115,7 +115,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           
           <div className="flex items-center gap-1.5 md:gap-2 text-[9px] font-bold text-gray-400 shrink-0">
             <div className="flex items-center gap-0.5">
-              <span>{product.rating || '5.0'}</span>
+              <span>{product.rating ? Number(product.rating).toFixed(1) : '5.0'}</span>
               <Star size={9} className="fill-amber-400 text-amber-400" />
             </div>
             <span className="hidden min-[450px]:inline">· {product.soldCount || 0} sold</span>

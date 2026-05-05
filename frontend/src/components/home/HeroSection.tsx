@@ -119,7 +119,7 @@ export const HeroSection: React.FC = () => {
             
             <div className="flex flex-wrap items-center gap-6 mt-8">
               <button 
-                className="relative overflow-hidden group bg-primary text-white rounded-xl px-8 py-4 text-lg font-bold shadow-[0_15px_35px_rgba(15,23,42,0.2)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(15,23,42,0.3)] active:scale-95 flex items-center gap-2"
+                className="relative overflow-hidden group bg-primary text-white rounded-xl px-8 py-4 text-lg font-bold transition-all duration-500 hover:-translate-y-1 active:scale-95 flex items-center gap-2"
                 onClick={() => window.location.href = banner.link || '/category/all'}
               >
                 <span className="relative z-10">Start Shopping</span>
@@ -144,7 +144,7 @@ export const HeroSection: React.FC = () => {
           {/* Right Image Part & Trust Badges */}
           <div className="w-full md:w-1/2 flex flex-col justify-center py-2 animate-in fade-in slide-in-from-right-8 duration-1000">
             {/* Wider Image Aspect Ratio */}
-            <div className="relative aspect-[16/10] md:aspect-[4/3] rounded-[3rem] overflow-hidden shadow-[0_40px_80px_-20px_rgba(0,0,0,0.2)] border-4 border-white group mb-8">
+            <div className="relative aspect-[16/10] md:aspect-[4/3] rounded-[3rem] overflow-hidden border-4 border-white group mb-8">
               <img 
                 key={currentIndex}
                 src={banner.image} 
@@ -168,9 +168,9 @@ export const HeroSection: React.FC = () => {
             </div>
 
             {/* Trust Badges - Very Compact One Line Row */}
-            <div className="flex flex-wrap md:flex-nowrap justify-between gap-2 bg-gray-50/50 p-2 rounded-2xl border border-gray-100 shadow-sm mt-auto">
+            <div className="flex flex-wrap md:flex-nowrap justify-between gap-2 bg-gray-50/50 p-2 rounded-2xl border border-gray-100 mt-auto">
               {trustBadges.map((badge, index) => (
-                <div key={index} className="flex items-center gap-2 px-3 py-2 bg-white rounded-xl shadow-sm hover:shadow-md transition-all group flex-1 justify-center">
+                <div key={index} className="flex items-center gap-2 px-3 py-2 bg-white rounded-xl border border-gray-50 transition-all group flex-1 justify-center">
                   <badge.icon size={16} className="text-accent shrink-0 group-hover:scale-110 transition-transform" />
                   <span className="text-[10px] font-black text-primary uppercase tracking-tighter whitespace-nowrap">{badge.label}</span>
                 </div>

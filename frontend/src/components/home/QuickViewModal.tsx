@@ -96,7 +96,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
                   {[1, 2, 3, 4, 5].map(i => (
                     <Star key={i} size={16} className={`${i <= (product.rating || 5.0) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`} />
                   ))}
-                  <span className="ml-2 text-sm font-bold text-gray-900">{product.rating || '5.0'}</span>
+                  <span className="ml-2 text-sm font-bold text-gray-900">{product.rating ? Number(product.rating).toFixed(1) : '5.0'}</span>
                 </div>
                 <div className="h-4 w-px bg-gray-200" />
                 <span className="text-sm font-bold text-gray-400">{product.reviewCount || 0} reviews</span>

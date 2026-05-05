@@ -163,9 +163,9 @@ export const ProductDetails: React.FC = () => {
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map(i => (
-                    <Star key={i} size={14} className={`${i <= 4.9 ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`} />
+                    <Star key={i} size={14} className={`${i <= (product.rating || 5.0) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`} />
                   ))}
-                  <span className="ml-1.5 text-sm font-black text-gray-900">4.9</span>
+                  <span className="ml-1.5 text-sm font-black text-gray-900">{product.rating ? Number(product.rating).toFixed(1) : '5.0'}</span>
                 </div>
                 <div className="h-3 w-px bg-gray-200" />
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">248 Reviews</span>
