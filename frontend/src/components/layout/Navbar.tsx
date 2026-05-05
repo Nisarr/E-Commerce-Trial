@@ -210,14 +210,16 @@ export const Navbar: React.FC = () => {
                   </span>
                 )}
               </Link>
-              <Link to="/cart" className="relative bg-primary text-white p-2 rounded-xl hover:bg-primary-light transition-all cursor-pointer shadow-lg shadow-primary/20 flex items-center gap-2 group">
-                <ShoppingCart size={18} className="group-hover:scale-110 transition-transform" />
+              <Link to="/cart" className="relative text-primary hover:text-accent p-1.5 hover:bg-white/50 rounded-xl transition-all cursor-pointer flex items-center gap-2 group">
+                <div className="relative">
+                  <ShoppingCart size={20} className="group-hover:scale-110 transition-transform" />
+                  {totalItems > 0 && (
+                    <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[8px] font-bold text-white shadow-lg border-2 border-white">
+                      {totalItems}
+                    </span>
+                  )}
+                </div>
                 <span className="hidden lg:inline text-xs font-bold">Cart</span>
-                {totalItems > 0 && (
-                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[8px] font-bold text-white shadow-sm border border-white/20">
-                    {totalItems}
-                  </span>
-                )}
               </Link>
             </div>
           </div>

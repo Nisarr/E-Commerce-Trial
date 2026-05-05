@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { 
-  ShoppingCart, Heart, Truck, RotateCcw, Star, 
+  ShoppingCart, Heart, RotateCcw, Star, 
   Check, ShieldCheck, Zap, Info, ArrowRight,
   Package, Award, Sparkles, Share2, Send, Link2
 } from 'lucide-react';
@@ -140,10 +140,6 @@ export const ProductDetails: React.FC = () => {
           <div className="lg:col-span-7 space-y-6">
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="px-4 py-1.5 bg-white border border-gray-100 text-primary text-[10px] font-black uppercase tracking-[0.2em] rounded-full shadow-sm flex items-center gap-2">
-                  <Sparkles size={12} className="text-accent" />
-                  {product.brand || 'PlayPen House'}
-                </span>
                 <div className="flex items-center gap-2 px-4 py-1.5 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-[0.2em] rounded-full shadow-sm">
                   <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                   Available Now

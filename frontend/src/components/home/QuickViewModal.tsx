@@ -79,9 +79,6 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
           <div className="space-y-8">
             <div>
               <div className="flex items-center gap-4 mb-4">
-                <span className="px-4 py-1.5 bg-purple-100 text-primary text-[10px] font-black uppercase tracking-[0.2em] rounded-full">
-                  {product.brand || 'PlayPen House'}
-                </span>
                 {product.stock > 0 ? (
                   <span className="flex items-center gap-1.5 text-green-600 text-[10px] font-black uppercase tracking-widest">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
@@ -103,8 +100,8 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
                 </div>
                 <div className="h-4 w-px bg-gray-200" />
                 <span className="text-sm font-bold text-gray-400">{product.reviewCount || 0} reviews</span>
-                <div className="h-4 w-px bg-gray-200" />
-                <span className="text-sm font-bold text-gray-400">{product.soldCount || 0} sold</span>
+                <div className="hidden md:block h-4 w-px bg-gray-200" />
+                <span className="hidden md:inline text-sm font-bold text-gray-400">{product.soldCount || 0} sold</span>
               </div>
             </div>
 

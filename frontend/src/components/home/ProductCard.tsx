@@ -33,12 +33,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <div 
-      className="group relative flex flex-col bg-white rounded-[2rem] overflow-hidden transition-all duration-500 hover:shadow-[0_20px_50px_rgba(170,59,255,0.12)] border border-gray-100 hover:border-purple-100 h-full"
+      className="group relative flex flex-col bg-white rounded-[2rem] overflow-hidden transition-all duration-500 hover:shadow-[0_20px_50px_rgba(170,59,255,0.12)] border border-gray-200 hover:border-purple-200 h-full"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Image Section */}
-      <div className="relative aspect-[4/5] overflow-hidden bg-gray-50">
+      <div className="relative aspect-square overflow-hidden bg-gray-50">
         <Link to={`/product/${product.slug}`} className="block w-full h-full">
           <img 
             src={isHovered && secondImageUrl ? secondImageUrl : imageUrl} 
@@ -91,11 +91,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </div>
 
       {/* Content Section */}
-      <div className="flex flex-col flex-grow p-6">
-        <span className="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-2 block">{product.brand || 'PlayPen House'}</span>
+      <div className="flex flex-col flex-grow p-4">
         
-        <Link to={`/product/${product.slug}`} className="block mb-3">
-          <h3 className="text-gray-900 font-bold text-base leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+        <Link to={`/product/${product.slug}`} className="block mb-2">
+          <h3 className="text-gray-900 font-bold text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
             {product.title}
           </h3>
         </Link>
@@ -104,23 +103,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className="flex flex-col">
             {product.salePrice ? (
               <>
-                <span className="text-xs text-gray-400 line-through font-medium">৳{product.price.toLocaleString()}</span>
-                <span className="text-xl font-black text-primary tracking-tight">৳{product.salePrice.toLocaleString()}</span>
+                <span className="text-[9px] text-gray-400 line-through font-medium">৳{product.price.toLocaleString()}</span>
+                <span className="text-base font-black text-primary tracking-tight">৳{product.salePrice.toLocaleString()}</span>
               </>
             ) : (
-              <span className="text-xl font-black text-gray-900 tracking-tight">৳{product.price.toLocaleString()}</span>
+              <span className="text-base font-black text-gray-900 tracking-tight">৳{product.price.toLocaleString()}</span>
             )}
           </div>
           
-          <div className="h-8 w-px bg-gray-100 mx-4" />
+          <div className="hidden min-[450px]:block h-6 w-px bg-gray-100 mx-2 md:mx-4" />
           
-          <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400">
+          <div className="flex items-center gap-1.5 md:gap-2 text-[9px] font-bold text-gray-400 shrink-0">
             <div className="flex items-center gap-0.5">
               <span>{product.rating || '5.0'}</span>
-              <Star size={10} className="fill-amber-400 text-amber-400" />
+              <Star size={9} className="fill-amber-400 text-amber-400" />
             </div>
-            <span>•</span>
-            <span>{product.soldCount || 0} sold</span>
+            <span className="hidden min-[450px]:inline">· {product.soldCount || 0} sold</span>
           </div>
         </div>
       </div>
