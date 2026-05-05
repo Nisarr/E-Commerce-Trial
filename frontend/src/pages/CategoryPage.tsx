@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { getProducts, getCategories } from '../services/api';
 import type { Product, Category } from '../types';
 import { ProductCard } from '../components/home/ProductCard';
-import { ChevronRight } from 'lucide-react';
+
 
 export const CategoryPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
