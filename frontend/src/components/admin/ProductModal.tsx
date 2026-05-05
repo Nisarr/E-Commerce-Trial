@@ -226,6 +226,32 @@ export const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, on
                       />
                     </div>
                   </div>
+
+                  {/* Special Offer Toggle */}
+                  <div className="bg-orange-50/50 border-2 border-orange-100/50 rounded-2xl p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600">
+                        <Tag size={20} />
+                      </div>
+                      <div>
+                        <div className="text-sm font-black text-primary uppercase tracking-wider">Special Offer</div>
+                        <div className="text-[10px] font-bold text-orange-600/70 uppercase">Featured in countdown section</div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (tags.includes('special-offer')) {
+                          setTags(tags.filter(t => t !== 'special-offer'));
+                        } else {
+                          setTags([...tags, 'special-offer']);
+                        }
+                      }}
+                      className={`w-14 h-8 rounded-full transition-all relative ${tags.includes('special-offer') ? 'bg-orange-500' : 'bg-gray-200'}`}
+                    >
+                      <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all ${tags.includes('special-offer') ? 'right-1' : 'left-1 shadow-sm'}`} />
+                    </button>
+                  </div>
                 </div>
               </div>
 

@@ -11,7 +11,7 @@ export const MegaMenu: React.FC = () => {
   }, []);
 
   return (
-    <div className="absolute top-full left-0 w-[600px] hidden group-hover:block bg-white shadow-xl rounded-b-lg border border-gray-100 p-6 z-50 transition-all duration-200 opacity-0 group-hover:opacity-100 mt-0">
+    <div className="absolute top-full left-0 w-[600px] hidden group-hover:block bg-white rounded-b-lg border border-gray-200 p-6 z-50 transition-all duration-200 opacity-0 group-hover:opacity-100 mt-0">
       <div className="grid grid-cols-3 gap-6">
         {categories.length > 0 ? (
           categories.slice(0, 9).map((cat) => (

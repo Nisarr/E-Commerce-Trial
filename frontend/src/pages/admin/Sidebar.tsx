@@ -39,6 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
       items: [
         { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { id: 'products', icon: Package, label: 'Products', hasSub: true },
+        { id: 'special-offers', icon: PartyPopper, label: 'Special Offers' },
         { id: 'categories', icon: ClipboardList, label: 'Category', hasSub: true },
         { id: 'inventory', icon: Box, label: 'Inventory', hasSub: true },
         { id: 'orders', icon: ShoppingBag, label: 'Orders', hasSub: true },

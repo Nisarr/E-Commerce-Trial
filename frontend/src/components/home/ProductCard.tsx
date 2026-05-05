@@ -33,7 +33,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <div 
-      className="group relative flex flex-col bg-white rounded-[2rem] overflow-hidden transition-all duration-500 hover:shadow-[0_20px_50px_rgba(170,59,255,0.12)] border border-gray-200 hover:border-purple-200 h-full"
+      className="group relative flex flex-col bg-white rounded-[2rem] overflow-hidden transition-all duration-500 border border-gray-200 hover:border-purple-200 h-full"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -51,12 +51,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Top Badges */}
         <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
           {discount > 0 && (
-            <div className="bg-red-500 text-white text-[10px] font-black px-3 py-1.5 rounded-full shadow-lg shadow-red-500/20 uppercase tracking-widest">
+            <div className="bg-red-500 text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest">
               {discount}% OFF
             </div>
           )}
-          {product.stock <= 5 && product.stock > 0 && (
-            <div className="bg-amber-500 text-white text-[10px] font-black px-3 py-1.5 rounded-full shadow-lg shadow-amber-500/20 uppercase tracking-widest">
+          {((product.stock || 0) - (product.soldCount || 0)) <= 5 && ((product.stock || 0) - (product.soldCount || 0)) > 0 && (
+            <div className="bg-amber-500 text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest">
               Low Stock
             </div>
           )}
@@ -66,13 +66,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="absolute top-4 right-4 flex flex-col gap-3 z-10 translate-x-12 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500">
           <button 
             onClick={() => toggleItem(product)}
-            className={`w-10 h-10 flex items-center justify-center rounded-2xl shadow-xl transition-all duration-300 ${isWishlisted ? 'bg-red-500 text-white' : 'bg-white text-gray-400 hover:bg-red-50 hover:text-red-500'}`}
+            className={`w-10 h-10 flex items-center justify-center rounded-2xl border border-gray-100 transition-all duration-300 ${isWishlisted ? 'bg-red-500 text-white' : 'bg-white text-gray-400 hover:bg-red-50 hover:text-red-500'}`}
           >
             <Heart size={20} fill={isWishlisted ? "currentColor" : "none"} />
           </button>
           <button 
             onClick={() => setIsQuickViewOpen(true)}
-            className="w-10 h-10 bg-white text-gray-400 flex items-center justify-center rounded-2xl shadow-xl hover:bg-purple-50 hover:text-purple-600 transition-all duration-300"
+            className="w-10 h-10 bg-white text-gray-400 flex items-center justify-center rounded-2xl border border-gray-100 hover:bg-purple-50 hover:text-purple-600 transition-all duration-300"
           >
             <Eye size={20} />
           </button>
@@ -82,7 +82,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 z-10">
           <button 
             onClick={() => addItem(product)}
-            className="w-full py-3.5 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-primary/30 hover:bg-primary-dark transition-all flex items-center justify-center gap-2"
+            className="w-full py-3.5 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-primary-dark transition-all flex items-center justify-center gap-2"
           >
             <ShoppingCart size={16} />
             Quick Add

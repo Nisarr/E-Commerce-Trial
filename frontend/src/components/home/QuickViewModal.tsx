@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, ShoppingCart, Heart, Star, ChevronLeft, ChevronRight, ShieldCheck, Truck, RotateCcw } from 'lucide-react';
+import { X, ShoppingCart, Heart, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Product } from '../../types';
 import { useCart } from '../../hooks/useCart';
 import { useWishlist } from '../../hooks/useWishlist';
@@ -22,14 +22,14 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
     : 0;
 
   return (
-    <div className="fixed inset-0 bg-primary/40 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-500">
+    <div className="fixed inset-0 bg-black/10 flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
       <div 
         className="bg-white rounded-[3rem] w-full max-w-5xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-500 flex flex-col md:flex-row relative max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         <button 
           onClick={onClose}
-          className="absolute top-6 right-6 z-20 p-3 bg-white/80 backdrop-blur-md hover:bg-white rounded-2xl text-gray-500 hover:text-primary transition-all shadow-xl"
+          className="absolute top-6 right-6 z-20 p-3 bg-white border border-gray-100 rounded-2xl text-gray-500 hover:text-primary transition-all"
         >
           <X size={24} />
         </button>
@@ -47,13 +47,13 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
               <>
                 <button 
                   onClick={() => setActiveImageIndex(prev => (prev === 0 ? images.length - 1 : prev - 1))}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl hover:bg-white transition-all"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all"
                 >
                   <ChevronLeft size={20} />
                 </button>
                 <button 
                   onClick={() => setActiveImageIndex(prev => (prev === images.length - 1 ? 0 : prev + 1))}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl hover:bg-white transition-all"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all"
                 >
                   <ChevronRight size={20} />
                 </button>
@@ -79,10 +79,10 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
           <div className="space-y-8">
             <div>
               <div className="flex items-center gap-4 mb-4">
-                {product.stock > 0 ? (
+                {((product.stock || 0) - (product.soldCount || 0)) > 0 ? (
                   <span className="flex items-center gap-1.5 text-green-600 text-[10px] font-black uppercase tracking-widest">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                    In Stock
+                    {(product.stock || 0) - (product.soldCount || 0)} In Stock
                   </span>
                 ) : (
                   <span className="text-red-500 text-[10px] font-black uppercase tracking-widest">Out of Stock</span>
@@ -144,39 +144,20 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
                   for(let i=0; i<quantity; i++) addItem(product);
                   onClose();
                 }}
-                className="flex-[3] h-14 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 hover:bg-primary-dark transition-all flex items-center justify-center gap-3"
+                className="flex-[3] h-14 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-primary-dark transition-all flex items-center justify-center gap-3"
               >
                 <ShoppingCart size={20} />
                 Add to Cart
               </button>
               <button 
                 onClick={() => toggleItem(product)}
-                className={`h-14 w-14 flex items-center justify-center rounded-2xl border-2 transition-all duration-300 ${isWishlisted ? 'bg-red-500 border-red-500 text-white shadow-xl shadow-red-500/20' : 'border-gray-100 text-gray-400 hover:border-red-500 hover:text-red-500'}`}
+                className={`h-14 w-14 flex items-center justify-center rounded-2xl border-2 transition-all duration-300 ${isWishlisted ? 'bg-red-500 border-red-500 text-white' : 'border-gray-100 text-gray-400 hover:border-red-500 hover:text-red-500'}`}
               >
                 <Heart size={20} fill={isWishlisted ? "currentColor" : "none"} />
               </button>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 pt-8 border-t border-gray-100">
-              <div className="flex flex-col items-center text-center gap-2">
-                <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center text-primary">
-                  <ShieldCheck size={24} />
-                </div>
-                <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Safe & Secure</span>
-              </div>
-              <div className="flex flex-col items-center text-center gap-2">
-                <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center text-primary">
-                  <Truck size={24} />
-                </div>
-                <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Fast Delivery</span>
-              </div>
-              <div className="flex flex-col items-center text-center gap-2">
-                <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center text-primary">
-                  <RotateCcw size={24} />
-                </div>
-                <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Easy Returns</span>
-              </div>
-            </div>
+
           </div>
         </div>
       </div>

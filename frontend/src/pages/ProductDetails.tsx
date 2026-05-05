@@ -3,8 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { 
   ShoppingCart, Heart, RotateCcw, Star, 
-  Check, ShieldCheck, Zap, Info, ArrowRight,
-  Package, Award, Sparkles, Share2, Send, Link2
+  Check, ShieldCheck, Info, ArrowRight,
+  Sparkles, Share2, Send, Link2
 } from 'lucide-react';
 import api from '../services/api';
 import type { Product } from '../types';
@@ -101,15 +101,10 @@ export const ProductDetails: React.FC = () => {
     ? Math.round(((product.price - product.salePrice) / product.price) * 100)
     : 0;
 
-  const features = [
-    { icon: <ShieldCheck size={20} />, title: 'Safety First', desc: 'EN71 Certified materials' },
-    { icon: <Zap size={20} />, title: 'Quick Setup', desc: 'Easy assembly in minutes' },
-    { icon: <Package size={20} />, title: 'Free Delivery', desc: 'On all orders over ৳5000' },
-    { icon: <Award size={20} />, title: '1 Year Warranty', desc: 'Guaranteed quality support' }
-  ];
+
 
   return (
-    <div className="bg-[#fafafa] min-h-screen pb-20">
+    <div className="bg-white min-h-screen pb-20">
       <Helmet>
         <title>{product.title} | PlayPen House</title>
         <meta name="description" content={product.brand || 'Premium Baby PlayPen'} />
@@ -121,7 +116,7 @@ export const ProductDetails: React.FC = () => {
           {/* Image Section - Sticky on Desktop */}
           <div className="lg:col-span-5">
             <div className="sticky top-24 space-y-4">
-              <div className="relative aspect-square rounded-[2rem] overflow-hidden bg-white shadow-lg shadow-gray-200/40 group">
+              <div className="relative aspect-square rounded-[2rem] overflow-hidden bg-white border border-gray-100 group">
                 <img 
                   src={images[activeImage] || 'https://placehold.co/800x1000'} 
                   alt={product.title}
@@ -160,10 +155,7 @@ export const ProductDetails: React.FC = () => {
           <div className="lg:col-span-7 space-y-6">
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-2 px-4 py-1.5 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-[0.2em] rounded-full shadow-sm">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  Available Now
-                </div>
+
                 <div className="flex items-center gap-4 ml-auto">
                   <div className="flex items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
                     <Check className="text-green-500" size={14} />
@@ -183,12 +175,21 @@ export const ProductDetails: React.FC = () => {
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map(i => (
-                    <Star key={i} size={14} className={`${i <= (product.rating || 5.0) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`} />
+                    <Star key={i} size={14} className={`${i <= Math.round(reviewStats?.averageRating || 0) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`} />
                   ))}
-                  <span className="ml-1.5 text-sm font-black text-gray-900">{product.rating ? Number(product.rating).toFixed(1) : '5.0'}</span>
+                  <span className="ml-1.5 text-sm font-black text-gray-900">{reviewStats?.averageRating ? Number(reviewStats.averageRating).toFixed(1) : '0.0'}</span>
                 </div>
                 <div className="h-3 w-px bg-gray-200" />
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{product.reviewCount || 0} Reviews</span>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{reviewStats?.totalReviews ?? 0} Reviews</span>
+                <div className="h-3 w-px bg-gray-200" />
+                <div className="flex items-center gap-1.5">
+                  <div className={`w-1.5 h-1.5 rounded-full ${((product.stock || 0) - (product.soldCount || 0)) > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
+                  <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest">
+                    {((product.stock || 0) - (product.soldCount || 0)) > 0 ? `${(product.stock || 0) - (product.soldCount || 0)} In Stock` : 'Out of Stock'}
+                  </span>
+                </div>
+                <div className="h-3 w-px bg-gray-200" />
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{product.soldCount || 0} Sold</span>
               </div>
             </div>
 
@@ -215,17 +216,7 @@ export const ProductDetails: React.FC = () => {
               <div className="h-px bg-gray-100/60" />
             </div>
 
-            {/* Features Grid */}
-            <div className="grid grid-cols-2 gap-2">
-              {features.map((f, i) => (
-                <div key={i} className="p-2.5 rounded-xl bg-gray-50/50 border border-transparent flex items-center gap-2.5 hover:bg-white hover:border-gray-100 hover:shadow-sm transition-all group">
-                  <div className="w-7 h-7 rounded-lg bg-primary/5 text-primary flex items-center justify-center flex-shrink-0">
-                    {React.cloneElement(f.icon as any, { size: 14 })}
-                  </div>
-                  <h4 className="text-[9px] font-black uppercase tracking-widest text-gray-800">{f.title}</h4>
-                </div>
-              ))}
-            </div>
+
 
             {/* Optimized Action Row */}
             <div className="flex items-center gap-1.5">
@@ -267,7 +258,7 @@ export const ProductDetails: React.FC = () => {
             {[
               { id: 'description', label: 'Overview' },
               { id: 'specs', label: 'Specifications' },
-              { id: 'reviews', label: 'Client Reviews' }
+              { id: 'reviews', label: `Client Reviews (${reviewStats?.totalReviews ?? 0})` }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -339,7 +330,7 @@ export const ProductDetails: React.FC = () => {
                   <div className="grid grid-cols-1 gap-8">
                     {/* Stats Header */}
                     {reviewStats && (
-                      <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-center gap-10">
+                      <div className="bg-white p-8 rounded-3xl border border-gray-100 flex flex-col md:flex-row items-center gap-10">
                         <div className="text-center md:border-r border-gray-100 md:pr-10">
                           <div className="text-5xl font-black text-gray-900 mb-2">{reviewStats.averageRating}</div>
                           <div className="flex items-center justify-center gap-1 mb-2">
@@ -353,8 +344,8 @@ export const ProductDetails: React.FC = () => {
                           {reviewStats.distribution.slice().reverse().map((d: any) => (
                             <div key={d.stars} className="flex items-center gap-4">
                               <span className="text-[10px] font-black text-gray-400 w-4">{d.stars}</span>
-                              <div className="flex-grow h-2 bg-gray-50 rounded-full overflow-hidden">
-                                <div className="h-full bg-amber-400 rounded-full" style={{ width: `${d.percentage}%` }} />
+                              <div className="flex-grow h-2 bg-gray-100">
+                                <div className="h-full bg-amber-400" style={{ width: `${d.percentage}%` }} />
                               </div>
                               <span className="text-[10px] font-black text-gray-900 w-8">{d.percentage}%</span>
                             </div>
@@ -366,7 +357,7 @@ export const ProductDetails: React.FC = () => {
                     {/* Review List */}
                     <div className="space-y-6">
                       {reviews.map((review) => (
-                        <div key={review.id} className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+                        <div key={review.id} className="bg-white p-8 rounded-3xl border border-gray-100 space-y-4">
                           <div className="flex justify-between items-start">
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary font-black text-sm uppercase">
@@ -392,6 +383,25 @@ export const ProductDetails: React.FC = () => {
                           </div>
                           {review.title && <h4 className="font-black text-gray-900 text-base">{review.title}</h4>}
                           <p className="text-sm text-gray-500 leading-relaxed font-medium">{review.content}</p>
+                          {(() => {
+                            try {
+                              const reviewImages = JSON.parse(review.images || '[]');
+                              if (reviewImages && reviewImages.length > 0) {
+                                return (
+                                  <div className="flex flex-wrap gap-3 mt-4">
+                                    {reviewImages.map((img: string, idx: number) => (
+                                      <div key={idx} className="relative group w-20 h-20 rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                                        <img src={img} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                                      </div>
+                                    ))}
+                                  </div>
+                                );
+                              }
+                            } catch (e) {
+                              return null;
+                            }
+                            return null;
+                          })()}
                         </div>
                       ))}
                     </div>

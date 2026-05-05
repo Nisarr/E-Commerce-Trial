@@ -9,7 +9,7 @@ export const RecentlyViewed: React.FC = () => {
   if (items.length === 0) return null;
 
   return (
-    <section className="py-10 bg-gray-50/50">
+    <section className="py-10 bg-white border-t border-gray-100">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-black text-primary flex items-center gap-2">
@@ -29,7 +29,7 @@ export const RecentlyViewed: React.FC = () => {
               to={`/product/${product.slug}`}
               className="flex-shrink-0 w-40 group snap-start"
             >
-              <div className="aspect-square rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-sm group-hover:shadow-lg transition-all group-hover:-translate-y-1">
+              <div className="aspect-square rounded-none bg-white border border-gray-100 overflow-hidden">
                 <img
                   src={(() => {
                     try {

@@ -79,19 +79,19 @@ ordersRouter.post("/", async (c) => {
     if (!product) {
       throw new Error(`VAL: Product "${item.productName || item.productId}" not found.`);
     }
-    if ((product.stock ?? 0) < item.quantity) {
+    const availableStock = (product.stock ?? 0) - (product.soldCount ?? 0);
+    if (availableStock < item.quantity) {
       throw new Error(
-        `VAL: Insufficient stock for "${product.title}". Available: ${product.stock ?? 0}, Requested: ${item.quantity}.`
+        `VAL: Insufficient stock for "${product.title}". Available: ${availableStock}, Requested: ${item.quantity}.`
       );
     }
   }
 
-  // ── Deduct stock & Increment Sold Count ────────────────
+  // ── Increment Sold Count ────────────────
   for (const item of body.items) {
     const [product] = await db.select().from(schema.products).where(eq(schema.products.id, item.productId));
     await db.update(schema.products)
       .set({ 
-        stock: (product!.stock ?? 0) - item.quantity,
         soldCount: (product!.soldCount ?? 0) + item.quantity
       })
       .where(eq(schema.products.id, item.productId));
@@ -342,7 +342,6 @@ ordersRouter.post("/:id/cancel", async (c) => {
     if (product) {
       await db.update(schema.products)
         .set({ 
-          stock: (product.stock ?? 0) + item.quantity,
           soldCount: Math.max(0, (product.soldCount ?? 0) - item.quantity)
         })
         .where(eq(schema.products.id, item.productId));

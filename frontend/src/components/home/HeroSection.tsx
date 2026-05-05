@@ -89,9 +89,7 @@ export const HeroSection: React.FC = () => {
   return (
     <section className="relative bg-white text-primary overflow-hidden">
       {/* Premium Decorative elements */}
-      <div className="absolute top-20 right-10 w-32 h-32 bg-accent/10 rounded-full blur-2xl animate-pulse" />
-      <div className="absolute bottom-40 left-20 w-48 h-48 bg-primary/5 rounded-full blur-3xl animate-bounce duration-[5000ms]" />
-      <div className="absolute top-0 right-0 w-full md:w-2/3 h-full bg-gradient-to-l from-gray-50/50 to-transparent pointer-events-none" />
+
 
       <div className="container relative z-10 mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center min-h-[500px] lg:min-h-[600px] gap-12 pt-12 md:pt-16 pb-0">
@@ -151,12 +149,12 @@ export const HeroSection: React.FC = () => {
                 alt="Hero Banner" 
                 className="w-full h-full object-cover transform transition-all duration-1000 group-hover:scale-110 animate-in fade-in zoom-in-95"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+
               
               {/* Arrows */}
               <div className="absolute inset-0 flex items-center justify-between px-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={(e) => { e.stopPropagation(); prevBanner(); }} className="w-14 h-14 glass rounded-full flex items-center justify-center text-primary shadow-xl hover:bg-accent hover:text-white transition-all"><ChevronLeft size={28} /></button>
-                <button onClick={(e) => { e.stopPropagation(); nextBanner(); }} className="w-14 h-14 glass rounded-full flex items-center justify-center text-primary shadow-xl hover:bg-accent hover:text-white transition-all"><ChevronRight size={28} /></button>
+                <button onClick={(e) => { e.stopPropagation(); prevBanner(); }} className="w-14 h-14 bg-white/80 rounded-full flex items-center justify-center text-primary shadow-sm hover:bg-accent hover:text-white transition-all"><ChevronLeft size={28} /></button>
+                <button onClick={(e) => { e.stopPropagation(); nextBanner(); }} className="w-14 h-14 bg-white/80 rounded-full flex items-center justify-center text-primary shadow-sm hover:bg-accent hover:text-white transition-all"><ChevronRight size={28} /></button>
               </div>
 
               {/* Indicators */}
@@ -168,10 +166,10 @@ export const HeroSection: React.FC = () => {
             </div>
 
             {/* Trust Badges - Very Compact One Line Row */}
-            <div className="flex flex-wrap md:flex-nowrap justify-between gap-2 bg-gray-50/50 p-2 rounded-2xl border border-gray-100 mt-auto">
+            <div className="flex flex-wrap md:flex-nowrap justify-between gap-2 bg-gray-50 p-2 rounded-2xl border border-gray-100 mt-auto">
               {trustBadges.map((badge, index) => (
-                <div key={index} className="flex items-center gap-2 px-3 py-2 bg-white rounded-xl border border-gray-50 transition-all group flex-1 justify-center">
-                  <badge.icon size={16} className="text-accent shrink-0 group-hover:scale-110 transition-transform" />
+                <div key={index} className="flex items-center gap-2 px-3 py-2 bg-white rounded-xl border border-gray-100 flex-1 justify-center">
+                  <badge.icon size={16} className="text-accent shrink-0" />
                   <span className="text-[10px] font-black text-primary uppercase tracking-tighter whitespace-nowrap">{badge.label}</span>
                 </div>
               ))}

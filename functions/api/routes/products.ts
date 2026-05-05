@@ -27,6 +27,9 @@ productsRouter.get("/", async (c) => {
         )
       );
     }
+    if (tag) {
+      conditions.push(like(schema.products.tags, `%"${tag}"%`));
+    }
     if (hasOffer === 'true') {
       conditions.push(isNotNull(schema.products.salePrice));
     }
@@ -120,8 +123,8 @@ productsRouter.post("/", async (c) => {
     price: Number(body.price),
     salePrice: body.salePrice ? Number(body.salePrice) : null,
     stock: Number(body.stock) || 0,
-    images: body.images ? JSON.stringify(body.images) : "[]",
-    tags: body.tags ? JSON.stringify(body.tags) : "[]",
+    images: body.images ? (typeof body.images === 'string' ? body.images : JSON.stringify(body.images)) : "[]",
+    tags: body.tags ? (typeof body.tags === 'string' ? body.tags : JSON.stringify(body.tags)) : "[]",
     rating: 0,
     reviewCount: 0,
     soldCount: body.soldCount || 0,
@@ -153,8 +156,8 @@ productsRouter.patch("/:id", async (c) => {
       price: body.price !== undefined ? Number(body.price) : existing.price,
       salePrice: body.salePrice !== undefined ? (body.salePrice ? Number(body.salePrice) : null) : existing.salePrice,
       stock: body.stock !== undefined ? Number(body.stock) : existing.stock,
-      images: body.images ? JSON.stringify(body.images) : existing.images,
-      tags: body.tags ? JSON.stringify(body.tags) : existing.tags,
+      images: body.images !== undefined ? (typeof body.images === 'string' ? body.images : JSON.stringify(body.images)) : existing.images,
+      tags: body.tags !== undefined ? (typeof body.tags === 'string' ? body.tags : JSON.stringify(body.tags)) : existing.tags,
       soldCount: body.soldCount !== undefined ? Number(body.soldCount) : existing.soldCount,
       isActive: body.isActive !== undefined ? (body.isActive ? 1 : 0) : existing.isActive,
     })
