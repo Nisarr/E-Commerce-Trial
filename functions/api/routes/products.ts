@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq, count } from "drizzle-orm";
+import { eq, count, like, or, and, isNotNull } from "drizzle-orm";
 import * as schema from "../../../backend/server/db/schema";
 import { Bindings, Variables, formatLinks, createPaginatedResponse } from "../shared";
 
@@ -12,15 +12,28 @@ productsRouter.get("/", async (c) => {
     const limit = Math.min(100, Math.max(1, Number(c.req.query("limit") || 12)));
     const offset = (page - 1) * limit;
     
-    const { category, tag, sort } = c.req.query();
+    const { category, tag, sort, q, hasOffer } = c.req.query();
     
     // Base query
-    let whereClause = undefined;
+    let conditions = [];
     if (category) {
-      whereClause = eq(schema.products.categoryId, category);
+      conditions.push(eq(schema.products.categoryId, category));
+    }
+    if (q) {
+      conditions.push(
+        or(
+          like(schema.products.title, `%${q}%`),
+          like(schema.products.brand, `%${q}%`)
+        )
+      );
+    }
+    if (hasOffer === 'true') {
+      conditions.push(isNotNull(schema.products.salePrice));
     }
     
-    const [totalRes] = await db.select({ count: count() }).from(schema.products);
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    
+    const [totalRes] = await db.select({ count: count() }).from(schema.products).where(whereClause);
     const total = totalRes.count;
 
     const rows = await db.query.products.findMany({
@@ -109,6 +122,7 @@ productsRouter.post("/", async (c) => {
     tags: body.tags ? JSON.stringify(body.tags) : "[]",
     rating: 0,
     reviewCount: 0,
+    soldCount: body.soldCount || 0,
     isActive: 1,
     createdAt: new Date(),
   });
@@ -139,6 +153,7 @@ productsRouter.patch("/:id", async (c) => {
       stock: body.stock !== undefined ? Number(body.stock) : existing.stock,
       images: body.images ? JSON.stringify(body.images) : existing.images,
       tags: body.tags ? JSON.stringify(body.tags) : existing.tags,
+      soldCount: body.soldCount !== undefined ? Number(body.soldCount) : existing.soldCount,
       isActive: body.isActive !== undefined ? (body.isActive ? 1 : 0) : existing.isActive,
     })
     .where(eq(schema.products.id, id));

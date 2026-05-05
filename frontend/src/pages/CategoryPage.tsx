@@ -38,11 +38,6 @@ export const CategoryPage: React.FC = () => {
     <div className="bg-white min-h-screen">
       <div className="bg-purple-50 py-20 overflow-hidden relative">
         <div className="container mx-auto px-6 relative z-10">
-          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary/60 mb-8">
-            <Link to="/">Home</Link>
-            <ChevronRight size={12} />
-            <span>Categories</span>
-          </div>
           <h1 className="text-6xl font-black text-primary tracking-tighter mb-4">{category.name}</h1>
           <p className="text-primary/60 font-bold max-w-xl">
             Premium selection of {category.name.toLowerCase()} designed with safety and comfort in mind for your precious little ones.

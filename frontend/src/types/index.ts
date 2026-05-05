@@ -27,6 +27,7 @@ export interface Product {
   images: string;          // parse JSON → string[]
   rating: number;
   reviewCount: number;
+  soldCount: number;
   stock: number;
   tags: string;            // parse JSON → string[]
   isActive: number;

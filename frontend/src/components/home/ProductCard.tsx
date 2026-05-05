@@ -92,13 +92,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
       {/* Content Section */}
       <div className="flex flex-col flex-grow p-6">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] font-black text-purple-400 uppercase tracking-widest">{product.brand || 'PlayPen House'}</span>
-          <div className="flex items-center gap-1">
-            <Star size={10} className="fill-amber-400 text-amber-400" />
-            <span className="text-[10px] font-bold text-gray-400">{product.rating || '5.0'}</span>
-          </div>
-        </div>
+        <span className="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-2 block">{product.brand || 'PlayPen House'}</span>
         
         <Link to={`/product/${product.slug}`} className="block mb-3">
           <h3 className="text-gray-900 font-bold text-base leading-tight line-clamp-2 group-hover:text-primary transition-colors">
@@ -120,15 +114,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           
           <div className="h-8 w-px bg-gray-100 mx-4" />
           
-          <div className="flex -space-x-2">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center overflow-hidden">
-                <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="" className="w-full h-full object-cover" />
-              </div>
-            ))}
-            <div className="text-[8px] font-black text-gray-400 ml-4 self-center uppercase tracking-tighter">
-              +12 happy moms
+          <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400">
+            <div className="flex items-center gap-0.5">
+              <span>{product.rating || '5.0'}</span>
+              <Star size={10} className="fill-amber-400 text-amber-400" />
             </div>
+            <span>•</span>
+            <span>{product.soldCount || 0} sold</span>
           </div>
         </div>
       </div>

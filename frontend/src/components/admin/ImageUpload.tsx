@@ -7,52 +7,55 @@ interface ImageUploadProps {
   onUploadSuccess: (url: string) => void;
   label?: string;
   compact?: boolean;
+  multiple?: boolean;
 }
 
-export const ImageUpload: React.FC<ImageUploadProps> = ({ onUploadSuccess, label = 'Upload Image', compact = false }) => {
+export const ImageUpload: React.FC<ImageUploadProps> = ({ onUploadSuccess, label = 'Upload Image', compact = false, multiple = false }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [shouldCompress, setShouldCompress] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const originalFile = e.target.files?.[0];
-    if (!originalFile) return;
-
-    // Show local preview immediately
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreview(reader.result as string);
-    };
-    reader.readAsDataURL(originalFile);
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
     setIsUploading(true);
+    
     try {
-      let fileToUpload = originalFile;
-      if (shouldCompress && originalFile.type.startsWith('image/')) {
-        const options = {
-          maxSizeMB: 0.5,
-          maxWidthOrHeight: 1200,
-          useWebWorker: true,
-        };
-        try {
-          fileToUpload = await imageCompression(originalFile, options);
-          console.log(`📸 Image Compressed: ${(originalFile.size / 1024 / 1024).toFixed(2)}MB -> ${(fileToUpload.size / 1024 / 1024).toFixed(2)}MB`);
-        } catch (error) {
-          console.warn('Compression failed, using original file', error);
-        }
-      } else {
-        console.log(`📸 Uploading original image: ${(originalFile.size / 1024 / 1024).toFixed(2)}MB (Compression OFF)`);
+      // If single upload, show local preview
+      if (!multiple && files[0]) {
+        const reader = new FileReader();
+        reader.onloadend = () => setPreview(reader.result as string);
+        reader.readAsDataURL(files[0]);
       }
 
-      const url = await uploadImage(fileToUpload);
-      onUploadSuccess(url);
-      if (compact) setPreview(null); // Clear preview for multiple uploads
+      for (const originalFile of files) {
+        let fileToUpload = originalFile;
+        if (shouldCompress && originalFile.type.startsWith('image/')) {
+          const options = {
+            maxSizeMB: 0.5,
+            maxWidthOrHeight: 1200,
+            useWebWorker: true,
+          };
+          try {
+            fileToUpload = await imageCompression(originalFile, options);
+          } catch (error) {
+            console.warn('Compression failed, using original file', error);
+          }
+        }
+
+        const url = await uploadImage(fileToUpload);
+        onUploadSuccess(url);
+      }
+      
+      if (compact) setPreview(null);
     } catch (error) {
       alert('Upload failed. Please check your API key or connection.');
       setPreview(null);
     } finally {
       setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = ''; // Reset input
     }
   };
 
@@ -63,9 +66,15 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onUploadSuccess, label
         className={`relative w-full h-full rounded-xl border-2 border-dashed border-gray-100 flex flex-col items-center justify-center cursor-pointer hover:border-accent hover:bg-accent/5 transition-all group overflow-hidden ${isUploading ? 'pointer-events-none' : ''}`}
       >
         {isUploading ? (
-          <Loader2 size={16} className="text-accent animate-spin" />
+          <div className="flex flex-col items-center gap-1">
+            <Loader2 size={16} className="text-accent animate-spin" />
+            <span className="text-[8px] font-black text-accent uppercase">Uploading...</span>
+          </div>
         ) : (
-          <Upload size={16} className="text-gray-400 group-hover:text-accent" />
+          <>
+            <Upload size={16} className="text-gray-400 group-hover:text-accent" />
+            <span className="text-[8px] font-black text-gray-400 uppercase mt-1 group-hover:text-accent">Add Multiple</span>
+          </>
         )}
         <div className="absolute bottom-1 left-0 right-0 flex justify-center z-10" onClick={e => e.stopPropagation()}>
           <label className="flex items-center gap-1 bg-white/90 px-2 py-0.5 rounded-full text-[8px] font-bold text-primary shadow-sm cursor-pointer border border-gray-100 hover:bg-gray-50 transition-colors">
@@ -84,6 +93,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onUploadSuccess, label
           onChange={handleFileChange} 
           className="hidden" 
           accept="image/*"
+          multiple={multiple}
         />
       </div>
     );
@@ -128,7 +138,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onUploadSuccess, label
         {isUploading && (
           <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
             <Loader2 size={32} className="text-accent animate-spin" />
-            <p className="text-xs font-black text-accent uppercase tracking-widest">Uploading...</p>
+            <p className="text-xs font-black text-accent uppercase tracking-widest">Uploading Assets...</p>
           </div>
         )}
 
@@ -147,6 +157,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onUploadSuccess, label
         onChange={handleFileChange} 
         className="hidden" 
         accept="image/*"
+        multiple={multiple}
       />
     </div>
   );

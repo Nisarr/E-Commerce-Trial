@@ -97,12 +97,14 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map(i => (
-                    <Star key={i} size={16} className={`${i <= 4.8 ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`} />
+                    <Star key={i} size={16} className={`${i <= (product.rating || 5.0) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`} />
                   ))}
-                  <span className="ml-2 text-sm font-bold text-gray-900">4.8</span>
+                  <span className="ml-2 text-sm font-bold text-gray-900">{product.rating || '5.0'}</span>
                 </div>
                 <div className="h-4 w-px bg-gray-200" />
-                <span className="text-sm font-bold text-gray-400">120+ reviews</span>
+                <span className="text-sm font-bold text-gray-400">{product.reviewCount || 0} reviews</span>
+                <div className="h-4 w-px bg-gray-200" />
+                <span className="text-sm font-bold text-gray-400">{product.soldCount || 0} sold</span>
               </div>
             </div>
 

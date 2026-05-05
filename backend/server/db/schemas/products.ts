@@ -15,6 +15,7 @@ export const products = sqliteTable("products", {
   tags:        text("tags"),      // JSON string → string[]
   rating:      real("rating").default(0),
   reviewCount: integer("review_count").default(0),
+  soldCount:   integer("sold_count").default(0),
   isActive:    integer("is_active").default(1),
   createdAt:   integer("created_at", { mode: "timestamp" }),
 });

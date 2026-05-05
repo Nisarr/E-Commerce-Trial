@@ -259,6 +259,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, on
                         <ImageUpload 
                           onUploadSuccess={(url) => setImages([...images, url])}
                           compact
+                          multiple={true}
                         />
                       </div>
                     )}

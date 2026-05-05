@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import { Filter, Grid, List as ListIcon, ChevronDown, Search } from 'lucide-react';
 import { getProducts, getCategories } from '../services/api';
 import type { Product, Category } from '../types';
@@ -11,10 +11,15 @@ export const ShopPage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'grid' | 'list'>('grid');
-  
+
+  const location = useLocation();
+  const isBestSellers = location.pathname === '/best-sellers';
+  const isOffers = location.pathname === '/offers';
+  const isSearch = location.pathname === '/search';
+
   const query = searchParams.get('q') || '';
   const category = searchParams.get('category') || '';
-  const sort = searchParams.get('sort') || 'newest';
+  const sort = searchParams.get('sort') || (isBestSellers ? 'trending' : 'newest');
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -32,12 +37,13 @@ export const ShopPage: React.FC = () => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const response = await getProducts({ 
-          page: 1, 
-          limit: 20, 
-          q: query, 
-          category, 
-          sort 
+        const response = await getProducts({
+          page: 1,
+          limit: 20,
+          q: query,
+          category,
+          sort,
+          ...(isOffers ? { hasOffer: 'true' } : {})
         });
         setProducts(response.items);
       } catch (error) {
@@ -47,7 +53,7 @@ export const ShopPage: React.FC = () => {
       }
     };
     fetchProducts();
-  }, [query, category, sort]);
+  }, [query, category, sort, isOffers, isBestSellers]);
 
   const handleSortChange = (newSort: string) => {
     const params = new URLSearchParams(searchParams);
@@ -68,7 +74,13 @@ export const ShopPage: React.FC = () => {
       <div className="bg-gray-50 py-16 border-b border-gray-100">
         <div className="container mx-auto px-6">
           <h1 className="text-5xl font-black text-gray-900 mb-4 tracking-tighter">
-            {query ? `Search: "${query}"` : 'Premium Collection'}
+            {isSearch
+              ? (query ? `Search: "${query}"` : 'Search Products')
+              : isBestSellers
+                ? 'Best Sellers'
+                : isOffers
+                  ? 'Special Offers'
+                  : 'Premium Collection'}
           </h1>
           <p className="text-gray-500 font-medium max-w-2xl">
             Explore our curated selection of premium baby playpens and accessories, designed for maximum safety and comfort.
@@ -85,14 +97,14 @@ export const ShopPage: React.FC = () => {
                 <Filter size={14} /> Categories
               </h3>
               <div className="space-y-3">
-                <button 
+                <button
                   onClick={() => handleCategoryChange('')}
                   className={`w-full text-left px-4 py-3 rounded-2xl text-sm font-bold transition-all ${!category ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-gray-500 hover:bg-gray-50'}`}
                 >
                   All Products
                 </button>
                 {categories.map((cat) => (
-                  <button 
+                  <button
                     key={cat.id}
                     onClick={() => handleCategoryChange(cat.id)}
                     className={`w-full text-left px-4 py-3 rounded-2xl text-sm font-bold transition-all ${category === cat.id ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-gray-500 hover:bg-gray-50'}`}
@@ -119,13 +131,13 @@ export const ShopPage: React.FC = () => {
           <main className="flex-grow">
             <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-10 pb-6 border-b border-gray-100">
               <div className="flex items-center gap-4">
-                <button 
+                <button
                   onClick={() => setView('grid')}
                   className={`p-3 rounded-xl transition-all ${view === 'grid' ? 'bg-primary text-white shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
                 >
                   <Grid size={20} />
                 </button>
-                <button 
+                <button
                   onClick={() => setView('list')}
                   className={`p-3 rounded-xl transition-all ${view === 'list' ? 'bg-primary text-white shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
                 >
@@ -138,7 +150,7 @@ export const ShopPage: React.FC = () => {
 
               <div className="flex items-center gap-4 relative group">
                 <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Sort By:</span>
-                <select 
+                <select
                   value={sort}
                   onChange={(e) => handleSortChange(e.target.value)}
                   className="bg-gray-50 border-2 border-transparent hover:border-gray-100 rounded-xl px-4 py-2 text-sm font-black text-gray-900 outline-none transition-all appearance-none pr-10 cursor-pointer"

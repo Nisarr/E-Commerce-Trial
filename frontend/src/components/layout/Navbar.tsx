@@ -6,11 +6,13 @@ import { useWishlist } from '../../hooks/useWishlist';
 import { MegaMenu } from './MegaMenu.tsx';
 import { Breadcrumbs } from './Breadcrumbs.tsx';
 import { useAuthStore } from '../../store/authStore';
+import { useUIStore } from '../../store/uiStore';
 
 export const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuthStore();
+  const { activeProductTitle } = useUIStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
@@ -111,9 +113,12 @@ export const Navbar: React.FC = () => {
             </div>
 
             <div className="hidden lg:flex flex-1 max-w-2xl px-8 relative group justify-center">
-              {location.pathname.startsWith('/account') ? (
+              {location.pathname !== '/' && !location.pathname.startsWith('/adm') ? (
                 <div className="flex items-center justify-center animate-in fade-in duration-300">
-                  <Breadcrumbs className="bg-transparent border-0 shadow-none hover:bg-transparent" />
+                  <Breadcrumbs 
+                    label={activeProductTitle || undefined} 
+                    className="bg-transparent border-0 shadow-none hover:bg-transparent" 
+                  />
                 </div>
               ) : (
                 <>

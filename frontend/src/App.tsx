@@ -42,7 +42,6 @@ function App() {
       <div className="flex flex-col min-h-screen">
         {!isAdminPath && <Popup />}
         {!isAdminPath && <Navbar />}
-        {!isAdminPath && !isHomePath && !isAccountPath && <Breadcrumbs />}
         
         <div className="flex-grow flex flex-col">
           <Routes>
@@ -55,6 +54,8 @@ function App() {
             <Route path="/product/:slug" element={<ProductDetails />} />
             <Route path="/shop" element={<ShopPage />} />
             <Route path="/search" element={<ShopPage />} />
+            <Route path="/best-sellers" element={<ShopPage />} />
+            <Route path="/offers" element={<ShopPage />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/wishlist" element={<Wishlist />} />
             
