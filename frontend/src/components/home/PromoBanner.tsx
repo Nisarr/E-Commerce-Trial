@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { getBanners } from '../../services/api';
-import type { Banner } from '../../types';
+import { useHomeStore } from '../../store/homeStore';
 import { Skeleton } from '../ui/Skeleton';
 
 interface PromoBannerProps {
@@ -8,25 +6,14 @@ interface PromoBannerProps {
 }
 
 export const PromoBanner: React.FC<PromoBannerProps> = ({ position }) => {
-  const [banner, setBanner] = useState<Banner | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data, loading: homeLoading } = useHomeStore();
+  
+  const banner = position === 'mid-1' 
+    ? (data?.banners?.mid1?.[0] || null)
+    : (data?.banners?.mid2?.[0] || null);
+    
+  const loading = homeLoading && !data;
 
-  useEffect(() => {
-    const fetchBanner = async () => {
-      try {
-        const bannersData = await getBanners(position);
-        if (bannersData && bannersData.length > 0) {
-          setBanner(bannersData[0]);
-        }
-      } catch (error) {
-
-        console.error(`Failed to fetch banner ${position}:`, error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchBanner();
-  }, [position]);
 
   if (loading) {
     return (

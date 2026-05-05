@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Eye, Edit3, Trash2, MoreVertical, Package, CheckCircle2, EyeOff } from 'lucide-react';
+import { Eye, Edit3, Trash2, MoreVertical, Package, CheckCircle2, EyeOff, ExternalLink, Search } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { Category, Product } from '../../types';
 
 interface CategoryManagerProps {
@@ -11,6 +12,18 @@ interface CategoryManagerProps {
 
 export const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, products, onEdit, onDelete }) => {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const query = searchParams.get('q') || '';
+
+  const filteredCategories = categories.filter(cat => 
+    cat.name.toLowerCase().includes(query.toLowerCase()) ||
+    cat.slug.toLowerCase().includes(query.toLowerCase())
+  );
+
+  const handleCategoryClick = (categoryId: string) => {
+    navigate(`/adm/products?category=${categoryId}`);
+  };
 
   const getStats = (categoryId: string) => {
     const catProducts = products.filter(p => p.categoryId === categoryId);
@@ -21,39 +34,49 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, pr
   };
 
   return (
-    <div className="bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-100 overflow-visible">
+    <div className="bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border-2 border-gray-100 overflow-hidden">
       <table className="w-full text-left">
-        <thead className="bg-gray-50/50 border-b border-gray-100">
+        <thead className="bg-gray-50 border-b-2 border-gray-100">
           <tr>
-            <th className="px-8 py-5 font-black text-primary text-[10px] uppercase tracking-[0.2em]">Collection Details</th>
-            <th className="px-8 py-5 font-black text-primary text-[10px] uppercase tracking-[0.2em]">Inventory Stats</th>
-            <th className="px-8 py-5 font-black text-primary text-[10px] uppercase tracking-[0.2em] text-center">Visibility</th>
-            <th className="px-8 py-5 font-black text-primary text-[10px] uppercase tracking-[0.2em] text-right">Actions</th>
+            <th className="px-6 py-3 font-black text-primary text-[10px] uppercase tracking-[0.2em] border-r border-gray-100 last:border-r-0">Collection Details</th>
+            <th className="px-6 py-3 font-black text-primary text-[10px] uppercase tracking-[0.2em] border-r border-gray-100 last:border-r-0">Inventory Stats</th>
+            <th className="px-6 py-3 font-black text-primary text-[10px] uppercase tracking-[0.2em] text-center border-r border-gray-100 last:border-r-0">Visibility</th>
+            <th className="px-6 py-3 font-black text-primary text-[10px] uppercase tracking-[0.2em] text-right border-r border-gray-100 last:border-r-0">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-50">
-          {categories.map(category => {
+        <tbody className="divide-y-2 divide-gray-100">
+          {filteredCategories.map(category => {
             const stats = getStats(category.id);
             return (
-              <tr key={category.id} className="hover:bg-gray-50/30 transition-all group">
-                <td className="px-8 py-6">
-                  <div className="flex items-center gap-5">
+              <tr key={category.id} className="hover:bg-gray-50/50 transition-all group">
+                <td className="px-6 py-3 border-r border-gray-50 last:border-r-0">
+                  <div 
+                    className="flex items-center gap-5 cursor-pointer group/link"
+                    onClick={() => handleCategoryClick(category.id)}
+                  >
                     <div className="relative group/img">
                       <img 
                         src={category.image || 'https://placehold.co/100x100/f8fafc/64748b?text=No+Img'} 
                         alt="" 
-                        className="w-14 h-14 object-cover rounded-2xl shadow-sm group-hover/img:scale-105 transition-transform duration-500" 
+                        className="w-12 h-12 object-cover rounded-xl shadow-sm group-hover/img:scale-110 transition-all duration-500 border-2 border-white" 
                       />
                       <div className="absolute inset-0 rounded-2xl border border-primary/5 group-hover/img:border-accent/20 transition-colors" />
+                      <div className="absolute -right-2 -top-2 w-6 h-6 bg-accent text-white rounded-full flex items-center justify-center scale-0 group-hover/link:scale-100 transition-transform duration-300 shadow-lg">
+                        <ExternalLink size={12} strokeWidth={3} />
+                      </div>
                     </div>
                     <div>
-                      <div className="font-black text-primary text-lg tracking-tight">{category.name}</div>
-                      <div className="text-[10px] font-bold text-muted uppercase tracking-widest mt-1">ID: {category.id.slice(0, 8)}...</div>
+                      <div className="font-black text-primary text-base tracking-tight group-hover/link:text-accent transition-colors">{category.name}</div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className="text-[10px] font-bold text-muted uppercase tracking-widest">ID: {category.id.slice(0, 8)}...</div>
+                        <span className="w-1 h-1 rounded-full bg-gray-200" />
+                        <span className="text-[10px] font-black text-accent opacity-0 group-hover/link:opacity-100 transition-opacity">VIEW PRODUCTS</span>
+                      </div>
                     </div>
                   </div>
                 </td>
                 
-                <td className="px-8 py-6">
+                <td className="px-6 py-3 border-r border-gray-50 last:border-r-0">
                   <div className="flex items-center gap-6">
                     <div className="flex flex-col">
                       <span className="text-[10px] font-black text-primary uppercase tracking-widest flex items-center gap-1.5 mb-1.5">
@@ -78,7 +101,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, pr
                   </div>
                 </td>
 
-                <td className="px-8 py-6">
+                <td className="px-6 py-3 border-r border-gray-50 last:border-r-0">
                   <div className="flex flex-col items-center gap-2">
                     <div className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${category.isActive ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-gray-300'}`} />
@@ -94,7 +117,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, pr
                   </div>
                 </td>
 
-                <td className="px-8 py-6 text-right relative">
+                <td className="px-6 py-3 text-right relative">
                   <button 
                     onClick={() => setOpenMenuId(openMenuId === category.id ? null : category.id)}
                     className="p-3 hover:bg-gray-100 rounded-xl transition-all text-muted hover:text-primary active:scale-95"
@@ -145,6 +168,17 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, pr
               </tr>
             );
           })}
+          {filteredCategories.length === 0 && (
+            <tr>
+              <td colSpan={4} className="px-8 py-20 text-center">
+                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
+                  <Search size={32} />
+                </div>
+                <h3 className="text-lg font-black text-primary">No Collections Found</h3>
+                <p className="text-sm text-muted font-bold uppercase tracking-widest mt-1">Try adjusting your search query</p>
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>

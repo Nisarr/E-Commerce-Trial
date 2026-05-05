@@ -7,23 +7,23 @@ import {
   ShoppingBag,
   CreditCard,
   PartyPopper,
-  ReceiptText,
+  Ticket,
   Settings,
   LogOut,
   ChevronLeft,
   ShoppingBasket,
-  ChevronDown,
-  Bell
+  Bell,
+  TrendingUp,
+  Sparkles
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 interface SidebarProps {
   activeTab: string;
-  onTabChange: (tab: any) => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ activeTab }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
@@ -38,16 +38,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
       title: 'GENERAL',
       items: [
         { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-        { id: 'products', icon: Package, label: 'Products', hasSub: true },
+        { id: 'banners', icon: Sparkles, label: 'Banners' },
+        { id: 'products', icon: Package, label: 'Products' },
         { id: 'special-offers', icon: PartyPopper, label: 'Special Offers' },
-        { id: 'categories', icon: ClipboardList, label: 'Category', hasSub: true },
-        { id: 'inventory', icon: Box, label: 'Inventory', hasSub: true },
-        { id: 'orders', icon: ShoppingBag, label: 'Orders', hasSub: true },
+        { id: 'best-selling', icon: TrendingUp, label: 'Best Selling' },
+        { id: 'new-arrivals', icon: Sparkles, label: 'New Arrivals' },
+        { id: 'categories', icon: ClipboardList, label: 'Category' },
+        { id: 'inventory', icon: Box, label: 'Inventory' },
+        { id: 'orders', icon: ShoppingBag, label: 'Orders' },
         { id: 'customers', icon: CreditCard, label: 'Customers' },
         { id: 'notifications', icon: Bell, label: 'Notifications' },
         { id: 'reviews', icon: PartyPopper, label: 'Reviews' },
         { id: 'returns', icon: Box, label: 'Returns' },
-        { id: 'coupons', icon: ReceiptText, label: 'Coupons' },
+        { id: 'coupons', icon: Ticket, label: 'Coupons' },
         { id: 'settings', icon: Settings, label: 'Settings' },
       ]
     }
@@ -89,7 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
       </div>
 
       {/* Navigation */}
-      <div className="flex-grow overflow-y-auto overflow-x-hidden px-5 space-y-8 py-4 hover:overflow-visible transition-all custom-scrollbar">
+      <div className="flex-grow overflow-y-auto overflow-x-hidden px-5 space-y-8 py-4 custom-scrollbar">
         {sections.map((section, sIndex) => (
           <div key={sIndex} className="space-y-3">
             {!isCollapsed && (
@@ -101,9 +104,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
               {section.items.map((item) => {
                 const isActive = item.id === activeTab;
                 return (
-                  <button
+                  <Link
                     key={item.id}
-                    onClick={() => onTabChange(item.id as any)}
+                    to={`/adm/${item.id}`}
                     className={`w-full flex items-center rounded-2xl font-bold text-[13px] transition-all duration-300 group relative border shadow-sm ${
                       isCollapsed ? 'justify-center p-3' : 'px-4 py-3.5 gap-3'
                     } ${
@@ -119,12 +122,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
                     <item.icon size={18} strokeWidth={isActive ? 2.5 : 2} className={`transition-transform ${isActive ? 'text-[#ff6b6b]' : 'text-[#8692a0] group-hover:text-[#3e4b5b]'}`} />
                     
                     {!isCollapsed && (
-                      <>
-                        <span className="flex-grow text-left">{item.label}</span>
-                        {item.hasSub && (
-                          <ChevronDown size={14} className={`opacity-40 transition-transform ${isActive ? 'rotate-180' : ''}`} />
-                        )}
-                      </>
+                      <span className="flex-grow text-left">{item.label}</span>
                     )}
 
                     {/* Tooltip for collapsed state */}
@@ -134,7 +132,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
                         {item.label}
                       </div>
                     )}
-                  </button>
+                  </Link>
                 );
               })}
             </div>

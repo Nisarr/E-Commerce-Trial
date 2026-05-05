@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { getProducts, getCategories, getBanners, createBanner, updateBanner, deleteBanner, createProduct, updateProduct, deleteProduct, createCategory, updateCategory, deleteCategory } from '../../services/api';
 import type { Product, Category, Banner } from '../../types';
 import { Sidebar } from './Sidebar';
@@ -15,7 +16,10 @@ import { ReviewModeration } from './ReviewModeration';
 import { CouponManager } from './CouponManager';
 import { ReturnManager } from './ReturnManager';
 import { SpecialOfferManager } from './SpecialOfferManager';
+import { BestSellingManager } from './BestSellingManager';
+import { NewArrivalManager } from './NewArrivalManager';
 import { NotificationManager } from './NotificationManager';
+import { ProductBuyers } from './ProductBuyers';
 import { useAuthStore } from '../../store/authStore';
 import { BannerModal } from '../../components/admin/BannerModal';
 import { ProductModal } from '../../components/admin/ProductModal';
@@ -24,7 +28,13 @@ import { CategoryModal } from '../../components/admin/CategoryModal';
 export const AdminIndex: React.FC = () => {
   const { isAuthenticated, user } = useAuthStore();
   const isAdmin = isAuthenticated && user?.role === 'admin';
-  const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const location = useLocation();
+  
+  const activeTab = useMemo(() => {
+    const parts = location.pathname.split('/');
+    const segment = parts[2];
+    return !segment || segment === '' ? 'dashboard' : segment;
+  }, [location.pathname]);
   const [data, setData] = useState<{
     banners: Banner[],
     categories: Category[],
@@ -159,79 +169,102 @@ export const AdminIndex: React.FC = () => {
     <div className="min-h-screen bg-[#f4f7fa] flex font-['Outfit',sans-serif]">
       <Sidebar 
         activeTab={activeTab} 
-        onTabChange={setActiveTab} 
       />
 
       <div className="flex-grow flex flex-col min-w-0">
         <AdminNavbar 
-          onAdd={['banners', 'categories', 'products'].includes(activeTab) ? openAddModal : undefined}
+          onAdd={['banners', 'categories', 'products', 'inventory'].includes(activeTab) ? openAddModal : undefined}
           addLabel={
             activeTab === 'banners' ? 'Add Banner' :
             activeTab === 'categories' ? 'Add Category' :
-            activeTab === 'products' ? 'Add Product' : undefined
+            (activeTab === 'products' || activeTab === 'inventory') ? 'Add Product' : undefined
           }
         />
 
         <main className="flex-grow py-8 px-12 overflow-y-auto overflow-x-hidden">
           {loading ? (
             <div className="w-full max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="h-40 bg-gray-200/50 rounded-[2rem] animate-pulse" />
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="h-32 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+                    <div className="w-10 h-10 rounded-xl skeleton" />
+                    <div className="space-y-2">
+                      <div className="h-6 w-24 rounded skeleton" />
+                      <div className="h-3 w-16 rounded skeleton" />
+                    </div>
+                  </div>
                 ))}
               </div>
-              <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm space-y-6">
-                <div className="h-8 bg-gray-200/50 w-1/4 rounded-lg animate-pulse" />
+              <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm space-y-8">
+                <div className="flex justify-between items-center">
+                  <div className="h-8 bg-gray-100 w-1/4 rounded-xl skeleton" />
+                  <div className="h-10 bg-gray-100 w-32 rounded-xl skeleton" />
+                </div>
                 <div className="space-y-4">
-                  {[1, 2, 3, 4, 5].map(i => (
-                    <div key={i} className="h-20 bg-gray-100/50 rounded-2xl animate-pulse" />
+                  {[1, 2, 3, 4, 5, 6].map(i => (
+                    <div key={i} className="h-16 bg-gray-50/50 rounded-2xl border border-gray-100/50 skeleton" />
                   ))}
                 </div>
               </div>
             </div>
           ) : (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-[1600px] mx-auto w-full">
-              {activeTab === 'dashboard' && (
-                <AdminDashboard 
-                  stats={{
-                    products: data.products.length,
-                    categories: data.categories.length,
-                    banners: data.banners.length
-                  }} 
-                />
-              )}
-              {activeTab === 'banners' && (
-                <BannerManager 
-                  banners={data.banners} 
-                  onEdit={openEditBannerModal}
-                  onDelete={handleDeleteBanner}
-                />
-              )}
-              {activeTab === 'categories' && (
-                <CategoryManager 
-                  categories={data.categories} 
-                  products={data.products}
-                  onEdit={openEditCategoryModal}
-                  onDelete={handleDeleteCategory}
-                />
-              )}
-              {activeTab === 'products' && (
-                <ProductManager 
-                  products={data.products} 
-                  onEdit={openEditProductModal}
-                  onDelete={handleDeleteProduct}
-                />
-              )}
-              {activeTab === 'orders' && (
-                <OrderManager />
-              )}
-              {activeTab === 'customers' && <CustomerManager />}
-              {activeTab === 'notifications' && <NotificationManager />}
-              {activeTab === 'reviews' && <ReviewModeration />}
-              {activeTab === 'coupons' && <CouponManager />}
-              {activeTab === 'returns' && <ReturnManager />}
-              {activeTab === 'special-offers' && <SpecialOfferManager />}
-              {activeTab === 'settings' && <AdminSettings />}
+              <Routes>
+                <Route index element={<Navigate to="/adm/dashboard" replace />} />
+                <Route path="dashboard" element={
+                  <AdminDashboard 
+                    stats={{
+                      products: data.products.length,
+                      categories: data.categories.length,
+                      banners: data.banners.length
+                    }} 
+                  />
+                } />
+                <Route path="banners" element={
+                  <BannerManager 
+                    banners={data.banners} 
+                    onEdit={openEditBannerModal}
+                    onDelete={handleDeleteBanner}
+                  />
+                } />
+                <Route path="categories" element={
+                  <CategoryManager 
+                    categories={data.categories} 
+                    products={data.products}
+                    onEdit={openEditCategoryModal}
+                    onDelete={handleDeleteCategory}
+                  />
+                } />
+                <Route path="products" element={
+                  <ProductManager 
+                    products={data.products} 
+                    categories={data.categories}
+                    onEdit={openEditProductModal}
+                    onDelete={handleDeleteProduct}
+                  />
+                } />
+                <Route path="inventory" element={
+                  <ProductManager 
+                    products={data.products} 
+                    categories={data.categories}
+                    onEdit={openEditProductModal}
+                    onDelete={handleDeleteProduct}
+                  />
+                } />
+                <Route path="orders" element={<OrderManager />} />
+                <Route path="customers" element={<CustomerManager />} />
+                <Route path="notifications" element={<NotificationManager />} />
+                <Route path="reviews" element={<ReviewModeration />} />
+                <Route path="coupons" element={<CouponManager />} />
+                <Route path="returns" element={<ReturnManager />} />
+                <Route path="special-offers" element={<SpecialOfferManager />} />
+                <Route path="best-selling" element={<BestSellingManager />} />
+                <Route path="new-arrivals" element={<NewArrivalManager />} />
+                <Route path="products/:id/buyers" element={<ProductBuyers />} />
+                <Route path="settings" element={<AdminSettings />} />
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/adm/dashboard" replace />} />
+              </Routes>
             </div>
           )}
         </main>
@@ -245,7 +278,7 @@ export const AdminIndex: React.FC = () => {
         />
       )}
 
-      {isModalOpen && activeTab === 'products' && (
+      {isModalOpen && (activeTab === 'products' || activeTab === 'inventory') && (
         <ProductModal 
           product={editingProduct}
           onClose={() => setIsModalOpen(false)}

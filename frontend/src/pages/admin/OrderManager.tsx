@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Eye, Truck } from 'lucide-react';
+import { Eye, Truck, X } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { Invoice } from '../../components/ui/Invoice';
 
 export const OrderManager: React.FC = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchTerm = searchParams.get('q') || '';
   
   // Modal states
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
@@ -82,20 +84,18 @@ export const OrderManager: React.FC = () => {
           <h1 className="text-3xl font-black font-garamond text-primary">Orders & Invoices</h1>
           <p className="text-gray-500 font-medium">Manage customer orders and trackings</p>
         </div>
-      </div>
-
-      {/* Toolbar */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4">
-        <div className="relative flex-grow max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-          <input 
-            type="text" 
-            placeholder="Search by Invoice ID or Customer Name..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
-          />
-        </div>
+        {searchTerm && (
+          <button 
+            onClick={() => {
+              const newParams = new URLSearchParams(searchParams);
+              newParams.delete('q');
+              setSearchParams(newParams);
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all"
+          >
+            <X size={14} strokeWidth={3} /> Clear Search
+          </button>
+        )}
       </div>
 
       {/* Orders Table */}
@@ -114,9 +114,13 @@ export const OrderManager: React.FC = () => {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={6} className="p-8 text-center text-gray-500">Loading orders...</td>
-                </tr>
+                Array.from({ length: 8 }).map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={6} className="p-4">
+                      <div className="h-12 w-full rounded-xl skeleton" />
+                    </td>
+                  </tr>
+                ))
               ) : filteredOrders.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-gray-500">No orders found.</td>

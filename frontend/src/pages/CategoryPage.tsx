@@ -31,7 +31,23 @@ export const CategoryPage: React.FC = () => {
     fetchCategoryData();
   }, [slug]);
 
-  if (loading) return <div className="p-20 text-center font-black text-primary">LOADING CATEGORY...</div>;
+  if (loading) return (
+    <div className="bg-white min-h-screen animate-in fade-in duration-500">
+      <div className="bg-gray-50 py-20">
+        <div className="container mx-auto px-6">
+          <div className="h-12 w-64 rounded-2xl skeleton mb-4" />
+          <div className="h-6 w-96 rounded skeleton" />
+        </div>
+      </div>
+      <div className="container mx-auto px-6 py-16">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+            <div key={i} className="aspect-[4/5] bg-gray-50 rounded-[2rem] skeleton" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
   if (!category) return <div className="p-20 text-center font-black text-red-500">CATEGORY NOT FOUND</div>;
 
   return (

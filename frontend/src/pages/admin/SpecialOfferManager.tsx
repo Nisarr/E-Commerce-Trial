@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Tag, Trash2, Plus, Loader2, Package, Search } from 'lucide-react';
+import { Tag, Trash2, Plus, Package, Search, X } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { getProducts, updateProduct } from '../../services/api';
 import type { Product } from '../../types';
 import { SpecialOfferPriceModal } from '../../components/admin/SpecialOfferPriceModal';
@@ -9,7 +10,8 @@ export const SpecialOfferManager: React.FC = () => {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchTerm = searchParams.get('q') || '';
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const fetchOffers = async () => {
@@ -109,10 +111,28 @@ export const SpecialOfferManager: React.FC = () => {
     p.brand.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const filteredOffers = offers.filter(p => 
+    p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.brand.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="animate-spin text-accent" size={40} />
+      <div className="space-y-8 max-w-6xl mx-auto animate-in fade-in duration-500">
+        <div className="flex justify-between items-end">
+          <div className="space-y-2">
+            <div className="h-8 w-48 rounded-xl skeleton" />
+            <div className="h-4 w-64 rounded skeleton" />
+          </div>
+          <div className="h-12 w-32 rounded-2xl skeleton" />
+        </div>
+        <div className="bg-white rounded-[2.5rem] shadow-xl shadow-primary/5 border border-gray-100 overflow-hidden">
+          <div className="p-8 space-y-4">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="h-20 w-full rounded-2xl border border-gray-50 skeleton" />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -143,10 +163,27 @@ export const SpecialOfferManager: React.FC = () => {
                 type="text"
                 placeholder="Search products to add..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  const newParams = new URLSearchParams(searchParams);
+                  if (e.target.value) newParams.set('q', e.target.value);
+                  else newParams.delete('q');
+                  setSearchParams(newParams);
+                }}
                 className="w-full pl-12 pr-6 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-orange-200 focus:bg-white outline-none transition-all font-bold"
               />
             </div>
+            {searchTerm && (
+              <button 
+                onClick={() => {
+                  const newParams = new URLSearchParams(searchParams);
+                  newParams.delete('q');
+                  setSearchParams(newParams);
+                }}
+                className="flex items-center gap-2 px-4 py-4 bg-red-50 text-red-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all"
+              >
+                <X size={18} strokeWidth={3} /> Clear
+              </button>
+            )}
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
@@ -194,7 +231,7 @@ export const SpecialOfferManager: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {offers.map(product => {
+            {filteredOffers.map(product => {
               let imgs: string[] = [];
               try {
                 imgs = typeof product.images === 'string' ? JSON.parse(product.images) : (product.images || []);

@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { getProducts } from '../../services/api';
-import type { Product } from '../../types';
+import { Link } from 'react-router-dom';
+import { useHomeStore } from '../../store/homeStore';
 import { ProductCard } from './ProductCard';
 import { Skeleton } from '../ui/Skeleton';
 
 export const SpecialOfferCountdown: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading: homeLoading } = useHomeStore();
+  const products = data?.products?.specialOffers?.items || [];
+  const loading = (homeLoading && !data) || (!data && !homeLoading);
   const [timeLeft, setTimeLeft] = useState({
     days: 2,
     hours: 14,
@@ -15,19 +16,6 @@ export const SpecialOfferCountdown: React.FC = () => {
   });
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await getProducts({ tag: 'special-offer', limit: 4 });
-        setProducts(response.items);
-      } catch (error) {
-
-        console.error('Failed to fetch special offers:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-
     // Simple countdown logic
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -51,6 +39,7 @@ export const SpecialOfferCountdown: React.FC = () => {
 
     return () => clearInterval(timer);
   }, []);
+
 
   if (loading) {
     return (
@@ -91,9 +80,9 @@ export const SpecialOfferCountdown: React.FC = () => {
               ))}
             </div>
             
-            <a href="/offers" className="inline-block bg-[var(--primary)] text-white px-8 py-3 rounded-full font-medium hover:bg-[var(--primary)]/90 transition-colors mt-4">
+            <Link to="/offers" className="inline-block bg-[var(--primary)] text-white px-8 py-3 rounded-full font-medium hover:bg-[var(--primary)]/90 transition-colors mt-4">
               View All Offers
-            </a>
+            </Link>
           </div>
           
           <div className="w-full lg:w-2/3">

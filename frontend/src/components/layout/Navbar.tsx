@@ -7,6 +7,7 @@ import { MegaMenu } from './MegaMenu.tsx';
 import { Breadcrumbs } from './Breadcrumbs.tsx';
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
+import { useHomeStore } from '../../store/homeStore';
 
 export const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -16,8 +17,22 @@ export const Navbar: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const { data: homeData } = useHomeStore();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const lastCheckRef = React.useRef<{ unreadCount: number; latestId: string | null }>({ unreadCount: 0, latestId: null });
+
+  // Seed notifications from the bulk home data on initial load
+  useEffect(() => {
+    if (homeData?.notifications?.items && notifications.length === 0) {
+      setNotifications(homeData.notifications.items);
+      const unread = homeData.notifications.items.filter((n: any) => !n.isRead);
+      lastCheckRef.current = {
+        unreadCount: unread.length,
+        latestId: homeData.notifications.items[0]?.id ?? null,
+      };
+    }
+  }, [homeData]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -31,25 +46,49 @@ export const Navbar: React.FC = () => {
   const { totalItems } = useCart();
   const wishlistItems = useWishlist((state) => state.items);
 
+  // Smart notification polling: check lightweight endpoint, only fetch full list when something changed
   useEffect(() => {
-    fetchNotifications();
     if (typeof window !== 'undefined' && 'Notification' in window) {
       if (Notification.permission === 'default') {
         Notification.requestPermission();
       }
     }
-    const interval = setInterval(fetchNotifications, 10000); // Poll every 10s
+
+    const checkForNewNotifications = async () => {
+      try {
+        const url = user?.id
+          ? `/api/v1/notifications/check?userId=${user.id}`
+          : '/api/v1/notifications/check';
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        const prev = lastCheckRef.current;
+        const hasChanged = data.unreadCount !== prev.unreadCount || data.latestId !== prev.latestId;
+
+        if (hasChanged) {
+          lastCheckRef.current = { unreadCount: data.unreadCount, latestId: data.latestId };
+          // Something changed — fetch the full notification list
+          await fetchFullNotifications();
+        }
+      } catch (err) {
+        console.error('Notification check failed:', err);
+      }
+    };
+
+    // Only start polling after initial data is loaded (from bulk home)
+    const interval = setInterval(checkForNewNotifications, 30000); // 30s lightweight check
     return () => clearInterval(interval);
   }, [user?.id]);
 
-  const fetchNotifications = async () => {
+  const fetchFullNotifications = async () => {
     try {
       const url = user?.id ? `/api/v1/notifications?userId=${user.id}` : '/api/v1/notifications';
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         setNotifications((prev) => {
-          // Send web notifications for any newly arrived unread notifications
+          // Send web push for newly arrived unread notifications
           const prevIds = prev.map(p => p.id);
           const newUnread = (data.items || []).filter((n: any) => !n.isRead && !prevIds.includes(n.id));
           if (newUnread.length > 0 && typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
@@ -67,10 +106,10 @@ export const Navbar: React.FC = () => {
 
   const markRead = async (id: string) => {
     try {
-      const res = await fetch(`/api/v1/notifications/${id}/read`, { method: 'POST' });
-      if (res.ok) {
-        fetchNotifications();
-      }
+      // Optimistic local update
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: 1 } : n));
+      lastCheckRef.current.unreadCount = Math.max(0, lastCheckRef.current.unreadCount - 1);
+      await fetch(`/api/v1/notifications/${id}/read`, { method: 'POST' });
     } catch (err) {
       console.error(err);
     }

@@ -1,5 +1,6 @@
 import axios from "axios";
-import type { Banner, Product, Category, User, Address, Review, ReviewStats, ReturnRequest } from "../types";
+import type { Banner, Product, Category, User, Address, Review, ReviewStats, ReturnRequest, HomeBulkResponse } from "../types";
+import { getCached, setCache, getInflight, setInflight, invalidate, getResourceBase } from "./apiCache";
 
 
 
@@ -32,6 +33,65 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// ─── Cache Invalidation on Mutations ────────────────────
+// When a POST/PATCH/DELETE succeeds, invalidate cached GETs for that resource
+api.interceptors.response.use((response) => {
+  const method = response.config.method;
+  if (method && ['post', 'patch', 'put', 'delete'].includes(method)) {
+    const url = `${response.config.baseURL}${response.config.url}`;
+    invalidate(getResourceBase(url));
+  }
+  return response;
+});
+
+// ─── Cached GET Wrapper ──────────────────────────────────
+// Replaces api.get with a version that has:
+//  1) In-memory TTL cache (30s) — instant returns for repeated reads
+//  2) In-flight deduplication — concurrent identical GETs share one request
+
+const _rawGet = api.get.bind(api);
+
+function buildCacheKey(url: string, params?: Record<string, any>): string {
+  let key = `/api/v1${url}`;
+  if (params && Object.keys(params).length > 0) {
+    const sorted = Object.entries(params).sort(([a], [b]) => a.localeCompare(b));
+    key += '?' + sorted.map(([k, v]) => `${k}=${v}`).join('&');
+  }
+  return key;
+}
+
+api.get = (async function cachedGet(url: string, config?: any): Promise<any> {
+  const cacheKey = buildCacheKey(url, config?.params);
+
+  // 1. Return from memory cache if fresh
+  const cached = getCached(cacheKey);
+  if (cached) {
+    return { data: cached, status: 200, statusText: 'OK (cached)', headers: {}, config: config || {} };
+  }
+
+  // 2. Deduplicate: if an identical GET is already in-flight, wait for it
+  const inflight = getInflight(cacheKey);
+  if (inflight) {
+    const data = await inflight;
+    return { data, status: 200, statusText: 'OK (deduped)', headers: {}, config: config || {} };
+  }
+
+  // 3. Make the actual request & track for dedup
+  const responsePromise = _rawGet(url, config);
+
+  const dataPromise = responsePromise.then((res: any) => {
+    setCache(cacheKey, res.data); // cache on success
+    return res.data;
+  }).catch((err: any) => {
+    // Don't cache errors, just propagate
+    throw err;
+  });
+
+  setInflight(cacheKey, dataPromise);
+
+  return responsePromise;
+}) as typeof api.get;
 
 // ─── Banners ─────────────────────────────────────────
 
@@ -88,6 +148,15 @@ export const getProducts = async (params: Record<string, string | number>) => {
   return res.data; // { items, pagination, _links }
 };
 
+export const getProductBySlug = async (slug: string): Promise<Product | null> => {
+  try {
+    const res = await api.get(`/products/by-slug/${slug}`);
+    return res.data;
+  } catch {
+    return null;
+  }
+};
+
 export const searchProducts = async (q: string): Promise<Product[]> => {
   const res = await api.get(`/products/search?q=${q}`);
   return res.data.items;
@@ -105,6 +174,11 @@ export const updateProduct = async (id: string, product: Partial<Product>) => {
 
 export const deleteProduct = async (id: string) => {
   const res = await api.delete(`/products/${id}`);
+  return res.data;
+};
+
+export const syncTags = async (type: 'best-selling' | 'new-arrival', limit?: number) => {
+  const res = await api.post("/products/sync-tags", { type, limit });
   return res.data;
 };
 
@@ -254,6 +328,12 @@ export const topupWallet = async (data: { userId: string; amount: number; refere
 
 export const chargeWallet = async (data: { userId: string; amount: number; reference?: string }) => {
   const res = await api.post("/wallet/charge", data);
+  return res.data;
+};
+
+// ─── Bulk Fetch ──────────────────────────────────────────
+export const getHomeBulk = async (): Promise<HomeBulkResponse> => {
+  const res = await api.get("/bulk/home");
   return res.data;
 };
 

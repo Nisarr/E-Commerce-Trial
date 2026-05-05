@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, ArrowRight, MapPin, Phone, Heart } from 'lucide-react';
-import { getCategories } from '../../services/api';
-import type { Category } from '../../types';
+import { useHomeStore } from '../../store/homeStore';
 
 /* Small red accent line used between list items */
 const ItemDivider = () => (
@@ -11,7 +10,8 @@ const ItemDivider = () => (
 
 export const Footer: React.FC = () => {
   const navigate = useNavigate();
-  const [categories, setCategories] = useState<Category[]>([]);
+  const { data } = useHomeStore();
+  const categories = data?.categories?.items || [];
   const [logoClicks, setLogoClicks] = useState(0);
 
   const handleLogoClick = (e: React.MouseEvent) => {
@@ -28,9 +28,6 @@ export const Footer: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    getCategories().then(setCategories).catch(console.error);
-  }, []);
   return (
     <footer className="bg-[#FFFBF0] text-gray-900 pt-10 pb-4 mt-auto rounded-t-[2.5rem] border-t-2 border-[#FF4500]">
       <div className="container mx-auto px-4 md:px-8">

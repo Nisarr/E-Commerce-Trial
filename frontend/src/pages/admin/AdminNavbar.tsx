@@ -1,4 +1,5 @@
 import { Bell, ChevronDown, Moon, Search, Plus } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 
 interface AdminNavbarProps {
@@ -8,6 +9,18 @@ interface AdminNavbarProps {
 
 export const AdminNavbar: React.FC<AdminNavbarProps> = ({ onAdd, addLabel }) => {
   const { user } = useAuthStore();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const query = searchParams.get('q') || '';
+
+  const handleSearch = (val: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (val) {
+      newParams.set('q', val);
+    } else {
+      newParams.delete('q');
+    }
+    setSearchParams(newParams);
+  };
 
   return (
     <header className="sticky top-0 z-40 pt-4 px-8 pb-4 bg-[#f4f7fa]/80 backdrop-blur-xl">
@@ -18,6 +31,8 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({ onAdd, addLabel }) => 
             <input 
               type="text" 
               placeholder="Search records..." 
+              value={query}
+              onChange={(e) => handleSearch(e.target.value)}
               className="bg-transparent border-none outline-none px-3 text-[13px] font-medium text-[#3e4b5b] placeholder:text-gray-400 w-full"
             />
           </div>

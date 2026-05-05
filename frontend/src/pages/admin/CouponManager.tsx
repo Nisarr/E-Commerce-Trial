@@ -15,6 +15,8 @@ interface Coupon {
   usageLimit?: number;
   usedCount?: number;
   isActive?: number;
+  applicableType: 'all' | 'product' | 'category';
+  applicableIds?: string; // JSON array string
   startsAt?: string;
   expiresAt?: string;
 }
@@ -22,10 +24,12 @@ interface Coupon {
 const EMPTY_FORM: {
   code: string; description: string; type: 'percentage' | 'fixed'; value: number;
   minOrderAmount: number; maxDiscount: number; usageLimit: number; isActive: number;
+  applicableType: 'all' | 'product' | 'category'; applicableIds: string[];
   startsAt: string; expiresAt: string;
 } = {
   code: '', description: '', type: 'percentage', value: 0,
   minOrderAmount: 0, maxDiscount: 0, usageLimit: 0, isActive: 1,
+  applicableType: 'all', applicableIds: [],
   startsAt: '', expiresAt: '',
 };
 
@@ -38,8 +42,24 @@ export const CouponManager: React.FC = () => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  
+  const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
 
-  useEffect(() => { fetchCoupons(); }, []);
+  const fetchProductsAndCategories = async () => {
+    try {
+      const [pRes, cRes] = await Promise.all([
+        fetch('/api/v1/products?limit=1000'),
+        fetch('/api/v1/categories')
+      ]);
+      const pData = await pRes.json();
+      const cData = await cRes.json();
+      setProducts(pData.items || []);
+      setCategories(cData.items || []);
+    } catch (err) {
+      console.error("Failed to fetch products/categories for coupons", err);
+    }
+  };
 
   const fetchCoupons = async () => {
     try {
@@ -49,6 +69,11 @@ export const CouponManager: React.FC = () => {
     } catch { setCoupons([]); }
     finally { setLoading(false); }
   };
+
+  useEffect(() => { 
+    fetchCoupons(); 
+    fetchProductsAndCategories();
+  }, []);
 
   const resetForm = () => {
     setForm(EMPTY_FORM);
@@ -67,6 +92,8 @@ export const CouponManager: React.FC = () => {
       maxDiscount: c.maxDiscount || 0,
       usageLimit: c.usageLimit || 0,
       isActive: c.isActive ?? 1,
+      applicableType: c.applicableType || 'all',
+      applicableIds: c.applicableIds ? JSON.parse(c.applicableIds) : [],
       startsAt: c.startsAt ? new Date(c.startsAt).toISOString().slice(0, 16) : '',
       expiresAt: c.expiresAt ? new Date(c.expiresAt).toISOString().slice(0, 16) : '',
     });
@@ -90,6 +117,7 @@ export const CouponManager: React.FC = () => {
           expiresAt: form.expiresAt || null,
           usageLimit: form.usageLimit || null,
           maxDiscount: form.maxDiscount || null,
+          applicableIds: form.applicableType === 'all' ? [] : form.applicableIds,
         }),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.message || 'Failed'); }
@@ -119,6 +147,8 @@ export const CouponManager: React.FC = () => {
       await fetchCoupons();
     } catch {}
   };
+
+  const now = Date.now();
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -217,6 +247,54 @@ export const CouponManager: React.FC = () => {
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-accent/20 bg-gray-50"
               />
             </div>
+            <div className="space-y-1 md:col-span-2">
+              <label className="text-xs font-black text-gray-500 uppercase">Applies To *</label>
+              <select
+                value={form.applicableType}
+                onChange={(e) => setForm({ ...form, applicableType: e.target.value as 'all' | 'product' | 'category', applicableIds: [] })}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-accent/20 bg-gray-50"
+              >
+                <option value="all">All Products</option>
+                <option value="category">Specific Categories</option>
+                <option value="product">Specific Products</option>
+              </select>
+            </div>
+            
+            {form.applicableType !== 'all' && (
+              <div className="space-y-1 md:col-span-2">
+                <label className="text-xs font-black text-gray-500 uppercase">
+                  Select {form.applicableType === 'category' ? 'Categories' : 'Products'} *
+                </label>
+                <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-xl p-2 bg-gray-50 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {(form.applicableType === 'category' ? categories : products).map(item => {
+                    const isSelected = form.applicableIds.includes(item.id);
+                    return (
+                      <label key={item.id} className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors border border-transparent hover:border-gray-200">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setForm({ ...form, applicableIds: [...form.applicableIds, item.id] });
+                            } else {
+                              setForm({ ...form, applicableIds: form.applicableIds.filter(id => id !== item.id) });
+                            }
+                          }}
+                          className="w-4 h-4 text-accent border-gray-300 rounded focus:ring-accent"
+                        />
+                        <span className="text-sm font-bold text-primary truncate">
+                          {item.title || item.name}
+                        </span>
+                      </label>
+                    );
+                  })}
+                  {(form.applicableType === 'category' ? categories : products).length === 0 && (
+                    <div className="col-span-full p-4 text-center text-sm text-muted">No items available to select.</div>
+                  )}
+                </div>
+              </div>
+            )}
+            
             <div className="md:col-span-2 flex gap-3 pt-2">
               <button type="button" onClick={resetForm} className="px-6 py-2.5 border border-gray-200 rounded-xl font-bold text-sm text-muted hover:bg-gray-50">Cancel</button>
               <button type="submit" disabled={saving}
@@ -232,7 +310,11 @@ export const CouponManager: React.FC = () => {
       {/* Coupon List */}
       <div className="bg-white rounded-[2rem] shadow-xl shadow-primary/5 border border-gray-100 overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-accent" size={32} /></div>
+          <div className="p-8 space-y-4">
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className="h-16 w-full rounded-2xl border border-gray-50 skeleton" />
+            ))}
+          </div>
         ) : coupons.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400">
             <Ticket size={48} />
@@ -253,12 +335,15 @@ export const CouponManager: React.FC = () => {
               </thead>
               <tbody>
                 {coupons.map((c) => {
-                  const isExpired = c.expiresAt && new Date(c.expiresAt).getTime() < Date.now();
+                  const isExpired = c.expiresAt && new Date(c.expiresAt).getTime() < now;
                   return (
                     <tr key={c.id} className={`border-b border-gray-50 hover:bg-gray-50/50 transition-colors ${isExpired ? 'opacity-50' : ''}`}>
                       <td className="px-6 py-4">
                         <span className="font-black text-primary bg-gray-100 px-3 py-1 rounded-lg text-xs tracking-wider">{c.code}</span>
                         {c.description && <p className="text-xs text-muted mt-1">{c.description}</p>}
+                        <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${c.applicableType === 'all' ? 'bg-green-100 text-green-700' : c.applicableType === 'category' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                          {c.applicableType === 'all' ? 'All Products' : c.applicableType === 'category' ? 'Categories' : 'Products'}
+                        </span>
                       </td>
                       <td className="px-4 py-4">
                         <span className="font-bold text-accent">

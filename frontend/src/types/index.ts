@@ -136,3 +136,46 @@ export interface ReviewStats {
     percentage: number;
   }[];
 }
+
+export interface ProductSale {
+  id: string;
+  productId: string;
+  orderId: string;
+  userId: string | null;
+  customerName: string;
+  customerEmail: string | null;
+  customerPhone: string;
+  invoiceId: string;
+  price: number;
+  quantity: number;
+  total: number;
+  createdAt: string | Date;
+}
+
+export interface Notification {
+  id: string;
+  userId: string | null;
+  title: string;
+  message: string;
+  type: string;
+  isRead: number;
+  createdAt: string;
+}
+
+export interface HomeBulkResponse {
+  banners: {
+    hero: Banner[];
+    mid1: Banner[];
+    mid2: Banner[];
+  };
+  categories: { items: Category[] };
+  products: {
+    trending: { items: Product[] };
+    newArrivals: { items: Product[] };
+    specialOffers: { items: Product[] };
+    bestSelling: { items: Product[] };
+  };
+  notifications: { items: Notification[] };
+  timestamp: string;
+}
+

@@ -1,27 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { getProducts } from '../../services/api';
-import type { Product } from '../../types';
+import { Link } from 'react-router-dom';
+import { useHomeStore } from '../../store/homeStore';
 import { ProductCard } from './ProductCard';
 import { Skeleton } from '../ui/Skeleton';
 
 export const BestSelling: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading: homeLoading } = useHomeStore();
+  const products = data?.products?.bestSelling?.items || [];
+  const loading = homeLoading && !data;
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await getProducts({ sort: 'best-selling', limit: 8 });
-        setProducts(response.items);
-      } catch (error) {
-
-        console.error('Failed to fetch best selling products:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
 
   if (loading) {
     return (
@@ -55,9 +41,9 @@ export const BestSelling: React.FC = () => {
         </div>
         
         <div className="text-center mt-10">
-          <a href="/best-sellers" className="inline-block border-2 border-[var(--primary)] text-[var(--primary)] px-8 py-3 rounded-full font-medium hover:bg-[var(--primary)] hover:text-white transition-colors">
+          <Link to="/best-sellers" className="inline-block border-2 border-[var(--primary)] text-[var(--primary)] px-8 py-3 rounded-full font-medium hover:bg-[var(--primary)] hover:text-white transition-colors">
             View All Best Sellers
-          </a>
+          </Link>
         </div>
       </div>
     </section>

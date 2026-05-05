@@ -21,4 +21,5 @@ export {
   coupons,
   adminLogs,
   notifications,
+  productSales,
 } from "./schemas";

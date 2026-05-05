@@ -6,7 +6,7 @@ import {
   Check, ShieldCheck, Info, ArrowRight,
   Sparkles, Share2, Send, Link2
 } from 'lucide-react';
-import api from '../services/api';
+import { getProductBySlug, getProductReviews } from '../services/api';
 import type { Product } from '../types';
 import { useCart } from '../hooks/useCart';
 import { useWishlist } from '../hooks/useWishlist';
@@ -32,10 +32,10 @@ export const ProductDetails: React.FC = () => {
 
   useEffect(() => {
     const fetchProduct = async () => {
+      if (!slug) return;
       setLoading(true);
       try {
-        const res = await api.get(`/products?limit=100`);
-        const p = res.data.items.find((item: Product) => item.slug === slug);
+        const p = await getProductBySlug(slug);
         if (p) setProduct(p);
       } catch (err) {
         console.error('Failed to fetch product');
@@ -51,9 +51,9 @@ export const ProductDetails: React.FC = () => {
       if (!product?.id) return;
       setLoadingReviews(true);
       try {
-        const res = await api.get(`/reviews?productId=${product.id}`);
-        setReviews(res.data.items || []);
-        setReviewStats(res.data.stats || null);
+        const data = await getProductReviews(product.id);
+        setReviews(data.items || []);
+        setReviewStats(data.stats || null);
       } catch (err) {
         console.error('Failed to fetch reviews');
       } finally {
@@ -72,10 +72,29 @@ export const ProductDetails: React.FC = () => {
   }, [product?.id, setActiveProductTitle]);
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-        <p className="text-sm font-black text-primary uppercase tracking-[0.3em] animate-pulse">Loading Premium Experience</p>
+    <div className="bg-white min-h-screen pb-20 animate-in fade-in duration-500">
+      <div className="container mx-auto px-4 lg:px-6 pt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          <div className="lg:col-span-5">
+            <div className="aspect-square rounded-[2rem] skeleton" />
+            <div className="flex gap-3 mt-4">
+              {[1, 2, 3, 4].map(i => <div key={i} className="w-16 h-16 rounded-xl skeleton" />)}
+            </div>
+          </div>
+          <div className="lg:col-span-7 space-y-6">
+            <div className="space-y-4">
+              <div className="h-4 w-32 rounded skeleton" />
+              <div className="h-10 w-3/4 rounded-xl skeleton" />
+              <div className="h-4 w-1/2 rounded skeleton" />
+            </div>
+            <div className="h-12 w-48 rounded-xl skeleton" />
+            <div className="h-24 w-full rounded-[2rem] skeleton" />
+            <div className="flex gap-4">
+              <div className="h-12 w-32 rounded-xl skeleton" />
+              <div className="h-12 flex-grow rounded-xl skeleton" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -323,8 +342,11 @@ export const ProductDetails: React.FC = () => {
             {activeTab === 'reviews' && (
               <div className="space-y-10">
                 {loadingReviews ? (
-                  <div className="py-20 flex justify-center">
-                    <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                  <div className="space-y-6">
+                    <div className="bg-white p-8 rounded-3xl border border-gray-100 flex gap-10 h-40 skeleton" />
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="bg-white p-8 rounded-3xl border border-gray-100 h-48 skeleton" />
+                    ))}
                   </div>
                 ) : reviews.length > 0 ? (
                   <div className="grid grid-cols-1 gap-8">

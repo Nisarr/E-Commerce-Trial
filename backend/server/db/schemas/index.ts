@@ -15,3 +15,4 @@ export { otpCodes } from "./otp";
 export { coupons } from "./coupons";
 export { adminLogs } from "./adminLogs";
 export { notifications } from "./notifications";
+export { productSales } from "./productSales";

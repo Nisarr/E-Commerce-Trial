@@ -1,29 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { getCategories } from '../../services/api';
-import type { Category } from '../../types';
+import { useHomeStore } from '../../store/homeStore';
 import { Skeleton } from '../ui/Skeleton';
 
 export const FeaturedCategories: React.FC = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading: homeLoading } = useHomeStore();
+  const categories = data?.categories?.items || [];
+  const loading = homeLoading && !data;
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const categoriesData = await getCategories(false);
-        // User requested max 12 items
-        setCategories(categoriesData.slice(0, 12));
-      } catch (error) {
-
-        console.error('Failed to fetch categories:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCategories();
-  }, []);
 
   if (loading) {
     return (

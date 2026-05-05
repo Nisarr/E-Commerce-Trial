@@ -36,6 +36,20 @@
       "when": 1777959567071,
       "tag": "0004_fat_spiral",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1777970844382,
+      "tag": "0005_hard_sumo",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1777973249248,
+      "tag": "0006_nice_annihilus",
+      "breakpoints": true
     }
   ]
 }

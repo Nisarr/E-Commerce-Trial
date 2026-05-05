@@ -1,14 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { getCategories } from '../../services/api';
-import type { Category } from '../../types';
+import { useHomeStore } from '../../store/homeStore';
 
 export const MegaMenu: React.FC = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
+  const { data } = useHomeStore();
+  const categories = data?.categories?.items || [];
 
-  useEffect(() => {
-    getCategories().then(setCategories).catch(console.error);
-  }, []);
 
   return (
     <div className="absolute top-full left-0 w-[600px] hidden group-hover:block bg-white rounded-b-lg border border-gray-200 p-6 z-50 transition-all duration-200 opacity-0 group-hover:opacity-100 mt-0">

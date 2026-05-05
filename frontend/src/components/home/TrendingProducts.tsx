@@ -1,27 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { getProducts } from '../../services/api';
-import type { Product } from '../../types';
+import { useHomeStore } from '../../store/homeStore';
 import { ProductCard } from './ProductCard';
 import { Skeleton } from '../ui/Skeleton';
 
 export const TrendingProducts: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading: homeLoading } = useHomeStore();
+  const products = data?.products?.trending?.items || [];
+  const loading = homeLoading && !data;
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await getProducts({ sort: 'trending', limit: 10 });
-        setProducts(response.items);
-      } catch (error) {
-
-        console.error('Failed to fetch trending products:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
 
   if (loading) {
     return (

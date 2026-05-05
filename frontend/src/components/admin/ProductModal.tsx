@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, Loader2, Trash2, Package, Tag, DollarSign, Box, Image as ImageIcon } from 'lucide-react';
+import { X, Loader2, Trash2, Package, Tag, DollarSign, Box, Image as ImageIcon, Star, Users } from 'lucide-react';
 import { ImageUpload } from './ImageUpload';
 import { getCategories } from '../../services/api';
+import { useNavigate } from 'react-router-dom';
 import type { Product, Category } from '../../types';
 
 interface ProductModalProps {
@@ -11,6 +12,7 @@ interface ProductModalProps {
 }
 
 export const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onSave }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<Partial<Product>>({
     title: '',
     brand: '',
@@ -88,6 +90,13 @@ export const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, on
     setImages(images.filter((_, i) => i !== index));
   };
 
+  const setAsCover = (index: number) => {
+    const newImages = [...images];
+    const [selected] = newImages.splice(index, 1);
+    newImages.unshift(selected);
+    setImages(newImages);
+  };
+
   const addTag = () => {
     if (newTag.trim() && !tags.includes(newTag.trim())) {
       setTags([...tags, newTag.trim()]);
@@ -119,12 +128,27 @@ export const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, on
               </div>
             </div>
           </div>
-          <button 
-            onClick={onClose}
-            className="p-3.5 hover:bg-gray-100 rounded-2xl text-muted hover:text-accent transition-all shadow-sm hover:rotate-90 duration-500 bg-white border border-gray-50"
-          >
-            <X size={24} strokeWidth={3} />
-          </button>
+          <div className="flex items-center gap-3">
+            {product && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  navigate(`/adm/products/${product.id}/buyers`);
+                }}
+                className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-100 transition-all border border-blue-100 shadow-sm"
+              >
+                <Users size={16} />
+                View Buyers
+              </button>
+            )}
+            <button 
+              onClick={onClose}
+              className="p-3.5 hover:bg-gray-100 rounded-2xl text-muted hover:text-accent transition-all shadow-sm hover:rotate-90 duration-500 bg-white border border-gray-50"
+            >
+              <X size={24} strokeWidth={3} />
+            </button>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="flex-grow overflow-hidden flex flex-col">
@@ -267,13 +291,31 @@ export const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, on
                   
                   <div className="grid grid-cols-2 gap-4">
                     {images.map((url, i) => (
-                      <div key={i} className="relative group aspect-square rounded-2xl overflow-hidden border-2 border-gray-100 shadow-sm transition-all hover:shadow-lg hover:scale-[1.05]">
+                      <div key={i} className={`relative group aspect-square rounded-2xl overflow-hidden border-2 shadow-sm transition-all hover:shadow-lg hover:scale-[1.05] ${i === 0 ? 'border-accent ring-4 ring-accent/10' : 'border-gray-100'}`}>
                         <img src={url} alt="" className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                        
+                        {i === 0 && (
+                          <div className="absolute top-2 left-2 px-2 py-1 bg-accent text-white text-[8px] font-black uppercase tracking-widest rounded-lg shadow-lg flex items-center gap-1 z-10 animate-in fade-in zoom-in duration-300">
+                            <Star size={10} fill="currentColor" /> Cover
+                          </div>
+                        )}
+
+                        <div className="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-[2px]">
+                          {i !== 0 && (
+                            <button 
+                              type="button"
+                              onClick={() => setAsCover(i)}
+                              className="w-10 h-10 bg-white text-accent rounded-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-2xl"
+                              title="Set as Cover"
+                            >
+                              <Star size={20} />
+                            </button>
+                          )}
                           <button 
                             type="button"
                             onClick={() => removeImage(i)}
                             className="w-10 h-10 bg-accent text-white rounded-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-2xl"
+                            title="Delete Image"
                           >
                             <Trash2 size={20} />
                           </button>

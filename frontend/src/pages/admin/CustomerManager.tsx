@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Users, Search, Shield, ShieldCheck, Ban, UserCheck,
-  Loader2, ChevronLeft, ChevronRight, Mail, Phone, Calendar
+  Users, Shield, ShieldCheck, Ban, UserCheck,
+  Loader2, ChevronLeft, ChevronRight, Mail, Phone, Calendar, X
 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 
 interface UserRecord {
   id: string;
@@ -20,7 +21,8 @@ interface UserRecord {
 export const CustomerManager: React.FC = () => {
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const search = searchParams.get('q') || '';
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -77,23 +79,27 @@ export const CustomerManager: React.FC = () => {
           </h2>
           <p className="text-muted font-medium text-sm">{total} registered user{total !== 1 ? 's' : ''}</p>
         </div>
-        <div className="relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by username..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent w-72"
-          />
-        </div>
+        {search && (
+          <button 
+            onClick={() => {
+              const newParams = new URLSearchParams(searchParams);
+              newParams.delete('q');
+              setSearchParams(newParams);
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all"
+          >
+            <X size={14} strokeWidth={3} /> Clear Search
+          </button>
+        )}
       </div>
 
       {/* Table */}
       <div className="bg-white rounded-[2rem] shadow-xl shadow-primary/5 border border-gray-100 overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="animate-spin text-accent" size={32} />
+          <div className="p-8 space-y-4">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+              <div key={i} className="h-16 w-full rounded-2xl border border-gray-50 skeleton" />
+            ))}
           </div>
         ) : users.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400">

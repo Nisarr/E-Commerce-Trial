@@ -4,7 +4,7 @@ import { useAuthStore } from '../../store/authStore';
 import {
   User, MapPin, CreditCard, Wallet,
   Package, RotateCcw, XCircle,
-  Star, Heart, LogOut, ChevronRight,
+  Star, Heart, LogOut,
   ShieldCheck
 } from 'lucide-react';
 
@@ -94,7 +94,6 @@ export const AccountSidebar: React.FC = () => {
                         </span>
                       )}
                     </span>
-                    {!item.comingSoon && <ChevronRight size={14} className="sidebar-link-chevron" />}
                   </NavLink>
                 </li>
               ))}

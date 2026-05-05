@@ -54,7 +54,9 @@ export const Cart: React.FC = () => {
       }));
 
       // Fetch wallet balance
-      getWallet(user.id!).then(data => setWalletBalance(data.balance)).catch(() => {});
+      if (user.id) {
+        getWallet(user.id).then(data => setWalletBalance(data.balance)).catch(() => {});
+      }
     }
   }, [user]);
 
@@ -106,9 +108,16 @@ export const Cart: React.FC = () => {
     setCouponLoading(true);
     setCouponError('');
     try {
-      const res = await fetch(`/api/v1/coupons/validate?code=${encodeURIComponent(couponCode)}&total=${subtotal}`);
+      const res = await fetch(`/api/v1/coupons/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: couponCode,
+          items: items.map(i => ({ productId: i.product.id, quantity: i.quantity, price: i.product.salePrice || i.product.price }))
+        })
+      });
       const data = await res.json();
-      if (data.valid) {
+      if (res.ok && data.valid) {
         setCouponDiscount(data.discount);
         setCouponApplied(couponCode.toUpperCase());
         setCouponError('');

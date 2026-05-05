@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import {
   MessageSquare, Star, Loader2, CheckCircle2, Flag, Trash2,
-  ShieldCheck, AlertCircle, Calendar, Filter
+  ShieldCheck, AlertCircle, Calendar, Filter, X, Search
 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 
 interface ReviewRecord {
   id: string;
@@ -16,6 +17,9 @@ interface ReviewRecord {
   isVerified?: number;
   status?: string;
   createdAt?: string;
+  productName?: string;
+  invoiceId?: string;
+  price?: number;
 }
 
 const STATUS_FILTERS = ['All', 'approved', 'pending', 'flagged', 'rejected'];
@@ -29,7 +33,9 @@ const STATUS_COLORS: Record<string, string> = {
 export const ReviewModeration: React.FC = () => {
   const [reviews, setReviews] = useState<ReviewRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const query = searchParams.get('q') || '';
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [success, setSuccess] = useState('');
 
@@ -67,9 +73,14 @@ export const ReviewModeration: React.FC = () => {
     } catch {} finally { setActionLoading(null); }
   };
 
-  const filteredReviews = reviews.filter((r) =>
-    filter === 'All' || (r.status || 'approved') === filter
-  );
+  const filteredReviews = reviews.filter((r) => {
+    const matchesStatus = statusFilter === 'All' || (r.status || 'approved') === statusFilter;
+    const matchesSearch = !query || 
+      r.username.toLowerCase().includes(query.toLowerCase()) ||
+      r.content?.toLowerCase().includes(query.toLowerCase()) ||
+      r.title?.toLowerCase().includes(query.toLowerCase());
+    return matchesStatus && matchesSearch;
+  });
 
   const renderStars = (rating: number) => (
     <div className="flex gap-0.5">
@@ -88,6 +99,18 @@ export const ReviewModeration: React.FC = () => {
           </h2>
           <p className="text-muted font-medium text-sm">{reviews.length} total review{reviews.length !== 1 ? 's' : ''}</p>
         </div>
+        {query && (
+          <button 
+            onClick={() => {
+              const newParams = new URLSearchParams(searchParams);
+              newParams.delete('q');
+              setSearchParams(newParams);
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all"
+          >
+            <X size={14} strokeWidth={3} /> Clear Search
+          </button>
+        )}
       </div>
 
       {/* Filter Tabs */}
@@ -96,9 +119,9 @@ export const ReviewModeration: React.FC = () => {
         {STATUS_FILTERS.map((f) => (
           <button
             key={f}
-            onClick={() => setFilter(f)}
+            onClick={() => setStatusFilter(f)}
             className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider transition-colors ${
-              filter === f
+              statusFilter === f
                 ? 'bg-primary text-white shadow'
                 : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
             }`}
@@ -113,11 +136,16 @@ export const ReviewModeration: React.FC = () => {
       {/* Reviews */}
       <div className="bg-white rounded-[2rem] shadow-xl shadow-primary/5 border border-gray-100 overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-accent" size={32} /></div>
+          <div className="p-8 space-y-4">
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className="h-24 w-full rounded-2xl border border-gray-50 skeleton" />
+            ))}
+          </div>
         ) : filteredReviews.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-            <MessageSquare size={48} />
-            <p className="mt-4 font-bold">No reviews {filter !== 'All' ? `with status "${filter}"` : 'found'}</p>
+            <Search size={48} />
+            <p className="mt-4 font-bold">No reviews found</p>
+            <p className="text-xs font-medium uppercase tracking-widest mt-1">Try adjusting your search or filters</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-50">
@@ -158,11 +186,25 @@ export const ReviewModeration: React.FC = () => {
                           }
                         } catch {} return null;
                       })()}
-                      <div className="flex items-center gap-3 mt-2 text-[10px] text-gray-400 font-medium">
+                      <div className="flex flex-wrap items-center gap-3 mt-2 text-[10px] text-gray-400 font-medium">
                         <span className="flex items-center gap-1"><Calendar size={10} />
                           {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'N/A'}
                         </span>
-                        <span>Product: {review.productId.slice(0, 8)}...</span>
+                        {review.productName && (
+                          <span className="bg-primary/5 text-primary px-2 py-0.5 rounded-md font-black uppercase tracking-wider">
+                            Product: {review.productName}
+                          </span>
+                        )}
+                        {review.invoiceId && (
+                          <span className="bg-accent/5 text-accent px-2 py-0.5 rounded-md font-black uppercase tracking-wider">
+                            Invoice: {review.invoiceId}
+                          </span>
+                        )}
+                        {review.price !== undefined && review.price !== null && (
+                          <span className="bg-green-50 text-green-600 px-2 py-0.5 rounded-md font-black uppercase tracking-wider">
+                            Price: ৳{review.price.toLocaleString()}
+                          </span>
+                        )}
                       </div>
                     </div>
 

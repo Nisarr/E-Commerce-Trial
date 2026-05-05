@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { getProducts } from '../../services/api';
 import type { Product } from '../../types';
 import { ProductCard } from './ProductCard';
 import { Skeleton } from '../ui/Skeleton';
+import { useHomeStore } from '../../store/homeStore';
 
 export const NewArrivalsTabbed: React.FC = () => {
   const [activeTab, setActiveTab] = useState('all');
+  const { data } = useHomeStore();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -17,12 +20,27 @@ export const NewArrivalsTabbed: React.FC = () => {
   ];
 
   useEffect(() => {
+    if (activeTab === 'all' && data?.products?.newArrivals?.items) {
+      setProducts(data.products.newArrivals.items);
+      setLoading(false);
+      return;
+    }
+
+    // Wait for bulk fetch if we are on 'all' tab and it's still loading
+    if (activeTab === 'all' && !data) {
+      return;
+    }
+
     const fetchProducts = async () => {
+
       setLoading(true);
       try {
-        const params: Record<string, string> = { sort: 'newest', limit: '8' };
-        if (activeTab !== 'all') {
+        const params: Record<string, string> = { limit: '8' };
+        if (activeTab === 'all') {
+          params.tag = 'new-arrival';
+        } else {
           params.category = activeTab;
+          params.sort = 'newest';
         }
         const response = await getProducts(params);
         setProducts(response.items);
@@ -34,7 +52,8 @@ export const NewArrivalsTabbed: React.FC = () => {
       }
     };
     fetchProducts();
-  }, [activeTab]);
+  }, [activeTab, data]);
+
 
   return (
     <section className="py-12 bg-gray-50">
@@ -76,6 +95,15 @@ export const NewArrivalsTabbed: React.FC = () => {
             No products found for this category.
           </div>
         )}
+        
+        <div className="text-center mt-12">
+          <Link 
+            to="/new-arrivals" 
+            className="inline-flex items-center justify-center px-10 py-4 bg-primary text-white font-bold rounded-full hover:bg-primary/90 transition-all hover:shadow-xl hover:shadow-primary/20"
+          >
+            Explore All New Arrivals
+          </Link>
+        </div>
       </div>
     </section>
   );

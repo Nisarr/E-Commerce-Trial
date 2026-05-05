@@ -97,7 +97,11 @@ export const ReturnManager: React.FC = () => {
       {/* Returns List */}
       <div className="bg-white rounded-[2rem] shadow-xl shadow-primary/5 border border-gray-100 overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-accent" size={32} /></div>
+          <div className="p-8 space-y-4">
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className="h-24 w-full rounded-2xl border border-gray-50 skeleton" />
+            ))}
+          </div>
         ) : filteredReturns.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400">
             <RotateCcw size={48} />

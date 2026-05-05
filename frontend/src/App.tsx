@@ -30,9 +30,17 @@ import { MyCancellations } from './pages/account/MyCancellations';
 import { MyReviews } from './pages/account/MyReviews';
 import { ForgotPassword } from './pages/account/ForgotPassword';
 import { ResetPassword } from './pages/account/ResetPassword';
+import { useHomeStore } from './store/homeStore';
+import React from 'react';
 
 function App() {
+  const { fetchHomeData } = useHomeStore();
   const location = useLocation();
+
+  React.useEffect(() => {
+    fetchHomeData();
+  }, [fetchHomeData]);
+
   const isAdminPath = location.pathname.startsWith('/adm');
 
   return (
@@ -47,13 +55,14 @@ function App() {
             <Route path="/" element={<Home />} />
             
             {/* Admin Routes */}
-            <Route path="/adm" element={<AdminIndex />} />
+            <Route path="/adm/*" element={<AdminIndex />} />
             
             <Route path="/category/:slug" element={<CategoryPage />} />
             <Route path="/product/:slug" element={<ProductDetails />} />
             <Route path="/shop" element={<ShopPage />} />
             <Route path="/search" element={<ShopPage />} />
             <Route path="/best-sellers" element={<ShopPage />} />
+            <Route path="/new-arrivals" element={<ShopPage />} />
             <Route path="/offers" element={<ShopPage />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/wishlist" element={<Wishlist />} />

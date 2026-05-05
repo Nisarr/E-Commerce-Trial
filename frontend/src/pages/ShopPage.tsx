@@ -16,10 +16,11 @@ export const ShopPage: React.FC = () => {
   const isBestSellers = location.pathname === '/best-sellers';
   const isOffers = location.pathname === '/offers';
   const isSearch = location.pathname === '/search';
+  const isNewArrivals = location.pathname === '/new-arrivals';
 
   const query = searchParams.get('q') || '';
   const category = searchParams.get('category') || '';
-  const sort = searchParams.get('sort') || (isBestSellers ? 'trending' : 'newest');
+  const sort = searchParams.get('sort') || (isBestSellers ? 'trending' : isNewArrivals ? 'newest' : 'newest');
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -43,7 +44,8 @@ export const ShopPage: React.FC = () => {
           q: query,
           category,
           sort,
-          ...(isOffers ? { hasOffer: 'true' } : {})
+          ...(isOffers ? { hasOffer: 'true' } : {}),
+          ...(isNewArrivals ? { tag: 'new-arrival' } : {})
         });
         setProducts(response.items);
       } catch (error) {
@@ -80,7 +82,9 @@ export const ShopPage: React.FC = () => {
                 ? 'Best Sellers'
                 : isOffers
                   ? 'Special Offers'
-                  : 'Premium Collection'}
+                  : isNewArrivals
+                    ? 'New Arrivals'
+                    : 'Premium Collection'}
           </h1>
           <p className="text-gray-500 font-medium max-w-2xl">
             Explore our curated selection of premium baby playpens and accessories, designed for maximum safety and comfort.
@@ -167,7 +171,7 @@ export const ShopPage: React.FC = () => {
             {loading ? (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="aspect-[4/5] bg-gray-50 rounded-[2rem] animate-pulse" />
+                  <div key={i} className="aspect-[4/5] bg-gray-50 rounded-[2rem] skeleton" />
                 ))}
               </div>
             ) : products.length > 0 ? (

@@ -12,6 +12,8 @@ export const coupons = sqliteTable("coupons", {
   usageLimit:   integer("usage_limit"),                    // null = unlimited
   usedCount:    integer("used_count").default(0),
   isActive:     integer("is_active").default(1),           // 0 = disabled
+  applicableType: text("applicable_type").notNull().default("all"), // "all" | "product" | "category"
+  applicableIds:  text("applicable_ids", { mode: "json" }), // JSON array of string IDs
   startsAt:     integer("starts_at", { mode: "timestamp" }),
   expiresAt:    integer("expires_at", { mode: "timestamp" }),
   createdAt:    integer("created_at", { mode: "timestamp" }),

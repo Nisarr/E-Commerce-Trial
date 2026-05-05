@@ -8,30 +8,17 @@ import {
   Award, 
   Headphones 
 } from 'lucide-react';
-import { getBanners } from '../../services/api';
+import { useHomeStore } from '../../store/homeStore';
 import type { Banner } from '../../types';
 import { Skeleton } from '../ui/Skeleton';
 import heroFallback from '../../assets/hero.png';
 
 export const HeroSection: React.FC = () => {
-  const [banners, setBanners] = useState<Banner[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading: homeLoading } = useHomeStore();
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  useEffect(() => {
-    const fetchBanners = async () => {
-      try {
-        const bannersData = await getBanners('hero');
-        setBanners(bannersData);
-      } catch (error) {
-        console.error('Failed to fetch hero banners:', error);
-        setBanners([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchBanners();
-  }, []);
+  const banners = data?.banners?.hero || [];
+  const loading = homeLoading && !data;
 
   useEffect(() => {
     if (banners.length <= 1) return;
@@ -40,6 +27,7 @@ export const HeroSection: React.FC = () => {
     }, 5000);
     return () => clearInterval(timer);
   }, [banners.length]);
+
 
   const nextBanner = () => {
     if (banners.length === 0) return;
