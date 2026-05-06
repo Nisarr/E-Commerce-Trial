@@ -7,7 +7,7 @@
     "dev": "cd frontend && vite",
     "dev:frontend": "cd frontend && vite",
     "dev:backend": "wrangler pages dev . --port 8788",
-    "dev:full": "concurrently -n \"backend,frontend\" -c \"green,blue\" \"npm run dev:backend\" \"wait-on http://127.0.0.1:8788/api/health && npm run dev:frontend\"",
+    "dev:full": "concurrently -n \"backend,frontend\" -c \"green,blue\" \"npm run dev:backend\" \"wait-on -d 500 -t 60000 http-get://127.0.0.1:8788/api/health && npm run dev:frontend\"",
     "build": "tsc -b && cd frontend && vite build",
     "preview": "wrangler pages dev ./frontend/dist",
     "deploy": "npm run build && wrangler pages deploy ./frontend/dist",

@@ -9,11 +9,14 @@ notificationsRouter.get("/", async (c) => {
   try {
     const db = c.get("db");
     const userId = c.req.query("userId");
+    const isAdminView = c.req.query("all") === "true";
 
     const rows = await db.query.notifications.findMany({
-      where: userId
-        ? or(eq(schema.notifications.userId, userId), isNull(schema.notifications.userId))
-        : isNull(schema.notifications.userId),
+      where: isAdminView 
+        ? undefined 
+        : userId
+          ? or(eq(schema.notifications.userId, userId), isNull(schema.notifications.userId))
+          : isNull(schema.notifications.userId),
       orderBy: (n: any, { desc }: any) => [desc(n.createdAt)],
     });
 

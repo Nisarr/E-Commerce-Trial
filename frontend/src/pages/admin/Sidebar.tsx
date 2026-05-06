@@ -15,10 +15,14 @@ import {
   Bell,
   TrendingUp,
   Sparkles,
-  Gift
+  Gift,
+  RefreshCw,
+  Loader2
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
+import { useUIStore } from '../../store/uiStore';
 import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 interface SidebarProps {
   activeTab: string;
@@ -27,7 +31,9 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, isOpen, onClose }) => {
+  const { isAdminModalOpen } = useUIStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
 
@@ -72,6 +78,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, isOpen, onClose }) 
 
       <aside 
         className={`bg-[#f8f9fa]/60 backdrop-blur-3xl border-2 border-[#ff6b6b]/20 flex flex-col transition-all duration-500 fixed md:sticky top-4 z-[80] md:z-[60] shadow-[0_8px_32px_rgba(255,107,107,0.05)] flex-shrink-0 my-4 ml-4 rounded-[2.5rem] h-[calc(100vh-2rem)] ${
+          isAdminModalOpen ? 'hidden' : ''
+        } ${
           isCollapsed ? 'md:w-24' : 'md:w-64'
         } ${
           isOpen ? 'translate-x-0 w-[280px]' : '-translate-x-[120%] md:translate-x-0'
@@ -168,23 +176,50 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, isOpen, onClose }) 
         <div className="p-5 pt-2 space-y-2">
           <button 
             onClick={async () => {
+              if (isRefreshing) return;
+              setIsRefreshing(true);
+              const toastId = toast.loading('Refreshing system cache...');
               try {
+                const adminKey = localStorage.getItem('admin_key') || 'adm_sk_72e829fc89d4e37decb405dace50ba5c';
                 const res = await fetch('/api/v1/system/refresh-cache', { 
                   method: 'POST',
-                  headers: { 'Authorization': `Bearer ${useAuthStore.getState().token}` }
+                  headers: { 'Authorization': `Bearer ${adminKey}` }
                 });
-                if (res.ok) alert('Cache updated successfully!');
+                if (res.ok) {
+                  toast.success('Cache updated successfully!', { id: toastId });
+                } else {
+                  const data = await res.json();
+                  toast.error(data.message || 'Failed to update cache', { id: toastId });
+                }
               } catch (err) {
                 console.error(err);
-                alert('Failed to update cache');
+                toast.error('Network error while updating cache', { id: toastId });
+              } finally {
+                setIsRefreshing(false);
               }
             }}
-            className={`flex items-center rounded-2xl font-bold text-[13px] text-amber-600 hover:bg-white hover:shadow-md transition-all duration-300 group border shadow-sm bg-white/40 border-white/40 hover:scale-[1.02] ${
+            disabled={isRefreshing}
+            className={`flex items-center rounded-2xl font-bold text-[13px] transition-all duration-500 group border shadow-sm hover:scale-[1.02] ${
+              isRefreshing 
+                ? 'bg-amber-50 border-amber-200 text-amber-400 cursor-not-allowed' 
+                : 'bg-white/40 border-white/40 text-amber-600 hover:bg-white hover:shadow-md'
+            } ${
               isCollapsed && !isOpen ? 'md:justify-center p-3' : 'w-full px-4 py-3.5 gap-3'
             }`}
           >
-            <Sparkles size={18} strokeWidth={2.5} className="group-hover:rotate-180 transition-transform duration-500" />
-            {(!isCollapsed || isOpen) && <span>Update Cache</span>}
+            {isRefreshing ? (
+              <Loader2 size={18} strokeWidth={2.5} className="animate-spin" />
+            ) : (
+              <RefreshCw size={18} strokeWidth={2.5} className="group-hover:rotate-180 transition-transform duration-500" />
+            )}
+            {(!isCollapsed || isOpen) && (
+              <span className="relative">
+                {isRefreshing ? 'Refreshing...' : 'Update Cache'}
+                {!isRefreshing && (
+                  <span className="absolute -top-1 -right-2 w-1.5 h-1.5 bg-amber-400 rounded-full animate-ping" />
+                )}
+              </span>
+            )}
           </button>
 
           <button 

@@ -10,11 +10,32 @@ import {
 export const MyCancellations: React.FC = () => {
   const { user } = useAuthStore();
   const { data: userData, loading, fetchUserData } = useUserStore();
-  const cancellations = userData?.cancellations?.items || [];
+  const cancellationsReqs = userData?.cancellations?.items || [];
+  const orders = userData?.orders?.items || [];
+  
+  // Find orders with 'Cancelled' status that aren't already in cancellation requests
+  const cancelledOrders = orders
+    .filter(o => o.status?.toLowerCase() === 'cancelled')
+    .filter(o => !cancellationsReqs.some(c => c.orderId === o.id))
+    .map(o => ({
+      id: `order-${o.id}`,
+      orderId: o.id,
+      userId: o.userId || '',
+      reason: 'Order Cancelled',
+      details: 'This order was cancelled.',
+      status: 'Cancelled',
+      type: 'cancellation',
+      adminNotes: null,
+      createdAt: o.createdAt
+    }));
+
+  const cancellations = [...cancellationsReqs, ...cancelledOrders].sort((a, b) => {
+    return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+  });
 
   useEffect(() => {
     if (user?.id) {
-      fetchUserData(user.id, user.username);
+      fetchUserData(user.id, user.username, user.email);
     }
   }, [user, fetchUserData]);
 
@@ -22,6 +43,7 @@ export const MyCancellations: React.FC = () => {
     const s = status.toLowerCase();
     if (s === 'approved' || s === 'completed') return { icon: CheckCircle2, cls: 'return-status--approved', label: status };
     if (s === 'rejected') return { icon: Ban, cls: 'return-status--rejected', label: status };
+    if (s === 'cancelled') return { icon: XCircle, cls: 'return-status--rejected', label: status };
     return { icon: Clock, cls: 'return-status--pending', label: status };
   };
 

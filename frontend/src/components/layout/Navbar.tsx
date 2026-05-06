@@ -28,10 +28,10 @@ export const Navbar: React.FC = () => {
   // Start intelligent polling when logged in
   useEffect(() => {
     if (user?.id) {
-      const stop = startPolling(user.id, user.username);
+      const stop = startPolling(user.id, user.username, user.email);
       return () => stop();
     }
-  }, [user?.id, user?.username, startPolling]);
+  }, [user?.id, user?.username, user?.email, startPolling]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -49,7 +49,7 @@ export const Navbar: React.FC = () => {
     try {
       await fetch(`/api/v1/notifications/${id}/read`, { method: 'POST' });
       // Refresh user data to get updated count
-      if (user?.id) useUserStore.getState().fetchUserData(user.id, user.username, true);
+      if (user?.id) useUserStore.getState().fetchUserData(user.id, user.username, user.email, true);
     } catch (err) {
       console.error(err);
     }
@@ -221,12 +221,26 @@ export const Navbar: React.FC = () => {
                             onClick={() => {
                               markRead(n.id);
                               setIsNotifOpen(false);
+                              if (n.type === 'order_status' && n.orderId) {
+                                navigate(`/account/orders?id=${n.orderId}`);
+                              } else {
+                                navigate('/account/notifications');
+                              }
                             }}
                           >
                             <span className="text-xs font-bold text-primary">{n.title}</span>
                             <span className="text-[11px] text-gray-600 leading-normal font-normal">{n.message}</span>
                             {n.createdAt && (
-                              <span className="text-[9px] text-muted mt-0.5 font-normal">{new Date(n.createdAt).toLocaleDateString()}</span>
+                              <span className="text-[9px] text-muted mt-0.5 font-normal">
+                                {new Date(n.createdAt).toLocaleString('en-US', { 
+                                  month: 'short', 
+                                  day: 'numeric', 
+                                  year: 'numeric',
+                                  hour: 'numeric',
+                                  minute: 'numeric',
+                                  hour12: true 
+                                })}
+                              </span>
                             )}
                           </div>
                         ))

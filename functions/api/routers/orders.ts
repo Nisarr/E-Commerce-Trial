@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq } from "drizzle-orm";
+import { eq, and, desc, or } from "drizzle-orm";
 import { verify } from "hono/jwt";
 import * as schema from "../../../backend/server/db/schema";
 import type { Bindings, Variables } from "../types";
@@ -22,19 +22,23 @@ ordersRouter.get("/", async (c) => {
     const rows = await db.query.orders.findMany({
       where: (o: any, { eq, and }: any) => {
         const filters = [];
-        if (customerName) filters.push(eq(o.customerName, customerName));
-        if (userId) filters.push(eq(o.userId, userId));
+        if (customerName && customerName.trim() !== "") filters.push(eq(o.customerName, customerName));
+        if (userId && userId.trim() !== "") filters.push(eq(o.userId, userId));
         return filters.length > 0 ? and(...filters) : undefined;
       },
       orderBy: (o: any, { desc }: any) => [desc(o.createdAt)],
     });
 
     return c.json({
-      items: rows.map((r: any) => ({ ...r, _links: formatLinks(c, "/orders", r.id) })),
+      items: rows.map((r: any) => ({ 
+        ...r, 
+        totalAmount: Number(r.totalAmount || 0),
+        _links: formatLinks(c, "/orders", r.id) 
+      })),
       _links: formatLinks(c, "/orders")
     });
   } catch (error: any) {
-    console.error("Fetch orders error:", error.message);
+    console.error("Fetch orders error:", error);
     return c.json({ items: [], _links: formatLinks(c, "/orders") });
   }
 });
@@ -242,6 +246,18 @@ ordersRouter.patch("/:id/status", async (c) => {
     })
     .where(eq(schema.orders.id, id));
 
+  // Add tracking entry for the status update
+  if (newStatus !== existing.status) {
+    await db.insert(schema.trackings).values({
+      id: crypto.randomUUID(),
+      orderId: id,
+      status: newStatus,
+      message: body.message || `Order status updated to ${newStatus}.`,
+      location: body.location || null,
+      createdAt: new Date(),
+    });
+  }
+
   // Notification: Notify customer about status change
   try {
     let notifyUserId = null;
@@ -255,6 +271,7 @@ ordersRouter.patch("/:id/status", async (c) => {
       title: `Order Status Updated — ${existing.invoiceId}`,
       message: `Your order ${existing.invoiceId} status is now: ${newStatus}.`,
       type: "order_status",
+      orderId: id,
       isRead: 0,
       createdAt: new Date().toISOString(),
     });
@@ -281,6 +298,48 @@ ordersRouter.patch("/:id/status", async (c) => {
 
   return c.json({
     message: "Order status updated successfully",
+    _links: formatLinks(c, "/orders", id)
+  });
+});
+
+ordersRouter.patch("/:id", async (c) => {
+  const id = c.req.param("id");
+  const db = c.get("db");
+  const body = await c.req.json();
+
+  // Admin Check
+  const authHeader = c.req.header("Authorization");
+  const apiKey = c.env.ADMIN_API_KEY;
+  let isAdmin = apiKey && authHeader === `Bearer ${apiKey}`;
+  
+  if (!isAdmin && authHeader?.startsWith("Bearer ")) {
+    try {
+      const token = authHeader.split(" ")[1];
+      const payload = await verify(token, c.env.JWT_SECRET || "fallback-dev-secret-change-me", "HS256");
+      if (payload.role === "admin") isAdmin = true;
+    } catch {}
+  }
+
+  if (!isAdmin) {
+    return c.json({ error: "Unauthorized", message: "Only admins can update order details." }, 401);
+  }
+
+  const [existing] = await db.select().from(schema.orders).where(eq(schema.orders.id, id));
+  if (!existing) throw new Error(`Order with ID ${id} not found`);
+
+  await db.update(schema.orders)
+    .set({
+      customerPhone: body.customerPhone ?? existing.customerPhone,
+      shippingAddress: body.shippingAddress ?? existing.shippingAddress,
+      internalNote: body.internalNote ?? existing.internalNote,
+      courierId: body.courierId ?? existing.courierId,
+      courierLink: body.courierLink ?? existing.courierLink,
+      status: body.status ?? existing.status,
+    })
+    .where(eq(schema.orders.id, id));
+
+  return c.json({
+    message: "Order updated successfully",
     _links: formatLinks(c, "/orders", id)
   });
 });
@@ -339,6 +398,7 @@ ordersRouter.post("/:id/trackings", async (c) => {
       title: `Order Tracking Updated — ${existing.invoiceId}`,
       message: `Your order ${existing.invoiceId} tracking status is now: ${body.status}. ${body.message || ''}`,
       type: "order_status",
+      orderId: id,
       isRead: 0,
       createdAt: new Date().toISOString(),
     });

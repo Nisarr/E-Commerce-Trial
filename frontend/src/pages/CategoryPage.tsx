@@ -15,7 +15,7 @@ export const CategoryPage: React.FC = () => {
     const fetchCategoryData = async () => {
       setLoading(true);
       try {
-        if (slug === 'all') {
+        if (slug === 'all' || !slug) {
           setCategory({
             id: 'all',
             name: 'All Products',

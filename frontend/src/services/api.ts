@@ -321,6 +321,7 @@ export const submitReview = async (data: {
   title?: string;
   content?: string;
   images?: string[];
+  orderId?: string;
 }) => {
   const res = await api.post("/reviews", data);
   return res.data;
@@ -390,9 +391,10 @@ export const getHomeBulk = async (): Promise<HomeBulkResponse> => {
   return res.data;
 };
 
-export const getUserBulk = async (userId: string, customerName?: string, bypassCache = false): Promise<UserBulkResponse> => {
+export const getUserBulk = async (userId: string, customerName?: string, email?: string | null, bypassCache = false): Promise<UserBulkResponse> => {
   const params = new URLSearchParams({ userId });
   if (customerName) params.append('customerName', customerName);
+  if (email) params.append('email', email);
   const res = await api.get(`/bulk/user?${params.toString()}`, { bypassCache } as any);
   return res.data;
 };

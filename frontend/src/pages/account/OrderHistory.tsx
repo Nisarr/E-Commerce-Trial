@@ -3,7 +3,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useUserStore } from '../../store/userStore';
 import { UserOrderDetailsModal } from '../../components/ui/UserOrderDetailsModal';
 import { Package, ArrowRight, Search, Filter, Ban, Loader2 } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { cancelOrder } from '../../services/api';
 import toast from 'react-hot-toast';
 import type { Order } from '../../types';
@@ -19,20 +19,32 @@ export const OrderHistory: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const [loadingDetails, setLoadingDetails] = useState(false);
 
   const orders = userData?.orders?.items || [];
 
   useEffect(() => {
     if (user?.id) {
-      fetchUserData(user.id, user.username, !!orderPlaced);
+      fetchUserData(user.id, user.username, user.email, !!orderPlaced);
     }
   }, [user, fetchUserData, orderPlaced]);
 
+  // Handle auto-open from notification/URL
+  useEffect(() => {
+    const orderId = searchParams.get('id') || searchParams.get('orderId');
+    if (orderId && orders.length > 0) {
+      handleOrderClick(orderId);
+    }
+  }, [searchParams, orders.length]);
+
   const refreshData = () => {
-    if (user?.id) fetchUserData(user.id, user.username, true);
+    if (user?.id) fetchUserData(user.id, user.username, user.email, true);
   };
 
   const handleOrderClick = async (orderId: string) => {
+    setLoadingDetails(true);
+    setSelectedOrder({ id: orderId } as Order); // Placeholder to open modal instantly
     try {
       const res = await fetch(`/api/v1/orders/${orderId}`);
       if (res.ok) {
@@ -41,6 +53,8 @@ export const OrderHistory: React.FC = () => {
       }
     } catch (error) {
       console.error("Failed to fetch order details:", error);
+    } finally {
+      setLoadingDetails(false);
     }
   };
   const handleCancelOrder = async (e: React.MouseEvent, orderId: string) => {
@@ -166,6 +180,7 @@ export const OrderHistory: React.FC = () => {
       {selectedOrder && (
         <UserOrderDetailsModal
           order={selectedOrder}
+          loading={loadingDetails}
           onClose={() => setSelectedOrder(null)}
           onOrderUpdated={() => {
             setSelectedOrder(null);

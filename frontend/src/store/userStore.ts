@@ -6,8 +6,8 @@ interface UserState {
   data: UserBulkResponse | null;
   loading: boolean;
   error: string | null;
-  fetchUserData: (userId: string, customerName?: string, force?: boolean) => Promise<void>;
-  startPolling: (userId: string, customerName?: string) => () => void;
+  fetchUserData: (userId: string, customerName?: string, email?: string | null, force?: boolean) => Promise<void>;
+  startPolling: (userId: string, customerName?: string, email?: string | null) => () => void;
   clearData: () => void;
 }
 
@@ -19,7 +19,7 @@ export const useUserStore = create<UserState>((set, get) => {
     loading: false,
     error: null,
 
-    fetchUserData: async (userId, customerName, force = false) => {
+    fetchUserData: async (userId, customerName, email, force = false) => {
       // If we have data and it's fresh (less than 30s old), don't refetch unless forced
       const currentData = get().data;
       if (currentData && !force) {
@@ -29,14 +29,14 @@ export const useUserStore = create<UserState>((set, get) => {
 
       set({ loading: true, error: null });
       try {
-        const data = await getUserBulk(userId, customerName, force);
+        const data = await getUserBulk(userId, customerName, email, force);
         set({ data, loading: false });
       } catch (err: unknown) {
         set({ error: err instanceof Error ? err.message : 'Failed to fetch user data', loading: false });
       }
     },
 
-    startPolling: (userId, customerName) => {
+    startPolling: (userId, customerName, email) => {
       if (pollInterval) return () => clearInterval(pollInterval);
 
       const poll = async () => {
@@ -44,7 +44,7 @@ export const useUserStore = create<UserState>((set, get) => {
         if (document.visibilityState !== 'visible') return;
         
         try {
-          const data = await getUserBulk(userId, customerName);
+          const data = await getUserBulk(userId, customerName, email);
           set({ data }); // Silent update, no loading state
         } catch (err) {
           console.error("Poll failed", err);

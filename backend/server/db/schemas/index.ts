@@ -5,7 +5,7 @@
 export { banners } from "./banners";
 export { categories } from "./categories";
 export { products } from "./products";
-export { orders, orderItems, trackings } from "./orders";
+export { orders, orderItems, trackings, ordersRelations, orderItemsRelations, trackingsRelations } from "./orders";
 export { users } from "./users";
 export { addresses } from "./addresses";
 export { reviews } from "./reviews";

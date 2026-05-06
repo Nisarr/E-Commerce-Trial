@@ -4,8 +4,10 @@ import { useSearchParams } from 'react-router-dom';
 import { getProducts, updateProduct } from '../../services/api';
 import type { Product } from '../../types';
 import { SpecialOfferPriceModal } from '../../components/admin/SpecialOfferPriceModal';
+import { useUIStore } from '../../store/uiStore';
 
 export const SpecialOfferManager: React.FC = () => {
+  const { setIsAdminModalOpen } = useUIStore();
   const [offers, setOffers] = useState<Product[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -13,6 +15,10 @@ export const SpecialOfferManager: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchTerm = searchParams.get('q') || '';
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  useEffect(() => {
+    setIsAdminModalOpen(!!selectedProduct);
+  }, [selectedProduct, setIsAdminModalOpen]);
 
   const fetchOffers = async () => {
     try {

@@ -25,8 +25,10 @@ import { useAuthStore } from '../../store/authStore';
 import { BannerModal } from '../../components/admin/BannerModal';
 import { ProductModal } from '../../components/admin/ProductModal';
 import { CategoryModal } from '../../components/admin/CategoryModal';
+import { useUIStore } from '../../store/uiStore';
 
 export const AdminIndex: React.FC = () => {
+  const { setIsAdminModalOpen } = useUIStore();
   const { isAuthenticated, user } = useAuthStore();
   const isAdmin = isAuthenticated && user?.role === 'admin';
   const location = useLocation();
@@ -80,6 +82,10 @@ export const AdminIndex: React.FC = () => {
     }, 0);
     return () => clearTimeout(timeout);
   }, [isAdmin, fetchData]);
+
+  useEffect(() => {
+    setIsAdminModalOpen(isModalOpen);
+  }, [isModalOpen, setIsAdminModalOpen]);
 
   const handleSaveBanner = async (bannerData: Omit<Banner, 'id'>) => {
     if (editingBanner) {
@@ -217,7 +223,7 @@ export const AdminIndex: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-[1600px] mx-auto w-full">
+            <div className="animate-in fade-in duration-700 max-w-[1600px] mx-auto w-full">
               <Routes>
                 <Route index element={<Navigate to="/adm/dashboard" replace />} />
                 <Route path="dashboard" element={

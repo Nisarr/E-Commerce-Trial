@@ -7,5 +7,6 @@ export const notifications = sqliteTable("notifications", {
   message: text("message").notNull(),
   type: text("type").notNull().default("info"), // 'offer', 'order_status', 'info'
   isRead: integer("is_read").notNull().default(0),
+  orderId: text("order_id"),
   createdAt: text("created_at"),
 });

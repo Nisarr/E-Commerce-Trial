@@ -5,7 +5,7 @@ import {
   User, MapPin, CreditCard, Wallet,
   Package, RotateCcw, XCircle,
   Star, Heart, LogOut,
-  ShieldCheck
+  ShieldCheck, Bell
 } from 'lucide-react';
 
 interface SidebarSection {
@@ -40,6 +40,7 @@ const sections: SidebarSection[] = [
     title: 'My Engagement',
     items: [
       { icon: Star, label: 'My Reviews', to: '/account/reviews' },
+      { icon: Bell, label: 'My Notifications', to: '/account/notifications' },
       { icon: Heart, label: 'My Wishlist', to: '/wishlist' },
     ],
   },

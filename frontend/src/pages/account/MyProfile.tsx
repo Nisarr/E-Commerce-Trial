@@ -32,7 +32,7 @@ export const MyProfile: React.FC = () => {
 
   useEffect(() => {
     if (user?.id) {
-      fetchUserData(user.id, user.username);
+      fetchUserData(user.id, user.username, user.email);
     }
   }, [user, fetchUserData]);
 

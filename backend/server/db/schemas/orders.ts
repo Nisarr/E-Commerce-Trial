@@ -1,5 +1,5 @@
-// ── Orders & Order Items & Trackings ─────────────────
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
+import { relations } from "drizzle-orm";
 
 export const orders = sqliteTable("orders", {
   id:              text("id").primaryKey(),
@@ -14,6 +14,9 @@ export const orders = sqliteTable("orders", {
   paymentMethod:   text("payment_method").default("cod"), // cod, bkash, nagad, wallet
   paymentPhone:    text("payment_phone"), // phone number used to send money
   paymentTrxId:    text("payment_trx_id"), // bKash/Nagad transaction ID
+  internalNote:    text("internal_note"), // admin-only notes
+  courierId:       text("courier_id"),    // e.g. Pathao/Steadfast ID
+  courierLink:     text("courier_link"),  // link to tracking
   createdAt:       integer("created_at", { mode: "timestamp" }),
 });
 
@@ -33,3 +36,23 @@ export const trackings = sqliteTable("trackings", {
   location:  text("location"),
   createdAt: integer("created_at", { mode: "timestamp" }),
 });
+
+// ── Relations ──────────────────────────────────────────
+export const ordersRelations = relations(orders, ({ many }) => ({
+  items: many(orderItems),
+  trackings: many(trackings),
+}));
+
+export const orderItemsRelations = relations(orderItems, ({ one }) => ({
+  order: one(orders, {
+    fields: [orderItems.orderId],
+    references: [orders.id],
+  }),
+}));
+
+export const trackingsRelations = relations(trackings, ({ one }) => ({
+  order: one(orders, {
+    fields: [trackings.orderId],
+    references: [orders.id],
+  }),
+}));

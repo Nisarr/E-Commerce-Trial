@@ -3,6 +3,7 @@ import {
   RotateCcw, Loader2, CheckCircle2, XCircle, MessageSquare,
   Filter, Calendar, Package
 } from 'lucide-react';
+import { useUIStore } from '../../store/uiStore';
 
 interface ReturnRecord {
   id: string;
@@ -26,6 +27,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export const ReturnManager: React.FC = () => {
+  const { setIsAdminModalOpen } = useUIStore();
   const [returns, setReturns] = useState<ReturnRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('All');
@@ -33,6 +35,10 @@ export const ReturnManager: React.FC = () => {
   const [success, setSuccess] = useState('');
   const [notesModal, setNotesModal] = useState<ReturnRecord | null>(null);
   const [adminNote, setAdminNote] = useState('');
+
+  useEffect(() => {
+    setIsAdminModalOpen(!!notesModal);
+  }, [notesModal, setIsAdminModalOpen]);
 
   const fetchReturns = async () => {
     try {

@@ -88,6 +88,33 @@ reviewsRouter.post("/", async (c) => {
     username = user?.username || "Guest";
   }
 
+  // ── AUTHENTIC REVIEW CHECK ──
+  // Check if user has a delivered order for this product
+  const deliveredOrders = await db.select({
+    orderId: schema.orders.id
+  })
+  .from(schema.orders)
+  .innerJoin(schema.orderItems, eq(schema.orders.id, schema.orderItems.orderId))
+  .where(and(
+    eq(schema.orders.userId, body.userId),
+    eq(schema.orders.status, "delivered"),
+    eq(schema.orderItems.productId, body.productId)
+  ))
+  .limit(1);
+
+  if (deliveredOrders.length === 0) {
+    throw new Error("VAL: You can only review products you have purchased and received.");
+  }
+
+  // Check if already reviewed (optional but good for UX)
+  const [existingReview] = await db.select().from(schema.reviews)
+    .where(and(eq(schema.reviews.userId, body.userId), eq(schema.reviews.productId, body.productId)))
+    .limit(1);
+  
+  if (existingReview) {
+    throw new Error("VAL: You have already reviewed this product.");
+  }
+
   const id = crypto.randomUUID();
   await db.insert(schema.reviews).values({
     id,
@@ -95,8 +122,11 @@ reviewsRouter.post("/", async (c) => {
     userId: body.userId,
     username,
     rating: body.rating,
-    content: body.comment || null,
+    title: body.title || null,
+    content: body.content || body.comment || null,
     images: body.images ? (typeof body.images === 'string' ? body.images : JSON.stringify(body.images)) : "[]",
+    isVerified: 1, // Automatically verified since we checked the order
+    orderId: deliveredOrders[0].orderId,
     status: "pending", // All new reviews require approval
     createdAt: new Date(),
   });

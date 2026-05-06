@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { UserOrderDetailsModal } from '../../components/ui/UserOrderDetailsModal';
 import {
   Package, Heart, ShoppingCart, Star,
-  ArrowRight, MapPin, TrendingUp
+  ArrowRight, MapPin, Clock, CheckCircle, Ban
 } from 'lucide-react';
 import type { Order } from '../../types';
 
@@ -17,10 +17,14 @@ export const AccountDashboard: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const orders = userData?.orders?.items || [];
+  const totalOrders = orders.length;
+  const pendingOrders = orders.filter(o => o.status?.toLowerCase() === 'pending').length;
+  const deliveredOrders = orders.filter(o => o.status?.toLowerCase() === 'delivered').length;
+  const cancelledOrders = orders.filter(o => o.status?.toLowerCase() === 'cancelled').length;
 
   useEffect(() => {
     if (user?.id) {
-      fetchUserData(user.id, user.username, !!location.state?.orderPlaced);
+      fetchUserData(user.id, user.username, user.email, !!location.state?.orderPlaced);
     }
   }, [user, fetchUserData, location.state?.orderPlaced]);
 
@@ -72,11 +76,39 @@ export const AccountDashboard: React.FC = () => {
           <p className="dashboard-welcome-subtitle">Here's a snapshot of your account activity.</p>
         </div>
         <div className="dashboard-welcome-stats">
-          <div className="dashboard-stat">
-            <TrendingUp size={18} />
+          {/* Desktop Stats (Hidden on Mobile) */}
+          <div className="hidden md:flex items-center gap-6">
+            <div className="dashboard-stat">
+              <Clock size={18} className="text-orange-500" />
+              <div>
+                <span className="dashboard-stat-value">{pendingOrders}</span>
+                <span className="dashboard-stat-label">Pending</span>
+              </div>
+            </div>
+            <div className="dashboard-stat border-l border-white/10 pl-4">
+              <CheckCircle size={18} className="text-green-500" />
+              <div>
+                <span className="dashboard-stat-value">{deliveredOrders}</span>
+                <span className="dashboard-stat-label">Delivered</span>
+              </div>
+            </div>
+            <div className="dashboard-stat border-l border-white/10 pl-4">
+              <Ban size={18} className="text-red-400" />
+              <div>
+                <span className="dashboard-stat-value">{cancelledOrders}</span>
+                <span className="dashboard-stat-label">Cancelled</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Stat (Visible only on Mobile) */}
+          <div className="md:hidden flex items-center gap-4 bg-white/10 px-5 py-3 rounded-2xl border border-white/10">
+            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+              <Package size={20} className="text-white" />
+            </div>
             <div>
-              <span className="dashboard-stat-value">{orders.length}</span>
-              <span className="dashboard-stat-label">Orders</span>
+              <span className="text-2xl font-black block leading-none">{totalOrders}</span>
+              <span className="text-[9px] font-bold uppercase tracking-widest opacity-60">Total Orders</span>
             </div>
           </div>
         </div>
@@ -149,7 +181,7 @@ export const AccountDashboard: React.FC = () => {
                   </p>
                 </div>
                 <div className="dashboard-order-amount">
-                  <span className="dashboard-order-total">${(order.totalAmount + 15).toFixed(2)}</span>
+                  <span className="dashboard-order-total">৳{order.totalAmount.toLocaleString()}</span>
                   <ArrowRight size={16} className="dashboard-order-arrow" />
                 </div>
               </button>

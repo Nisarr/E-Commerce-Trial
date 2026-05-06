@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { X, Star, Upload, Loader2, CheckCircle2 } from 'lucide-react';
+import { X, Star, Upload, Loader2, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { submitReview } from '../../services/api';
 import { uploadImage } from '../../services/imgbb';
 
@@ -9,12 +9,13 @@ interface ReviewModalProps {
   productTitle: string;
   userId: string;
   username: string;
+  orderId?: string; // Optional: can be passed if we want to link to a specific order
   onClose: () => void;
   onSuccess: () => void;
 }
 
 export const ReviewModal: React.FC<ReviewModalProps> = ({ 
-  productId, productTitle, userId, username, onClose, onSuccess 
+  productId, productTitle, userId, username, orderId, onClose, onSuccess 
 }) => {
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
@@ -69,7 +70,8 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
         rating,
         title,
         content,
-        images
+        images,
+        orderId // Pass the orderId if provided
       });
       setSuccess(true);
       setTimeout(() => {
@@ -112,7 +114,13 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
 
           <div className="space-y-8">
             <div className="space-y-2">
-              <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Share Your Experience</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Share Your Experience</span>
+                <div className="flex items-center gap-1 bg-green-50 text-green-600 px-2 py-0.5 rounded-full border border-green-100">
+                  <ShieldCheck size={10} />
+                  <span className="text-[8px] font-black uppercase tracking-wider">Verified Purchase</span>
+                </div>
+              </div>
               <h2 className="text-3xl font-black text-gray-900 tracking-tight">{productTitle}</h2>
             </div>
 

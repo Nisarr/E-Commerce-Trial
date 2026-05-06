@@ -8,8 +8,8 @@ import {
   Truck, ShieldCheck as Shield,
   Play, MessageSquare, 
   HelpCircle, Download,
-  ThumbsUp, LayoutGrid, ChevronDown,
-  Package as PackageIcon, Info, ArrowRight
+  ThumbsUp, ChevronDown,
+  Info, ArrowRight
 } from 'lucide-react';
 import { getProductReviews, markReviewHelpful, getProductDetailsBulk, logInteraction } from '../services/api';
 import { ReviewModal } from '../components/product/ReviewModal';
@@ -37,6 +37,8 @@ export const ProductDetails: React.FC = () => {
   const [sortBy, setSortBy] = useState<'latest' | 'helpful'>('latest');
   const [withPhotosOnly, setWithPhotosOnly] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [canReview, setCanReview] = useState(false);
+  const [reviewRestrictionReason, setReviewRestrictionReason] = useState("");
   
   const { addItem } = useCart();
   const { toggleItem, isInWishlist } = useWishlist();
@@ -61,6 +63,8 @@ export const ProductDetails: React.FC = () => {
           setRelatedProducts(data.relatedProducts);
           setReviews(data.reviews.items);
           setReviewStats(data.reviews.stats);
+          setCanReview((data as any).canReview);
+          setReviewRestrictionReason((data as any).reviewRestrictionReason);
         }
       } catch {
         console.error('Failed to fetch product data');
@@ -72,11 +76,8 @@ export const ProductDetails: React.FC = () => {
   }, [slug]);
 
   useEffect(() => {
-    // Skip on initial load as bulk API handles it
-    // But if filters change, we need to refresh reviews
     const fetchReviews = async () => {
       if (!product?.id) return;
-      // If filters are at default, don't re-fetch (to save one request)
       if (sortBy === 'latest' && !withPhotosOnly) return;
 
       setLoadingReviews(true);
@@ -160,8 +161,6 @@ export const ProductDetails: React.FC = () => {
     setActiveImage((prev) => (prev - 1 + images.length) % images.length);
   };
 
-
-
   return (
     <div className="bg-white min-h-screen pb-32 md:pb-20">
       <Helmet>
@@ -172,7 +171,7 @@ export const ProductDetails: React.FC = () => {
       <div className="container mx-auto px-4 lg:px-6 pt-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           
-          {/* Image Section - Sticky on Desktop */}
+          {/* Image Section */}
           <div className="lg:col-span-5">
             <div className="sticky top-24 space-y-4">
               <div className="relative aspect-square rounded-[2rem] overflow-hidden bg-white border border-gray-100 group">
@@ -182,7 +181,6 @@ export const ProductDetails: React.FC = () => {
                   className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                 />
                 
-                {/* Navigation Arrows - Circulatory */}
                 {images.length > 1 && (
                   <>
                     <button 
@@ -200,7 +198,6 @@ export const ProductDetails: React.FC = () => {
                   </>
                 )}
 
-                {/* Dots - Mobile Only */}
                 {images.length > 1 && (
                   <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 md:hidden z-10">
                     {images.map((_: any, i: number) => (
@@ -232,7 +229,6 @@ export const ProductDetails: React.FC = () => {
                 </button>
               </div>
 
-              {/* Thumbnails - Hidden on Mobile */}
               <div className="hidden md:flex gap-3 overflow-x-auto scrollbar-hide pb-2 px-1">
                 {images.map((img: string, i: number) => (
                   <button 
@@ -267,7 +263,6 @@ export const ProductDetails: React.FC = () => {
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{product.soldCount || 0} Sold</span>
               </div>
 
-              {/* Delivery & Warranty Badges */}
               <div className="flex flex-wrap gap-3">
                 {product.deliveryInfo && (
                   <div className="flex items-center gap-2 bg-blue-50/50 border border-blue-100 rounded-xl px-4 py-2">
@@ -283,9 +278,6 @@ export const ProductDetails: React.FC = () => {
                 )}
               </div>
 
-              {/* Review Stats & AI Summary — Moved further down below buttons */}
-
-              {/* Countdown Timer */}
               {product.offerDeadline && (
                 <div className="max-w-sm pt-2">
                   <CountdownTimer deadline={product.offerDeadline} />
@@ -293,7 +285,6 @@ export const ProductDetails: React.FC = () => {
               )}
             </div>
 
-            {/* Compact Pricing Area */}
             <div className="space-y-3">
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <div className="flex items-baseline gap-2">
@@ -314,7 +305,6 @@ export const ProductDetails: React.FC = () => {
                 </div>
               </div>
 
-              {/* Trust Badges */}
               {product.trustBadges && (
                 <div className="flex flex-wrap gap-4 py-2">
                   {(() => {
@@ -330,13 +320,9 @@ export const ProductDetails: React.FC = () => {
                   })()}
                 </div>
               )}
-
               <div className="h-px bg-gray-100/60" />
             </div>
 
-
-
-            {/* Optimized Action Row */}
             <div className="grid grid-cols-2 md:flex md:items-center gap-2">
               <div className="flex items-center bg-gray-100/40 rounded-lg p-0.5 border border-gray-100 h-10">
                 <button 
@@ -385,7 +371,6 @@ export const ProductDetails: React.FC = () => {
               </button>
             </div>
 
-            {/* Review Stats & AI Summary — Re-located below buttons */}
             {reviewStats && (
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4 pt-4 animate-in fade-in slide-in-from-top-4 duration-700">
                 <div className="md:col-span-7 bg-white p-6 rounded-3xl border-2 border-gray-100 flex items-center gap-8 shadow-sm">
@@ -425,11 +410,10 @@ export const ProductDetails: React.FC = () => {
                 </div>
               </div>
             )}
-
           </div>
         </div>
 
-        {/* Detailed Tabs Section */}
+        {/* Tabs Section */}
         <div className="mt-20 space-y-8">
           <div className="flex justify-center gap-4 md:gap-12 border-b border-gray-100 overflow-x-auto scrollbar-hide">
             {[
@@ -454,10 +438,9 @@ export const ProductDetails: React.FC = () => {
                 <div className="space-y-8 text-center md:text-left">
                   <h2 className="text-3xl font-black text-gray-900 tracking-tight">The Perfect Blend of Safety and Fun</h2>
                   <div className="text-lg text-gray-500 leading-relaxed font-medium whitespace-pre-wrap">
-                    {product.overview || `Experience peace of mind with our ${product.title}. Designed with the modern parent in mind, this ${product.brand || 'premium playpen'} offers a secure, spacious, and stylish environment for your baby to explore, play, and rest. Crafted from high-grade, non-toxic materials, it meets and exceeds all international safety standards.`}
+                    {product.overview || `Experience peace of mind with our ${product.title}. Designed with the modern parent in mind, this ${product.brand || 'premium playpen'} offers a secure, spacious, and stylish environment for your baby to explore, play, and rest.`}
                   </div>
 
-                  {/* Highlights Grid */}
                   {product.highlights && (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-8">
                       {(() => {
@@ -477,7 +460,6 @@ export const ProductDetails: React.FC = () => {
                     </div>
                   )}
 
-                  {/* How it Works / Use Case */}
                   {product.howItWorks && (
                     <div className="pt-10 space-y-8">
                       <div className="flex items-center gap-4">
@@ -492,7 +474,7 @@ export const ProductDetails: React.FC = () => {
                             return steps.map((step: any, i: number) => (
                               <div key={i} className="relative group">
                                 {i < steps.length - 1 && (
-                                  <div className="hidden md:block absolute top-6 left-full w-full h-px bg-dashed border-t-2 border-dashed border-gray-100 -ml-4 z-0" />
+                                  <div className="hidden md:block absolute top-6 left-full w-full h-px border-t-2 border-dashed border-gray-100 -ml-4 z-0" />
                                 )}
                                 <div className="relative z-10 space-y-4 text-center">
                                   <div className="w-12 h-12 bg-white border-2 border-gray-100 rounded-full flex items-center justify-center text-primary font-black mx-auto group-hover:border-primary group-hover:bg-primary group-hover:text-white transition-all duration-500">
@@ -511,7 +493,6 @@ export const ProductDetails: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Video Embed Placeholder */}
                   {product.videoUrl && (
                     <div className="pt-10">
                       <div className="aspect-video bg-gray-900 rounded-[2.5rem] overflow-hidden relative group cursor-pointer shadow-2xl">
@@ -525,35 +506,13 @@ export const ProductDetails: React.FC = () => {
                             <Play size={32} fill="currentColor" className="ml-1" />
                           </div>
                         </div>
-                        <div className="absolute bottom-8 left-8">
-                          <div className="flex items-center gap-3 text-white">
-                            <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-                            <span className="text-xs font-black uppercase tracking-widest">Watch Product Demo</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {!product.overview && !product.highlights && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-8">
-                      <div className="space-y-4">
-                        <h3 className="text-xs font-black text-primary uppercase tracking-[0.3em]">Premium Build</h3>
-                        <p className="text-sm text-gray-500 leading-relaxed font-bold italic">
-                          "We use only the finest BPA-free plastics and eco-friendly woods to ensure a healthy environment for your little one."
-                        </p>
-                      </div>
-                      <div className="space-y-4">
-                        <h3 className="text-xs font-black text-primary uppercase tracking-[0.3em]">Smart Design</h3>
-                        <p className="text-sm text-gray-500 leading-relaxed font-bold italic">
-                          "Our modular panels allow for flexible configurations to fit any room size or shape, adapting as your baby grows."
-                        </p>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
             )}
+            
             {activeTab === 'specs' && (
               <div className="space-y-8">
                 {product.specification ? (
@@ -567,11 +526,9 @@ export const ProductDetails: React.FC = () => {
                     <table className="w-full text-left">
                       <tbody className="divide-y-2 divide-gray-100">
                         {[
-                          ['Material', 'BPA-Free High Density Plastic / Premium Wood'],
-                          ['Certification', 'European Safety Standard EN71'],
+                          ['Material', 'BPA-Free High Density Plastic'],
                           ['Age Range', '6 Months - 3 Years'],
-                          ['Assembly', 'Tool-less, 15 Minute Setup'],
-                          ['Features', 'Strong Suction Cups, Secure Locking'],
+                          ['Assembly', 'Tool-less Setup'],
                           ['Warranty', '1 Year Full Replacement']
                         ].map(([label, value], i) => (
                           <tr key={i} className="hover:bg-gray-50/50 transition-colors">
@@ -584,7 +541,6 @@ export const ProductDetails: React.FC = () => {
                   </div>
                 )}
 
-                {/* Download Spec Sheet */}
                 {product.specSheetUrl && (
                   <div className="pt-4 flex justify-end">
                     <a 
@@ -599,7 +555,6 @@ export const ProductDetails: React.FC = () => {
                   </div>
                 )}
 
-                {/* Comparison Table */}
                 {product.comparisonData && (
                   <div className="bg-white rounded-[2.5rem] border-2 border-gray-200/60 overflow-hidden shadow-xl shadow-gray-100/50 mt-10">
                     {(() => {
@@ -630,7 +585,6 @@ export const ProductDetails: React.FC = () => {
                   </div>
                 )}
 
-                {/* FAQ Accordion */}
                 {product.faqs && (
                   <div className="space-y-4 mt-10">
                     <h3 className="text-xl font-black text-gray-900 tracking-tight flex items-center gap-3 ml-2">
@@ -673,7 +627,6 @@ export const ProductDetails: React.FC = () => {
                   </div>
                 ) : reviews.length > 0 ? (
                   <div className="grid grid-cols-1 gap-8">
-                    {/* Review Filters */}
                     <div className="flex items-center justify-between py-2 ml-2">
                       <div className="flex items-center gap-6">
                         <button 
@@ -695,28 +648,41 @@ export const ProductDetails: React.FC = () => {
                           WITH PHOTOS
                         </button>
                       </div>
-                      <button 
-                        onClick={() => {
-                          if (!isAuthenticated) {
-                            navigate('/account/login');
-                            return;
-                          }
-                          setShowReviewModal(true);
-                        }}
-                        className="bg-primary text-white px-4 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-primary-dark transition-all"
-                      >
-                        Write a Review
-                      </button>
+                      
+                      {canReview ? (
+                        <button 
+                          onClick={() => setShowReviewModal(true)}
+                          className="bg-primary text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary-dark hover:-translate-y-0.5 transition-all shadow-md shadow-primary/20"
+                        >
+                          Write a Review
+                        </button>
+                      ) : (
+                        <div className="group relative">
+                          <button 
+                            disabled
+                            className="bg-gray-100 text-gray-400 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-not-allowed opacity-60 flex items-center gap-2 border border-gray-200"
+                          >
+                            <Shield size={12} />
+                            Review Locked
+                          </button>
+                          {reviewRestrictionReason && (
+                            <div className="absolute bottom-full right-0 mb-2 w-48 p-3 bg-gray-900 text-white text-[10px] font-bold rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 shadow-xl">
+                              <div className="relative">
+                                {reviewRestrictionReason}
+                                <div className="absolute top-full right-6 w-2 h-2 bg-gray-900 rotate-45 -mt-1" />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
-                    {/* Review List */}
                     <div className="space-y-6">
                       {reviews.map((review) => {
                         const reviewImages = JSON.parse(review.images || '[]');
                         return (
                           <div key={review.id} className="bg-white p-8 rounded-[2rem] border-2 border-gray-200/60 shadow-sm hover:shadow-md transition-shadow group/card">
                             <div className="flex gap-8 items-start">
-                              {/* Left Content Side */}
                               <div className="flex-grow space-y-4">
                                 <div className="flex justify-between items-start">
                                   <div className="flex items-center gap-3">
@@ -739,23 +705,18 @@ export const ProductDetails: React.FC = () => {
                                     </div>
                                   </div>
                                   <div className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
-                                    {(() => {
-                                      const d = new Date(review.createdAt || Date.now());
-                                      if (d.getFullYear() > 2100) d.setFullYear(2024); 
-                                      return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
-                                    })()}
+                                    {new Date(review.createdAt || Date.now()).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
                                   </div>
                                 </div>
 
                                 {review.title && <h4 className="font-black text-gray-900 text-base">{review.title}</h4>}
-                                <p className="text-sm text-gray-500 leading-relaxed font-medium line-clamp-4 group-hover/card:line-clamp-none transition-all">{review.content}</p>
+                                <p className="text-sm text-gray-500 leading-relaxed font-medium">{review.content}</p>
                                 
                                 <div className="flex items-center justify-between pt-4">
                                   <button 
                                     onClick={async () => {
                                       try {
                                         await markReviewHelpful(review.id);
-                                        // Update local state to show +1 immediately
                                         setReviews(prev => prev.map(r => r.id === review.id ? { ...r, helpfulCount: (r.helpfulCount || 0) + 1 } : r));
                                       } catch (e) { console.error(e); }
                                     }}
@@ -768,27 +729,19 @@ export const ProductDetails: React.FC = () => {
                                 </div>
                               </div>
 
-                              {/* Right Images Side - 4 vertical boxes filled from right */}
                               <div className="hidden md:flex gap-2 shrink-0 flex-row-reverse">
                                 {[...Array(4)].map((_, idx) => {
-                                  // Images are filled from right, so index 0 is rightmost
                                   const img = reviewImages[idx];
+                                  if (!img) return null;
                                   return (
-                                    <div key={idx} className={`w-20 h-28 rounded-2xl overflow-hidden border-2 transition-all duration-500 ${img ? 'border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1' : 'border-dashed border-gray-50 opacity-40'}`}>
-                                      {img ? (
-                                        <img src={img} alt="" className="w-full h-full object-cover" />
-                                      ) : (
-                                        <div className="w-full h-full bg-gray-50 flex items-center justify-center text-gray-200">
-                                          <LayoutGrid size={16} />
-                                        </div>
-                                      )}
+                                    <div key={idx} className="w-20 h-28 rounded-2xl overflow-hidden border-2 border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-500">
+                                      <img src={img} alt="" className="w-full h-full object-cover" />
                                     </div>
                                   );
                                 })}
                               </div>
                             </div>
-
-                            {/* Mobile Images - Standard scroll */}
+                            
                             {reviewImages.length > 0 && (
                               <div className="flex md:hidden gap-3 mt-6 overflow-x-auto pb-2 scrollbar-hide">
                                 {reviewImages.map((img: string, idx: number) => (
@@ -820,7 +773,7 @@ export const ProductDetails: React.FC = () => {
         </div>
       </div>
 
-      {/* Related Products & Bundle */}
+      {/* Related Products */}
       <div className="mt-40 container mx-auto px-4 lg:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           <div className="lg:col-span-8 space-y-12">
@@ -846,11 +799,6 @@ export const ProductDetails: React.FC = () => {
                           alt={p.title}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
                         />
-                        <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
-                          <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-primary shadow-xl scale-50 group-hover:scale-100 transition-transform duration-500">
-                            <ShoppingCart size={20} />
-                          </div>
-                        </div>
                       </div>
                       <div className="space-y-1 px-2">
                         <h3 className="text-[10px] font-black text-gray-900 uppercase tracking-widest line-clamp-1 group-hover:text-primary transition-colors">{p.title}</h3>
@@ -889,18 +837,6 @@ export const ProductDetails: React.FC = () => {
                       <p className="text-xs font-black text-primary">৳{product.salePrice || product.price}</p>
                     </div>
                   </div>
-                  <div className="flex justify-center -my-2 relative z-20">
-                    <div className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center shadow-lg font-black text-lg border-4 border-orange-50">+</div>
-                  </div>
-                  <div className="flex items-center gap-4 bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white opacity-60">
-                    <div className="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center text-gray-300">
-                      <PackageIcon size={24} />
-                    </div>
-                    <div className="flex-grow">
-                      <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Mystery Accessory</h4>
-                      <p className="text-xs font-black text-primary">৳450</p>
-                    </div>
-                  </div>
                 </div>
 
                 <button className="w-full py-5 bg-gray-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-black hover:-translate-y-1 transition-all active:translate-y-0">
@@ -918,7 +854,6 @@ export const ProductDetails: React.FC = () => {
               <h2 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-4">
                 <MessageSquare size={32} className="text-primary" /> Questions & Answers
               </h2>
-              <p className="text-gray-400 font-medium ml-12">Have a question? Our team and community are here to help.</p>
             </div>
 
             <div className="space-y-6 ml-12">
@@ -927,7 +862,7 @@ export const ProductDetails: React.FC = () => {
                   try {
                     const qna = JSON.parse(product.qna);
                     return qna.map((q: any, i: number) => (
-                      <div key={i} className="space-y-4 animate-in slide-in-from-left duration-700" style={{ animationDelay: `${i * 100}ms` }}>
+                      <div key={i} className="space-y-4">
                         <div className="flex gap-4">
                           <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-primary font-black shrink-0">Q</div>
                           <p className="text-sm font-black text-gray-900">{q.question}</p>
@@ -936,7 +871,6 @@ export const ProductDetails: React.FC = () => {
                           <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary font-black shrink-0">A</div>
                           <div className="space-y-2">
                             <p className="text-sm text-gray-500 font-medium">{q.answer}</p>
-                            <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest">{q.date || 'Seller Answer'}</p>
                           </div>
                         </div>
                         {i < qna.length - 1 && <div className="h-px bg-gray-100 w-full" />}
@@ -946,10 +880,7 @@ export const ProductDetails: React.FC = () => {
                 })()
               ) : (
                 <div className="bg-gray-50 rounded-3xl p-8 text-center border-2 border-dashed border-gray-100">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">No questions asked yet. Be the first!</p>
-                  <button className="mt-4 px-6 py-3 bg-white border border-gray-200 rounded-xl text-[10px] font-black text-primary uppercase tracking-widest hover:border-primary transition-colors shadow-sm">
-                    Ask a Question
-                  </button>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">No questions asked yet.</p>
                 </div>
               )}
             </div>
@@ -957,10 +888,10 @@ export const ProductDetails: React.FC = () => {
         </div>
       </div>
 
-      {/* Recently Viewed */}
       <div className="mt-40">
         <RecentlyViewed />
       </div>
+
       {showReviewModal && product && (
         <ReviewModal 
           productId={product.id}

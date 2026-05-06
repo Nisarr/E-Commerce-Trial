@@ -5,26 +5,4 @@
 //
 // Individual schemas live in ./schemas/*.ts
 
-export {
-  banners,
-  categories,
-  products,
-  orders,
-  orderItems,
-  trackings,
-  users,
-  addresses,
-  reviews,
-  returns,
-  walletTransactions,
-  otpCodes,
-  coupons,
-  adminLogs,
-  notifications,
-  productSales,
-  popupSettings,
-  userInteractions,
-  productSimilarity,
-  systemCache,
-  systemSettings,
-} from "./schemas";
+export * from "./schemas";

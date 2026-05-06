@@ -33,6 +33,7 @@ import { MyCancellations } from './pages/account/MyCancellations';
 import { MyReviews } from './pages/account/MyReviews';
 import { ForgotPassword } from './pages/account/ForgotPassword';
 import { ResetPassword } from './pages/account/ResetPassword';
+import { MyNotifications } from './pages/account/MyNotifications';
 import { useHomeStore } from './store/homeStore';
 import React from 'react';
 
@@ -50,7 +51,7 @@ function App() {
     <ErrorBoundary>
       <ScrollToTop />
       <Toaster position="top-center" reverseOrder={false} />
-      <div className="flex flex-col min-h-screen pb-24 lg:pb-0">
+      <div className={`flex flex-col min-h-screen ${isAdminPath ? '' : 'pb-24 lg:pb-0'}`}>
         {!isAdminPath && <Popup />}
         {!isAdminPath && <Navbar />}
         
@@ -64,7 +65,7 @@ function App() {
             <Route path="/category/:slug" element={<CategoryPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/product/:slug" element={<ProductDetails />} />
-            <Route path="/shop" element={<ShopPage />} />
+            <Route path="/shop" element={<CategoryPage />} />
             <Route path="/search" element={<ShopPage />} />
             <Route path="/best-sellers" element={<ShopPage />} />
             <Route path="/new-arrivals" element={<ShopPage />} />
@@ -87,6 +88,7 @@ function App() {
                 <Route path="returns" element={<MyReturns />} />
                 <Route path="cancellations" element={<MyCancellations />} />
                 <Route path="reviews" element={<MyReviews />} />
+                <Route path="notifications" element={<MyNotifications />} />
               </Route>
             </Route>
             
@@ -94,7 +96,11 @@ function App() {
           </Routes>
         </div>
         
-        {!isAdminPath && <Footer />}
+        {!isAdminPath && (
+          <div className={location.pathname === '/' ? "" : "hidden lg:block"}>
+            <Footer />
+          </div>
+        )}
         {!isAdminPath && <MobileBottomNav />}
       </div>
     </ErrorBoundary>

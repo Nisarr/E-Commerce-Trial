@@ -13,6 +13,7 @@ bulkRouter.get("/user", async (c) => {
   const db = c.get("db");
   const userId = c.req.query("userId");
   const customerName = c.req.query("customerName");
+  const email = c.req.query("email");
 
   if (!userId) {
     return c.json({ error: "userId query parameter is required" }, 400);
@@ -43,9 +44,18 @@ bulkRouter.get("/user", async (c) => {
         where: (a: any, { eq }: any) => eq(a.userId, userId),
         orderBy: (a: any, { desc }: any) => [desc(a.createdAt)]
       }),
-      // 4. Orders
+      // 4. Orders (Unified query for registered & guest checkouts)
       db.query.orders.findMany({
-        where: (o: any, { eq }: any) => eq(o.userId, userId),
+        where: (o: any, { eq, or }: any) => {
+          const conds = [];
+          if (userId && userId.trim() !== "") conds.push(eq(o.userId, userId));
+          if (customerName && customerName.trim() !== "") conds.push(eq(o.customerName, customerName));
+          if (email && email.trim() !== "") conds.push(eq(o.customerEmail, email));
+          return conds.length > 0 ? or(...conds) : undefined;
+        },
+        with: {
+          items: true
+        },
         orderBy: (o: any, { desc }: any) => [desc(o.createdAt)]
       }),
       // 5. Returns

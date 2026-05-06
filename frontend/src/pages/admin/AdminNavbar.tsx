@@ -1,6 +1,7 @@
 import { Bell, ChevronDown, Moon, Search, Plus, Menu } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import { useUIStore } from '../../store/uiStore';
 
 interface AdminNavbarProps {
   onAdd?: () => void;
@@ -10,8 +11,11 @@ interface AdminNavbarProps {
 
 export const AdminNavbar: React.FC<AdminNavbarProps> = ({ onAdd, addLabel, onMenuToggle }) => {
   const { user } = useAuthStore();
+  const { isAdminModalOpen } = useUIStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
+
+  if (isAdminModalOpen) return null;
 
   const handleSearch = (val: string) => {
     const newParams = new URLSearchParams(searchParams);

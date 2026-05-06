@@ -36,12 +36,12 @@ export const AddressBook: React.FC = () => {
 
   useEffect(() => {
     if (user?.id) {
-      fetchUserData(user.id, user.username);
+      fetchUserData(user.id, user.username, user.email);
     }
   }, [user, fetchUserData]);
 
   const refreshData = () => {
-    if (user?.id) fetchUserData(user.id, user.username, true);
+    if (user?.id) fetchUserData(user.id, user.username, user.email, true);
   };
 
   const resetForm = () => {

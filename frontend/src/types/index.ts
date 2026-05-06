@@ -85,6 +85,9 @@ export interface Review {
   images: string | null;  // parse JSON → string[]
   isVerified: number;
   helpfulCount?: number;
+  orderId?: string;
+  productName?: string;
+  status?: string;
   createdAt?: Date;
 }
 
@@ -114,6 +117,9 @@ export interface Order {
   paymentTrxId?: string;
   totalAmount: number;
   status: string;
+  internalNote?: string;
+  courierId?: string;
+  courierLink?: string;
   createdAt: string | Date;
   items?: OrderItem[];
   trackings?: Tracking[];
@@ -135,6 +141,8 @@ export interface Tracking {
   status: string;
   message: string | null;
   location: string | null;
+  courierId?: string;
+  courierLink?: string;
   createdAt?: string | Date;
 }
 
@@ -179,6 +187,7 @@ export interface Notification {
   title: string;
   message: string;
   type: string;
+  orderId: string | null;
   isRead: number;
   createdAt: string;
 }

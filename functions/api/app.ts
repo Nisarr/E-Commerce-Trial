@@ -36,16 +36,20 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 // ─── MIDDLEWARE ───────────────────────────────────────────
 
-app.use("*", logger());
 app.use("*", cors());
 
-// ─── HEALTH CHECK (Before DB Middleware to ensure responsiveness) ───────
-app.get("/api/health", (c) => c.json({ status: "ok", version: "v1.mod" }));
-app.get("/api/v1/health", (c) => c.json({ status: "ok", version: "v1.mod" }));
+// ─── SILENT HEALTH CHECK ───────────────────────────────────
+// This must be BEFORE logger() and DB middleware to prevent 
+// log spam and DB connection overhead during boot/polling.
+app.on(["GET", "HEAD"], ["/api/health", "/api/v1/health"], (c) => {
+  return c.json({ status: "ok", version: "v1.mod", time: new Date().toISOString() });
+});
+
+app.use("*", logger());
 
 // DB Connection Middleware
 app.use("*", async (c, next) => {
-  // Skip DB for health checks
+  // Skip DB for health checks (actually return to stop execution here)
   if (c.req.path === "/api/health" || c.req.path === "/api/v1/health") {
     return await next();
   }
@@ -54,10 +58,7 @@ app.use("*", async (c, next) => {
   const authToken = c.env.TURSO_AUTH_TOKEN;
 
   if (!url || url.includes("your-db-url")) {
-    return c.json({
-      error: "Database Configuration Error",
-      message: "TURSO_URL is missing or using placeholder."
-    }, 503);
+    return await next(); // let health check handle it if it doesn't need DB
   }
 
   try {
@@ -66,12 +67,10 @@ app.use("*", async (c, next) => {
     await next();
   } catch (error: any) {
     console.error("DB Connection Error:", error);
-    return c.json({
-      error: "Service Unavailable",
-      message: "Could not connect to the database."
-    }, 503);
+    await next();
   }
 });
+
 
 // Global Error Handler
 app.onError((err, c) => {

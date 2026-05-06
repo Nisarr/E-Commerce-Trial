@@ -169,20 +169,38 @@ productsRouter.get("/by-slug/:slug/bulk", async (c) => {
       stats = { averageRating: 0, totalReviews: 0, distribution: [1,2,3,4,5].map(s => ({ stars: s, count: 0, percentage: 0 })) };
     }
 
-    // 5. Log Interaction (Optional - merged into same request)
-    const logView = c.req.query("logView") === "true";
-    if (logView) {
-      // We don't need to await this if we want to return faster, 
-      // but doing it in the same request ensures consistency.
-      const userId = c.req.query("userId") || null;
-      db.insert(schema.userInteractions).values({
-        id: crypto.randomUUID(),
-        productId: product.id,
-        interactionType: 'view',
-        userId: userId,
-        weight: 1,
-        createdAt: new Date()
-      }).catch(err => console.error("Auto-log view error:", err));
+    // 6. Check Review Eligibility
+    let canReview = false;
+    let reviewRestrictionReason = "Login to write a review";
+    const currentUserId = c.req.query("userId");
+    
+    if (currentUserId) {
+      const deliveredOrders = await db.select()
+        .from(schema.orders)
+        .innerJoin(schema.orderItems, eq(schema.orders.id, schema.orderItems.orderId))
+        .where(and(
+          eq(schema.orders.userId, currentUserId),
+          eq(schema.orders.status, "delivered"),
+          eq(schema.orderItems.productId, product.id)
+        ))
+        .limit(1);
+
+      if (deliveredOrders.length > 0) {
+        const [existingReview] = await db.select().from(schema.reviews)
+          .where(and(eq(schema.reviews.userId, currentUserId), eq(schema.reviews.productId, product.id)))
+          .limit(1);
+        
+        if (existingReview) {
+          canReview = false;
+          reviewRestrictionReason = "You have already reviewed this product";
+        } else {
+          canReview = true;
+          reviewRestrictionReason = "";
+        }
+      } else {
+        canReview = false;
+        reviewRestrictionReason = "Only verified purchasers can leave a review";
+      }
     }
 
     return c.json({
@@ -191,7 +209,9 @@ productsRouter.get("/by-slug/:slug/bulk", async (c) => {
       reviews: {
         items: reviews,
         stats
-      }
+      },
+      canReview,
+      reviewRestrictionReason
     });
   } catch (error: any) {
     console.error("Bulk fetch error:", error.message);
