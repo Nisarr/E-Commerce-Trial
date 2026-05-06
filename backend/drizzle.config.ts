@@ -1,10 +1,16 @@
 import { defineConfig } from "drizzle-kit";
+import * as dotenv from "dotenv";
+import path from "path";
+
+// Load environment variables from .dev.vars
+dotenv.config({ path: path.resolve(process.cwd(), "../.dev.vars") });
 
 export default defineConfig({
   schema: "./server/db/schemas/index.ts",
   out: "./drizzle",
-  dialect: "sqlite",
+  dialect: "turso",
   dbCredentials: {
-    url: ".wrangler/state/v3/d1/miniflare-D1DatabaseObject/baby_pen_house_db.sqlite", // Path to local D1 (approximate, usually better to use a temp file for generation)
+    url: process.env.TURSO_URL!,
+    authToken: process.env.TURSO_AUTH_TOKEN!,
   },
 });

@@ -6,7 +6,8 @@ import { Hono } from "hono";
 import { handle } from "hono/cloudflare-pages";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import { drizzle } from "drizzle-orm/d1";
+import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client";
 import * as schema from "../../backend/server/db/schema";
 
 // Types
@@ -53,13 +54,17 @@ app.use("*", async (c, next) => {
     return await next();
   }
 
-  if (!c.env.DB) {
-    console.error("DB Binding not found");
+  const url = c.env.TURSO_URL;
+  const authToken = c.env.TURSO_AUTH_TOKEN;
+
+  if (!url || !authToken) {
+    console.error("TURSO_URL or TURSO_AUTH_TOKEN not found in environment");
     return await next();
   }
 
   try {
-    c.set("db", drizzle(c.env.DB, { schema }));
+    const client = createClient({ url, authToken });
+    c.set("db", drizzle(client, { schema }));
     await next();
   } catch (error: any) {
     console.error("DB Initialization Error:", error);
