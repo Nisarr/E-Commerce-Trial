@@ -10,7 +10,7 @@ interface Customer {
 
 export const NotificationManager: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loadingCustomers, setLoadingCustomers] = useState(false);
+  const [loadingCustomers, setLoadingCustomers] = useState(true);
 
   // Form state
   const [recipientId, setRecipientId] = useState<string>(''); // empty means "All Users"
@@ -24,12 +24,7 @@ export const NotificationManager: React.FC = () => {
     message: '',
   });
 
-  useEffect(() => {
-    fetchCustomers();
-  }, []);
-
-  const fetchCustomers = async () => {
-    setLoadingCustomers(true);
+  const fetchCustomers = React.useCallback(async () => {
     try {
       const res = await fetch('/api/v1/users?limit=100');
       if (res.ok) {
@@ -41,7 +36,14 @@ export const NotificationManager: React.FC = () => {
     } finally {
       setLoadingCustomers(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const init = async () => {
+      await fetchCustomers();
+    };
+    init();
+  }, [fetchCustomers]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,8 +80,8 @@ export const NotificationManager: React.FC = () => {
         const data = await res.json();
         setStatus({ type: 'error', message: data.error || 'Failed to send notification.' });
       }
-    } catch (err: any) {
-      setStatus({ type: 'error', message: err.message || 'An error occurred while sending.' });
+    } catch (err: unknown) {
+      setStatus({ type: 'error', message: err instanceof Error ? err.message : 'An error occurred while sending.' });
     } finally {
       setSubmitting(false);
     }

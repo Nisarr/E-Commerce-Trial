@@ -16,3 +16,8 @@ export { coupons } from "./coupons";
 export { adminLogs } from "./adminLogs";
 export { notifications } from "./notifications";
 export { productSales } from "./productSales";
+export { popupSettings } from "./popupSettings";
+export { userInteractions, productSimilarity } from "./interactions";
+export { systemCache } from "./cache";
+export { systemSettings } from "./systemSettings";
+

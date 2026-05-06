@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../../store/authStore';
-import { getUserProfile, updateUserProfile, changePassword } from '../../services/api';
+import { useUserStore } from '../../store/userStore';
+import { updateUserProfile, changePassword } from '../../services/api';
 import {
   User, Mail, Phone, Camera, Save, Lock, Loader2,
   CheckCircle2, AlertCircle, Eye, EyeOff, Shield, ShieldCheck
@@ -8,7 +9,7 @@ import {
 
 export const MyProfile: React.FC = () => {
   const { user, updateUser } = useAuthStore();
-  const [loading, setLoading] = useState(true);
+  const { data: userData, loading, fetchUserData } = useUserStore();
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -30,30 +31,38 @@ export const MyProfile: React.FC = () => {
   const [savingPw, setSavingPw] = useState(false);
 
   useEffect(() => {
-    if (user?.id) loadProfile();
-  }, [user?.id]);
-
-  const loadProfile = async () => {
-    try {
-      const profile = await getUserProfile(user!.id!);
-      setForm({
-        fullName: profile.fullName || '',
-        email: profile.email || '',
-        phone: profile.phone || '',
-        avatar: profile.avatar || '',
-      });
-    } catch {
-      // fallback to store data
-      setForm({
-        fullName: user?.fullName || '',
-        email: user?.email || '',
-        phone: user?.phone || '',
-        avatar: user?.avatar || '',
-      });
-    } finally {
-      setLoading(false);
+    if (user?.id) {
+      fetchUserData(user.id, user.username);
     }
-  };
+  }, [user, fetchUserData]);
+
+  useEffect(() => {
+    const profileData = userData?.profile || (user ? {
+      fullName: user.fullName || '',
+      email: user.email || '',
+      phone: user.phone || '',
+      avatar: user.avatar || '',
+    } : null);
+
+    if (profileData) {
+      const isDifferent = 
+        form.fullName !== (profileData.fullName || '') ||
+        form.email !== (profileData.email || '') ||
+        form.phone !== (profileData.phone || '') ||
+        form.avatar !== (profileData.avatar || '');
+
+      if (isDifferent) {
+        Promise.resolve().then(() => {
+          setForm({
+            fullName: profileData.fullName || '',
+            email: profileData.email || '',
+            phone: profileData.phone || '',
+            avatar: profileData.avatar || '',
+          });
+        });
+      }
+    }
+  }, [userData, user, form]);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,8 +78,9 @@ export const MyProfile: React.FC = () => {
       updateUser({ fullName: form.fullName, phone: form.phone, avatar: form.avatar });
       setSuccess('Profile updated successfully!');
       setTimeout(() => setSuccess(''), 3000);
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Failed to update profile.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to update profile.';
+      setError(message);
     } finally {
       setSaving(false);
     }
@@ -98,8 +108,9 @@ export const MyProfile: React.FC = () => {
       setSuccess('Password changed successfully!');
       setPwForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setTimeout(() => setSuccess(''), 3000);
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Failed to change password.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to change password.';
+      setError(message);
     } finally {
       setSavingPw(false);
     }

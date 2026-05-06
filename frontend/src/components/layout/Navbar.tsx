@@ -7,32 +7,31 @@ import { MegaMenu } from './MegaMenu.tsx';
 import { Breadcrumbs } from './Breadcrumbs.tsx';
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
-import { useHomeStore } from '../../store/homeStore';
+import { useUserStore } from '../../store/userStore';
+import type { Product } from '../../types';
 
 export const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuthStore();
   const { activeProductTitle } = useUIStore();
+  const { data: userData, startPolling } = useUserStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-  const { data: homeData } = useHomeStore();
-  const [notifications, setNotifications] = useState<any[]>([]);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const lastCheckRef = React.useRef<{ unreadCount: number; latestId: string | null }>({ unreadCount: 0, latestId: null });
 
-  // Seed notifications from the bulk home data on initial load
+  // Use notifications from userStore if logged in, otherwise from homeStore
+  const notifications = userData?.notifications?.latest || [];
+  const unreadCount = userData?.notifications?.unreadCount || 0;
+
+  // Start intelligent polling when logged in
   useEffect(() => {
-    if (homeData?.notifications?.items && notifications.length === 0) {
-      setNotifications(homeData.notifications.items);
-      const unread = homeData.notifications.items.filter((n: any) => !n.isRead);
-      lastCheckRef.current = {
-        unreadCount: unread.length,
-        latestId: homeData.notifications.items[0]?.id ?? null,
-      };
+    if (user?.id) {
+      const stop = startPolling(user.id, user.username);
+      return () => stop();
     }
-  }, [homeData]);
+  }, [user?.id, user?.username, startPolling]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -46,79 +45,49 @@ export const Navbar: React.FC = () => {
   const { totalItems } = useCart();
   const wishlistItems = useWishlist((state) => state.items);
 
-  // Smart notification polling: check lightweight endpoint, only fetch full list when something changed
-  useEffect(() => {
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      if (Notification.permission === 'default') {
-        Notification.requestPermission();
-      }
+  const markRead = async (id: string) => {
+    try {
+      await fetch(`/api/v1/notifications/${id}/read`, { method: 'POST' });
+      // Refresh user data to get updated count
+      if (user?.id) useUserStore.getState().fetchUserData(user.id, user.username, true);
+    } catch (err) {
+      console.error(err);
     }
+  };
 
-    const checkForNewNotifications = async () => {
-      try {
-        const url = user?.id
-          ? `/api/v1/notifications/check?userId=${user.id}`
-          : '/api/v1/notifications/check';
-        const res = await fetch(url);
-        if (!res.ok) return;
-        const data = await res.json();
+  const [suggestions, setSuggestions] = useState<Product[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
-        const prev = lastCheckRef.current;
-        const hasChanged = data.unreadCount !== prev.unreadCount || data.latestId !== prev.latestId;
-
-        if (hasChanged) {
-          lastCheckRef.current = { unreadCount: data.unreadCount, latestId: data.latestId };
-          // Something changed — fetch the full notification list
-          await fetchFullNotifications();
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (searchQuery.trim().length > 1) {
+        setIsSearching(true);
+        try {
+          // Dynamic import or direct import if available
+          const { searchProducts } = await import('../../services/api');
+          const results = await searchProducts(searchQuery);
+          setSuggestions(results);
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setIsSearching(false);
         }
-      } catch (err) {
-        console.error('Notification check failed:', err);
+      } else {
+        setSuggestions([]);
       }
     };
 
-    // Only start polling after initial data is loaded (from bulk home)
-    const interval = setInterval(checkForNewNotifications, 30000); // 30s lightweight check
-    return () => clearInterval(interval);
-  }, [user?.id]);
-
-  const fetchFullNotifications = async () => {
-    try {
-      const url = user?.id ? `/api/v1/notifications?userId=${user.id}` : '/api/v1/notifications';
-      const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json();
-        setNotifications((prev) => {
-          // Send web push for newly arrived unread notifications
-          const prevIds = prev.map(p => p.id);
-          const newUnread = (data.items || []).filter((n: any) => !n.isRead && !prevIds.includes(n.id));
-          if (newUnread.length > 0 && typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-            newUnread.forEach((n: any) => {
-              new Notification(n.title, { body: n.message });
-            });
-          }
-          return data.items || [];
-        });
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const markRead = async (id: string) => {
-    try {
-      // Optimistic local update
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: 1 } : n));
-      lastCheckRef.current.unreadCount = Math.max(0, lastCheckRef.current.unreadCount - 1);
-      await fetch(`/api/v1/notifications/${id}/read`, { method: 'POST' });
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    const timer = setTimeout(fetchSuggestions, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+      setSuggestions([]);
+      setIsMobileSearchOpen(false);
+      setIsMenuOpen(false);
     }
   };
 
@@ -179,8 +148,37 @@ export const Navbar: React.FC = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full rounded-xl border border-gray-200/50 bg-white/50 px-4 py-1.5 pl-10 text-xs focus:border-accent focus:bg-white focus:outline-none focus:ring-4 focus:ring-accent/10 transition-all shadow-sm"
                 />
-                <Search className="absolute left-3.5 top-2.5 text-muted group-focus-within:text-accent transition-colors" size={14} />
+                {isSearching ? (
+                  <div className="absolute left-3.5 top-2.5 h-3.5 w-3.5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Search className="absolute left-3.5 top-2.5 text-muted group-focus-within:text-accent transition-colors" size={14} />
+                )}
               </form>
+
+              {/* Desktop Suggestions */}
+              {suggestions.length > 0 && (
+                <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
+                  {suggestions.map(p => (
+                    <div 
+                      key={p.id}
+                      onClick={() => {
+                        navigate(`/product/${p.slug}`);
+                        setSearchQuery('');
+                        setSuggestions([]);
+                      }}
+                      className="p-3 hover:bg-gray-50 flex items-center gap-3 cursor-pointer transition-colors border-b last:border-0"
+                    >
+                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0">
+                        <img src={JSON.parse(p.images)[0]} alt="" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <span className="text-xs font-bold text-primary truncate">{p.title}</span>
+                        <span className="text-[10px] text-accent font-black">৳{p.price}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-3 lg:gap-4">
@@ -198,9 +196,9 @@ export const Navbar: React.FC = () => {
                   className="relative text-primary hover:text-accent p-1.5 hover:bg-white/50 rounded-xl transition-all cursor-pointer flex"
                 >
                   <Bell size={20} />
-                  {notifications.filter(n => !n.isRead).length > 0 && (
+                  {unreadCount > 0 && (
                     <span className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[8px] font-bold text-white shadow-lg border-2 border-white">
-                      {notifications.filter(n => !n.isRead).length}
+                      {unreadCount}
                     </span>
                   )}
                 </button>
@@ -249,7 +247,7 @@ export const Navbar: React.FC = () => {
                   </span>
                 )}
               </Link>
-              <Link to="/cart" className="relative text-primary hover:text-accent p-1.5 hover:bg-white/50 rounded-xl transition-all cursor-pointer flex items-center gap-2 group">
+              <Link to="/cart" className="relative text-primary hover:text-accent p-1.5 hover:bg-white/50 rounded-xl transition-all cursor-pointer hidden lg:flex items-center gap-2 group">
                 <div className="relative">
                   <ShoppingCart size={20} className="group-hover:scale-110 transition-transform" />
                   {totalItems > 0 && (
@@ -275,8 +273,38 @@ export const Navbar: React.FC = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full rounded-xl border border-accent bg-white px-4 py-2 pl-10 text-sm focus:outline-none shadow-lg shadow-accent/5"
                 />
-                <Search className="absolute left-3.5 top-3 text-accent" size={16} />
+                {isSearching ? (
+                  <div className="absolute left-3.5 top-3 h-4 w-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Search className="absolute left-3.5 top-3 text-accent" size={16} />
+                )}
               </form>
+
+              {/* Mobile Suggestions */}
+              {suggestions.length > 0 && (
+                <div className="mt-2 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
+                  {suggestions.map(p => (
+                    <div 
+                      key={p.id}
+                      onClick={() => {
+                        navigate(`/product/${p.slug}`);
+                        setSearchQuery('');
+                        setSuggestions([]);
+                        setIsMobileSearchOpen(false);
+                      }}
+                      className="p-3 flex items-center gap-3 active:bg-gray-50 border-b last:border-0"
+                    >
+                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0">
+                        <img src={JSON.parse(p.images)[0]} alt="" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <span className="text-xs font-bold text-primary truncate">{p.title}</span>
+                        <span className="text-[10px] text-accent font-black">৳{p.price}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

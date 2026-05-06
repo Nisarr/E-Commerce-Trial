@@ -1,9 +1,13 @@
 import React from 'react';
 import { X, Package, Truck, CheckCircle, Clock, Ban, Loader2, AlertTriangle } from 'lucide-react';
 import { Invoice } from './Invoice';
+import { cancelOrder } from '../../services/api';
+import toast from 'react-hot-toast';
+
+import type { Order } from '../../types';
 
 interface OrderDetailsModalProps {
-  order: any;
+  order: Order;
   onClose: () => void;
   onOrderUpdated?: () => void;
 }
@@ -17,7 +21,7 @@ export const UserOrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order,
 
   if (!order) return null;
 
-  const canCancel = ['pending', 'processing'].includes(order.status?.toLowerCase());
+  const canCancel = order.status?.toLowerCase() === 'pending';
 
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
@@ -34,20 +38,15 @@ export const UserOrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order,
     setCancelling(true);
     setCancelError('');
     try {
-      const res = await fetch(`/api/v1/orders/${order.id}/cancel`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: cancelReason || 'Changed my mind' }),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || 'Failed to cancel order');
-      }
+      await cancelOrder(order.id, cancelReason || 'Cancelled by user');
+      toast.success('Order cancelled successfully');
       // Refresh the parent's order list
       onOrderUpdated?.();
       onClose();
-    } catch (err: any) {
-      setCancelError(err.message || 'Failed to cancel order.');
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Failed to cancel order.';
+      setCancelError(msg);
+      toast.error(msg);
     } finally {
       setCancelling(false);
     }
@@ -142,7 +141,7 @@ export const UserOrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order,
           {/* Tracking Timeline */}
           <h3 className="text-lg font-black text-primary mb-6">Tracking History</h3>
           <div className="relative border-l-2 border-gray-100 ml-3 mb-10 space-y-6">
-            {order.trackings?.map((track: any, idx: number) => (
+            {order.trackings?.map((track, idx) => (
               <div key={idx} className="relative pl-8">
                 <div className={`absolute -left-[11px] top-1 w-5 h-5 rounded-full bg-white border-4 ${
                   track.status?.toLowerCase() === 'cancelled' ? 'border-red-500' : 'border-accent'
@@ -151,7 +150,7 @@ export const UserOrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order,
                   <div className="flex justify-between items-start mb-2">
                     <h4 className="font-bold text-primary">{track.status}</h4>
                     <span className="text-xs font-bold text-gray-400">
-                      {new Date(track.createdAt).toLocaleString()}
+                      {track.createdAt ? new Date(track.createdAt).toLocaleString() : 'N/A'}
                     </span>
                   </div>
                   {track.message && <p className="text-sm text-gray-600">{track.message}</p>}
@@ -171,7 +170,7 @@ export const UserOrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order,
           {/* Items */}
           <h3 className="text-lg font-black text-primary mb-4">Items Ordered</h3>
           <div className="space-y-3">
-            {order.items?.map((item: any, idx: number) => (
+            {order.items?.map((item, idx) => (
               <div key={idx} className="flex justify-between items-center p-4 bg-gray-50 rounded-xl border border-gray-100">
                 <div className="flex items-center gap-4">
                   {item.productImage ? (

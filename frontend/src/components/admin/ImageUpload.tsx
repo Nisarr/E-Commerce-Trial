@@ -50,7 +50,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onUploadSuccess, label
       }
       
       if (compact) setPreview(null);
-    } catch (error) {
+    } catch {
       alert('Upload failed. Please check your API key or connection.');
       setPreview(null);
     } finally {

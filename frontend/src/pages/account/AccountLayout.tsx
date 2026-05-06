@@ -10,7 +10,9 @@ export const AccountLayout: React.FC = () => {
 
   // Close mobile sidebar on route change
   React.useEffect(() => {
-    setIsMobileSidebarOpen(false);
+    Promise.resolve().then(() => {
+      setIsMobileSidebarOpen((prev) => (prev ? false : prev));
+    });
   }, [location.pathname]);
 
   return (

@@ -18,7 +18,7 @@ export const SpecialOfferManager: React.FC = () => {
     try {
       const res = await getProducts({ tag: 'special-offer', limit: 100 });
       setOffers(res.items);
-    } catch (err) {
+    } catch {
       console.error('Failed to fetch special offers');
     }
   };
@@ -27,7 +27,7 @@ export const SpecialOfferManager: React.FC = () => {
     try {
       const res = await getProducts({ limit: 100 });
       setAllProducts(res.items);
-    } catch (err) {
+    } catch {
       console.error('Failed to fetch products');
     }
   };
@@ -41,7 +41,7 @@ export const SpecialOfferManager: React.FC = () => {
     init();
   }, []);
 
-  const parseTags = (tags: any): string[] => {
+  const parseTags = (tags: string | string[] | null | undefined): string[] => {
     try {
       let tagsData = tags;
       while (typeof tagsData === 'string' && tagsData.trim() !== '') {
@@ -54,7 +54,7 @@ export const SpecialOfferManager: React.FC = () => {
         }
       }
       return Array.isArray(tagsData) ? tagsData : [];
-    } catch (e) {
+    } catch {
       return [];
     }
   };
@@ -80,7 +80,7 @@ export const SpecialOfferManager: React.FC = () => {
       });
       
       await Promise.all([fetchOffers(), fetchAllProducts()]);
-    } catch (err) {
+    } catch {
       alert('Failed to remove special offer');
     }
   };
@@ -189,10 +189,12 @@ export const SpecialOfferManager: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
             {filteredProducts.map(product => {
               const isOffer = offers.some(o => o.id === product.id);
-              let imgs: string[] = [];
+              let pImgs: string[];
               try {
-                imgs = typeof product.images === 'string' ? JSON.parse(product.images) : (product.images || []);
-              } catch { imgs = []; }
+                pImgs = typeof product.images === 'string' ? JSON.parse(product.images) : (product.images || []);
+              } catch { 
+                pImgs = []; 
+              }
               
               return (
                 <div 
@@ -201,7 +203,7 @@ export const SpecialOfferManager: React.FC = () => {
                     isOffer ? 'border-orange-500 bg-orange-50/30' : 'border-gray-100 hover:border-orange-200'
                   }`}
                 >
-                  <img src={imgs[0] || '/placeholder.jpg'} alt="" className="w-12 h-12 rounded-lg object-cover bg-gray-100" />
+                  <img src={pImgs[0] || '/placeholder.jpg'} alt="" className="w-12 h-12 rounded-lg object-cover bg-gray-100" />
                   <div className="flex-grow min-w-0">
                     <div className="font-bold text-primary truncate text-sm">{product.title}</div>
                     <div className="text-[10px] font-black text-muted uppercase tracking-widest">৳{product.price}</div>
@@ -232,17 +234,19 @@ export const SpecialOfferManager: React.FC = () => {
           </thead>
           <tbody className="divide-y divide-gray-50">
             {filteredOffers.map(product => {
-              let imgs: string[] = [];
+              let parsedImgs: string[];
               try {
-                imgs = typeof product.images === 'string' ? JSON.parse(product.images) : (product.images || []);
-              } catch { imgs = []; }
+                parsedImgs = typeof product.images === 'string' ? JSON.parse(product.images) : (product.images || []);
+              } catch { 
+                parsedImgs = []; 
+              }
 
               return (
                 <tr key={product.id} className="hover:bg-gray-50/30 transition-colors group">
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-5">
                       <div className="w-14 h-14 bg-gray-100 rounded-2xl overflow-hidden shadow-sm group-hover:scale-110 transition-transform">
-                        <img src={imgs[0] || '/placeholder.jpg'} alt="" className="w-full h-full object-cover" />
+                        <img src={parsedImgs[0] || '/placeholder.jpg'} alt="" className="w-full h-full object-cover" />
                       </div>
                       <div>
                         <div className="font-bold text-primary text-base">{product.title}</div>

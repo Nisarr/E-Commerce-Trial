@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { getProducts, getCategories, getBanners, createBanner, updateBanner, deleteBanner, createProduct, updateProduct, deleteProduct, createCategory, updateCategory, deleteCategory } from '../../services/api';
 import type { Product, Category, Banner } from '../../types';
@@ -20,6 +20,7 @@ import { BestSellingManager } from './BestSellingManager';
 import { NewArrivalManager } from './NewArrivalManager';
 import { NotificationManager } from './NotificationManager';
 import { ProductBuyers } from './ProductBuyers';
+import { PopupManager } from './PopupManager';
 import { useAuthStore } from '../../store/authStore';
 import { BannerModal } from '../../components/admin/BannerModal';
 import { ProductModal } from '../../components/admin/ProductModal';
@@ -35,6 +36,8 @@ export const AdminIndex: React.FC = () => {
     const segment = parts[2];
     return !segment || segment === '' ? 'dashboard' : segment;
   }, [location.pathname]);
+
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [data, setData] = useState<{
     banners: Banner[],
     categories: Category[],
@@ -50,7 +53,7 @@ export const AdminIndex: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [banners, categories, productsResponse] = await Promise.all([
         getBanners(),
@@ -68,12 +71,15 @@ export const AdminIndex: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (!isAdmin) return;
-    fetchData();
-  }, [isAdmin]);
+    const timeout = setTimeout(() => {
+      fetchData();
+    }, 0);
+    return () => clearTimeout(timeout);
+  }, [isAdmin, fetchData]);
 
   const handleSaveBanner = async (bannerData: Omit<Banner, 'id'>) => {
     if (editingBanner) {
@@ -116,7 +122,7 @@ export const AdminIndex: React.FC = () => {
     try {
       await deleteBanner(id);
       await fetchData();
-    } catch (error) {
+    } catch {
       alert('Failed to delete banner');
     }
   };
@@ -125,7 +131,7 @@ export const AdminIndex: React.FC = () => {
     try {
       await deleteProduct(id);
       await fetchData();
-    } catch (error) {
+    } catch {
       alert('Failed to delete product');
     }
   };
@@ -134,7 +140,7 @@ export const AdminIndex: React.FC = () => {
     try {
       await deleteCategory(id);
       await fetchData();
-    } catch (error) {
+    } catch {
       alert('Failed to delete category');
     }
   };
@@ -169,6 +175,8 @@ export const AdminIndex: React.FC = () => {
     <div className="min-h-screen bg-[#f4f7fa] flex font-['Outfit',sans-serif]">
       <Sidebar 
         activeTab={activeTab} 
+        isOpen={isMobileSidebarOpen}
+        onClose={() => setIsMobileSidebarOpen(false)}
       />
 
       <div className="flex-grow flex flex-col min-w-0">
@@ -179,9 +187,10 @@ export const AdminIndex: React.FC = () => {
             activeTab === 'categories' ? 'Add Category' :
             (activeTab === 'products' || activeTab === 'inventory') ? 'Add Product' : undefined
           }
+          onMenuToggle={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
         />
 
-        <main className="flex-grow py-8 px-12 overflow-y-auto overflow-x-hidden">
+        <main className="flex-grow py-4 px-4 md:py-8 md:px-12 overflow-y-auto overflow-x-hidden">
           {loading ? (
             <div className="w-full max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -261,6 +270,7 @@ export const AdminIndex: React.FC = () => {
                 <Route path="best-selling" element={<BestSellingManager />} />
                 <Route path="new-arrivals" element={<NewArrivalManager />} />
                 <Route path="products/:id/buyers" element={<ProductBuyers />} />
+                <Route path="popup" element={<PopupManager />} />
                 <Route path="settings" element={<AdminSettings />} />
                 {/* Fallback */}
                 <Route path="*" element={<Navigate to="/adm/dashboard" replace />} />

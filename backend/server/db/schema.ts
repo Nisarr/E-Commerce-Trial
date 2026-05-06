@@ -22,4 +22,9 @@ export {
   adminLogs,
   notifications,
   productSales,
+  popupSettings,
+  userInteractions,
+  productSimilarity,
+  systemCache,
+  systemSettings,
 } from "./schemas";

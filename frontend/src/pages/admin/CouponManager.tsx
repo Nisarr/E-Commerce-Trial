@@ -43,10 +43,10 @@ export const CouponManager: React.FC = () => {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   
-  const [products, setProducts] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [products, setProducts] = useState<{ id: string; title: string }[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
 
-  const fetchProductsAndCategories = async () => {
+  const fetchProductsAndCategories = React.useCallback(async () => {
     try {
       const [pRes, cRes] = await Promise.all([
         fetch('/api/v1/products?limit=1000'),
@@ -59,16 +59,16 @@ export const CouponManager: React.FC = () => {
     } catch (err) {
       console.error("Failed to fetch products/categories for coupons", err);
     }
-  };
+  }, []);
 
-  const fetchCoupons = async () => {
+  const fetchCoupons = React.useCallback(async () => {
     try {
       const res = await fetch('/api/v1/coupons');
       const data = await res.json();
       setCoupons(data.items || []);
     } catch { setCoupons([]); }
     finally { setLoading(false); }
-  };
+  }, []);
 
   useEffect(() => { 
     fetchCoupons(); 
@@ -125,7 +125,9 @@ export const CouponManager: React.FC = () => {
       setTimeout(() => setSuccess(''), 3000);
       resetForm();
       await fetchCoupons();
-    } catch (err: any) { setError(err.message); }
+    } catch (err: unknown) { 
+      setError(err instanceof Error ? err.message : 'An error occurred'); 
+    }
     finally { setSaving(false); }
   };
 
@@ -145,10 +147,12 @@ export const CouponManager: React.FC = () => {
         body: JSON.stringify({ isActive: c.isActive ? 0 : 1 }),
       });
       await fetchCoupons();
-    } catch {}
+    } catch (err) {
+      console.error("Failed to toggle coupon status", err);
+    }
   };
 
-  const now = Date.now();
+  const [now] = useState(() => Date.now());
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">

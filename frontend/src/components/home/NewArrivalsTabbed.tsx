@@ -21,8 +21,10 @@ export const NewArrivalsTabbed: React.FC = () => {
 
   useEffect(() => {
     if (activeTab === 'all' && data?.products?.newArrivals?.items) {
-      setProducts(data.products.newArrivals.items);
-      setLoading(false);
+      Promise.resolve().then(() => {
+        setProducts(data.products.newArrivals.items);
+        setLoading(false);
+      });
       return;
     }
 
@@ -32,7 +34,6 @@ export const NewArrivalsTabbed: React.FC = () => {
     }
 
     const fetchProducts = async () => {
-
       setLoading(true);
       try {
         const params: Record<string, string> = { limit: '8' };
@@ -44,9 +45,8 @@ export const NewArrivalsTabbed: React.FC = () => {
         }
         const response = await getProducts(params);
         setProducts(response.items);
-
-      } catch (error) {
-        console.error('Failed to fetch new arrivals:', error);
+      } catch {
+        console.error('Failed to fetch new arrivals');
       } finally {
         setLoading(false);
       }

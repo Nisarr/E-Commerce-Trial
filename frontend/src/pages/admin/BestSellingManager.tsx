@@ -22,7 +22,7 @@ export const BestSellingManager: React.FC = () => {
       setItems(taggedRes.items);
       setAllProducts(allRes.items);
     } catch (err) {
-      console.error('Failed to fetch best sellers');
+      console.error('Failed to fetch best sellers', err);
     }
   };
 
@@ -35,7 +35,7 @@ export const BestSellingManager: React.FC = () => {
     init();
   }, []);
 
-  const parseTags = (tags: any): string[] => {
+  const parseTags = (tags: string | string[] | null | undefined): string[] => {
     try {
       let tagsData = tags;
       while (typeof tagsData === 'string' && tagsData.trim() !== '') {
@@ -49,6 +49,7 @@ export const BestSellingManager: React.FC = () => {
       }
       return Array.isArray(tagsData) ? tagsData : [];
     } catch (e) {
+      console.error('Failed to parse tags', e);
       return [];
     }
   };
@@ -70,6 +71,7 @@ export const BestSellingManager: React.FC = () => {
       
       await fetchData();
     } catch (err) {
+      console.error('Failed to update best selling status', err);
       alert('Failed to update best selling status');
     }
   };
@@ -80,6 +82,7 @@ export const BestSellingManager: React.FC = () => {
       await syncTags('best-selling', 8);
       await fetchData();
     } catch (err) {
+      console.error('Failed to auto-calculate best sellers', err);
       alert('Failed to auto-calculate best sellers');
     } finally {
       setSyncing(false);
@@ -179,10 +182,12 @@ export const BestSellingManager: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
             {filteredProducts.map(product => {
               const isTagged = items.some(o => o.id === product.id);
-              let imgs: string[] = [];
+              let imgs: string[];
               try {
                 imgs = typeof product.images === 'string' ? JSON.parse(product.images) : (product.images || []);
-              } catch { imgs = []; }
+              } catch { 
+                imgs = []; 
+              }
               
               return (
                 <div 
@@ -222,10 +227,12 @@ export const BestSellingManager: React.FC = () => {
           </thead>
           <tbody className="divide-y divide-gray-50">
             {filteredItems.map(product => {
-              let imgs: string[] = [];
+              let imgs: string[];
               try {
                 imgs = typeof product.images === 'string' ? JSON.parse(product.images) : (product.images || []);
-              } catch { imgs = []; }
+              } catch { 
+                imgs = []; 
+              }
 
               return (
                 <tr key={product.id} className="hover:bg-gray-50/30 transition-colors group">

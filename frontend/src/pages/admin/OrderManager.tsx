@@ -1,27 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, Truck, X } from 'lucide-react';
+import { Eye, Truck, X, Ban, RefreshCw, Loader2 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { Invoice } from '../../components/ui/Invoice';
+import toast from 'react-hot-toast';
+import type { Order } from '../../types';
+
 
 export const OrderManager: React.FC = () => {
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
   const searchTerm = searchParams.get('q') || '';
   
   // Modal states
-  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showInvoice, setShowInvoice] = useState(false);
   const [trackingForm, setTrackingForm] = useState({ status: 'Processing', message: '', location: '' });
+  const [actionLoading, setActionLoading] = useState(false);
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+  // Using the admin key from local storage or config
+  const adminKey = localStorage.getItem('admin_key') || 'adm_sk_72e829fc89d4e37decb405dace50ba5c';
 
   const fetchOrders = async () => {
     try {
       const res = await fetch('/api/v1/orders', {
-        headers: { 'Authorization': `Bearer ADMIN_SECRET_123` }
+        headers: { 'Authorization': `Bearer ${adminKey}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -37,7 +40,7 @@ export const OrderManager: React.FC = () => {
   const fetchOrderDetails = async (id: string) => {
     try {
       const res = await fetch(`/api/v1/orders/${id}`, {
-        headers: { 'Authorization': `Bearer ADMIN_SECRET_123` }
+        headers: { 'Authorization': `Bearer ${adminKey}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -48,6 +51,13 @@ export const OrderManager: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      fetchOrders();
+    }, 0);
+    return () => clearTimeout(timeout);
+  }, []);
+
   const handleStatusUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedOrder) return;
@@ -57,7 +67,7 @@ export const OrderManager: React.FC = () => {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ADMIN_SECRET_123`
+          'Authorization': `Bearer ${adminKey}`
         },
         body: JSON.stringify(trackingForm)
       });
@@ -69,6 +79,60 @@ export const OrderManager: React.FC = () => {
       }
     } catch (error) {
       console.error("Failed to update tracking:", error);
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    if (!selectedOrder || !window.confirm('Are you sure you want to cancel this order? Stock will be restored.')) return;
+    setActionLoading(true);
+    try {
+      const res = await fetch(`/api/v1/orders/${selectedOrder.id}/cancel`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminKey}`
+        },
+        body: JSON.stringify({ reason: 'Cancelled by Administrator' })
+      });
+      if (res.ok) {
+        toast.success('Order cancelled successfully');
+        await fetchOrderDetails(selectedOrder.id);
+        fetchOrders();
+      } else {
+        const data = await res.json();
+        toast.error(data.message || 'Failed to cancel order');
+      }
+    } catch (error) {
+      toast.error('Network error while cancelling');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReopenOrder = async () => {
+    if (!selectedOrder || !window.confirm('Re-open this order? System will check and consume stock.')) return;
+    setActionLoading(true);
+    try {
+      const res = await fetch(`/api/v1/orders/${selectedOrder.id}/reopen`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminKey}`
+        },
+        body: JSON.stringify({ reason: 'Re-opened by Administrator' })
+      });
+      if (res.ok) {
+        toast.success('Order re-opened successfully');
+        await fetchOrderDetails(selectedOrder.id);
+        fetchOrders();
+      } else {
+        const data = await res.json();
+        toast.error(data.message || 'Failed to re-open order');
+      }
+    } catch (error) {
+      toast.error('Network error while re-opening');
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -227,9 +291,9 @@ export const OrderManager: React.FC = () => {
                 <div>
                   <h3 className="text-lg font-black text-primary mb-3">Items</h3>
                   <div className="space-y-2">
-                    {selectedOrder.items?.map((item: any, idx: number) => (
+                    {selectedOrder.items?.map((item, idx) => (
                       <div key={idx} className="flex justify-between p-3 bg-white border border-gray-100 rounded-xl shadow-sm">
-                        <span className="font-medium text-primary text-sm">{item.productName || `Product ID: ${item.productId.slice(0,8)}`} x{item.quantity}</span>
+                        <span className="font-medium text-primary text-sm">{item.productName || `Product ID: ${item.productId?.slice(0,8)}`} x{item.quantity}</span>
                         <span className="font-bold text-accent">৳{(item.price * item.quantity).toLocaleString()}</span>
                       </div>
                     ))}
@@ -287,18 +351,42 @@ export const OrderManager: React.FC = () => {
                       Update Status
                     </button>
                   </form>
+                  
+                  <div className="mt-6 pt-6 border-t border-accent/20 space-y-3">
+                    {selectedOrder.status?.toLowerCase() !== 'cancelled' ? (
+                      <button 
+                        onClick={handleCancelOrder}
+                        disabled={actionLoading}
+                        className="w-full py-2.5 bg-red-50 text-red-600 rounded-xl font-bold hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
+                      >
+                        {actionLoading ? <Loader2 size={18} className="animate-spin" /> : <Ban size={18} />}
+                        Cancel Order
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={handleReopenOrder}
+                        disabled={actionLoading}
+                        className="w-full py-2.5 bg-green-50 text-green-600 rounded-xl font-bold hover:bg-green-100 transition-colors flex items-center justify-center gap-2"
+                      >
+                        {actionLoading ? <Loader2 size={18} className="animate-spin" /> : <RefreshCw size={18} />}
+                        Re-open Order
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div>
                   <h3 className="font-bold text-primary mb-3">Timeline</h3>
                   <div className="space-y-4 relative before:absolute before:inset-0 before:ml-2 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
-                    {selectedOrder.trackings?.map((track: any, idx: number) => (
+                    {selectedOrder.trackings?.map((track, idx) => (
                       <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
                         <div className="flex items-center justify-center w-5 h-5 rounded-full border-4 border-white bg-accent text-slate-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 relative z-10" />
                         <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
                           <div className="flex items-center justify-between mb-1">
                             <span className="font-bold text-primary text-sm">{track.status}</span>
-                            <span className="text-[10px] font-bold text-gray-400">{new Date(track.createdAt).toLocaleDateString()}</span>
+                            <span className="text-[10px] font-bold text-gray-400">
+                              {track.createdAt ? new Date(track.createdAt).toLocaleDateString() : 'N/A'}
+                            </span>
                           </div>
                           {track.message && <p className="text-xs text-gray-600">{track.message}</p>}
                         </div>

@@ -22,7 +22,7 @@ export const SpecialOfferPriceModal: React.FC<SpecialOfferPriceModalProps> = ({ 
     try {
       await onSave(price, salePrice);
       onClose();
-    } catch (err) {
+    } catch {
       alert('Failed to save prices');
     } finally {
       setIsSaving(false);

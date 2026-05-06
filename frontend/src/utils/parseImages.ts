@@ -5,12 +5,14 @@
  */
 export function parseImages(images: unknown): string[] {
   try {
-    let parsed: any = images;
+    let parsed: unknown = images;
     // Keep parsing while we still have a string (handles double/triple encoding)
     while (typeof parsed === 'string') {
       parsed = JSON.parse(parsed);
     }
     if (Array.isArray(parsed)) return parsed;
-  } catch {}
+  } catch {
+    // Return empty array on parse failure
+  }
   return [];
 }

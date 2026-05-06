@@ -11,6 +11,7 @@ export const reviews = sqliteTable("reviews", {
   content:    text("content"),
   images:     text("images"),                       // JSON string → string[]
   isVerified: integer("is_verified").default(0),    // Verified Purchase badge
+  helpfulCount: integer("helpful_count").default(0),
   status:     text("status").default("approved"),   // "pending" | "approved" | "flagged" | "rejected"
   createdAt:  integer("created_at", { mode: "timestamp" }),
 });

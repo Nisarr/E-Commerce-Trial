@@ -35,7 +35,7 @@ export const TrustBadges: React.FC = () => {
               className="group flex flex-col items-center text-center gap-4 p-6 rounded-[2rem] bg-gray-50 hover:bg-white hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 border border-transparent hover:border-gray-100"
             >
               <div className="shrink-0 p-4 bg-white rounded-2xl shadow-sm group-hover:scale-110 group-hover:bg-accent group-hover:text-white transition-all duration-300">
-                {React.cloneElement(feature.icon as React.ReactElement<any>, { 
+                {React.cloneElement(feature.icon as React.ReactElement<{ className?: string; size?: number }>, { 
                   className: "group-hover:text-white transition-colors",
                   size: 28
                 })}

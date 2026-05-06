@@ -5,12 +5,26 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+interface DashboardOrder {
+  id: string;
+  invoiceId: string;
+  customerName: string;
+  status: string;
+  totalAmount: number;
+}
+
+interface DashboardProduct {
+  id: string;
+  title: string;
+  stock: number;
+}
+
 interface DashboardStats {
   counts: { products: number; categories: number; users: number; orders: number; reviews: number; totalSold: number };
   revenue: number;
   ordersByStatus: Record<string, number>;
-  recentOrders: any[];
-  lowStockProducts: any[];
+  recentOrders: DashboardOrder[];
+  lowStockProducts: DashboardProduct[];
   monthlyRevenue: { month: string; total: number; count: number }[];
 }
 
@@ -77,7 +91,10 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
   }, []);
 
   useEffect(() => {
-    fetchDashboard(activeRange);
+    const timeout = setTimeout(() => {
+      fetchDashboard(activeRange);
+    }, 0);
+    return () => clearTimeout(timeout);
   }, [activeRange, fetchDashboard]);
 
   const handleTimelineSelect = (preset: TimelinePreset) => {
@@ -122,14 +139,14 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Welcome + Timeline Selector */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h2 className="text-2xl font-black text-[#3e4b5b] tracking-tight">Welcome Back, Admin!</h2>
-          <p className="text-sm font-medium text-gray-400 mt-1">Here's what's happening with your store today.</p>
+          <h2 className="text-xl md:text-2xl font-black text-[#3e4b5b] tracking-tight">Welcome Back, Admin!</h2>
+          <p className="text-[13px] md:text-sm font-medium text-gray-400 mt-1">Here's what's happening with your store today.</p>
         </div>
 
         {/* Timeline Picker */}
-        <div className="relative flex-shrink-0">
+        <div className="relative">
           <button
             onClick={() => setIsTimelineOpen(!isTimelineOpen)}
             className="flex items-center gap-2.5 px-5 py-3 bg-white border-2 border-gray-100 rounded-2xl shadow-sm hover:border-[#ff6b6b]/30 hover:shadow-md transition-all group"
@@ -144,7 +161,7 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
           {isTimelineOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setIsTimelineOpen(false)} />
-              <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-gray-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+              <div className="absolute left-0 sm:left-auto right-0 top-full mt-2 w-full sm:w-56 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-gray-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 <div className="p-2">
                   <div className="px-3 py-2 mb-1">
                     <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Select Period</span>
@@ -171,47 +188,56 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
 
       {/* Custom Date Range Picker */}
       {timeline === 'custom' && (
-        <div className="flex items-center gap-4 bg-white p-4 rounded-2xl border-2 border-[#ff6b6b]/20 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
-          <Calendar size={18} className="text-[#ff6b6b] flex-shrink-0" />
-          <div className="flex items-center gap-3 flex-grow">
-            <div className="flex-1">
-              <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">From</label>
-              <input
-                type="date"
-                value={customFrom}
-                onChange={e => setCustomFrom(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 text-[12px] font-bold text-[#3e4b5b] outline-none focus:border-[#ff6b6b]/30 focus:bg-white transition-all"
-              />
+        <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-[#ff6b6b]/20 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <div className="flex items-center gap-3">
+              <Calendar size={18} className="text-[#ff6b6b] flex-shrink-0" />
+              <span className="text-[11px] font-black text-[#3e4b5b] uppercase tracking-widest">Custom Range</span>
             </div>
-            <span className="text-gray-300 font-bold mt-4">—</span>
-            <div className="flex-1">
-              <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">To</label>
-              <input
-                type="date"
-                value={customTo}
-                onChange={e => setCustomTo(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 text-[12px] font-bold text-[#3e4b5b] outline-none focus:border-[#ff6b6b]/30 focus:bg-white transition-all"
-              />
+            
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-grow">
+              <div className="flex-1">
+                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">From</label>
+                <input
+                  type="date"
+                  value={customFrom}
+                  onChange={e => setCustomFrom(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 text-[12px] font-bold text-[#3e4b5b] outline-none focus:border-[#ff6b6b]/30 focus:bg-white transition-all"
+                />
+              </div>
+              <span className="hidden sm:block text-gray-300 font-bold mt-4">—</span>
+              <div className="flex-1">
+                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">To</label>
+                <input
+                  type="date"
+                  value={customTo}
+                  onChange={e => setCustomTo(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 text-[12px] font-bold text-[#3e4b5b] outline-none focus:border-[#ff6b6b]/30 focus:bg-white transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 md:mt-4">
+              <button
+                onClick={applyCustomRange}
+                disabled={!customFrom || !customTo}
+                className="flex-grow md:flex-grow-0 px-6 py-2.5 bg-[#ff6b6b] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#ff5252] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+              >
+                Apply
+              </button>
+              <button
+                onClick={() => { setTimeline('lifetime'); setActiveRange({ from: null, to: null }); setCustomFrom(''); setCustomTo(''); }}
+                className="p-2.5 text-gray-400 hover:text-[#ff6b6b] transition-colors bg-gray-50 rounded-xl border border-gray-100"
+              >
+                <X size={16} />
+              </button>
             </div>
           </div>
-          <button
-            onClick={applyCustomRange}
-            disabled={!customFrom || !customTo}
-            className="px-5 py-2.5 bg-[#ff6b6b] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#ff5252] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm mt-3"
-          >
-            Apply
-          </button>
-          <button
-            onClick={() => { setTimeline('lifetime'); setActiveRange({ from: null, to: null }); setCustomFrom(''); setCustomTo(''); }}
-            className="p-2 text-gray-400 hover:text-[#ff6b6b] transition-colors mt-3"
-          >
-            <X size={16} />
-          </button>
         </div>
       )}
 
       {/* Quick Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard 
             label="Total Revenue" 
             value={`৳${(revenue || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`} 
@@ -440,8 +466,8 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
   );
 };
 
-const StatCard: React.FC<{ label: string; value: string; icon: any; color: string; subtitle?: string; to?: string; loading?: boolean }> = ({ label, value, icon: Icon, color, subtitle, to, loading }) => {
-  const colorMap: any = {
+const StatCard: React.FC<{ label: string; value: string; icon: React.ElementType; color: string; subtitle?: string; to?: string; loading?: boolean }> = ({ label, value, icon: Icon, color, subtitle, to, loading }) => {
+  const colorMap: Record<string, string> = {
     orange: 'bg-[#ff6b6b]/10 text-[#ff6b6b]',
     coral: 'bg-[#ff9f43]/10 text-[#ff9f43]',
     red: 'bg-[#ee5253]/10 text-[#ee5253]',
@@ -461,22 +487,22 @@ const StatCard: React.FC<{ label: string; value: string; icon: any; color: strin
         </div>
       ) : (
         <>
-          <h4 className="text-xl font-black text-[#3e4b5b] tracking-tight mb-0.5">{value}</h4>
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</p>
+          <h4 className="text-lg md:text-xl font-black text-[#3e4b5b] tracking-tight mb-0.5">{value}</h4>
+          <p className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</p>
         </>
       )}
       {subtitle && (
         loading ? (
           <div className="h-3 w-20 bg-gray-50 rounded mt-2 skeleton" />
         ) : (
-          <p className="text-[10px] font-medium text-gray-400 mt-1">{subtitle}</p>
+          <p className="text-[9px] md:text-[10px] font-medium text-gray-400 mt-1 line-clamp-1">{subtitle}</p>
         )
       )}
       <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#ff6b6b]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
     </>
   );
 
-  const className = "bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all group relative overflow-hidden block cursor-pointer";
+  const className = "bg-white p-4 md:p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all group relative overflow-hidden block cursor-pointer";
 
   if (to) {
     return (

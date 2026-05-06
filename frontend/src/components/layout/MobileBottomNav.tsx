@@ -1,45 +1,52 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, Heart, ShoppingCart, User } from 'lucide-react';
-import { useCart } from '../../hooks/useCart';
+import { Home, Search, Heart, User, ShoppingBag } from 'lucide-react';
 
 export const MobileBottomNav: React.FC = () => {
   const location = useLocation();
-  const { totalItems } = useCart();
   
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => {
+    if (path === '/category/all') {
+      return location.pathname === '/category/all' || location.pathname === '/shop';
+    }
+    return location.pathname === path;
+  };
   
   const navItems = [
     { icon: <Home size={22} />, label: 'Home', path: '/' },
-    { icon: <Search size={22} />, label: 'Search', path: '/search' },
+    { icon: <Search size={22} />, label: 'Shop', path: '/category/all' },
+    { icon: <ShoppingBag size={22} />, label: 'Cart', path: '/cart' },
     { icon: <Heart size={22} />, label: 'Wishlist', path: '/wishlist' },
-    { icon: <ShoppingCart size={22} />, label: 'Cart', path: '/cart', badge: totalItems },
     { icon: <User size={22} />, label: 'Profile', path: '/account' },
   ];
 
+
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-50 pb-safe">
-      <div className="flex justify-around items-center h-16">
-        {navItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
-              isActive(item.path) ? 'text-[var(--accent)]' : 'text-gray-500'
-            }`}
-          >
-            <div className="relative">
-              {item.icon}
-              {item.badge !== undefined && item.badge > 0 && (
-                <span className="absolute -top-1.5 -right-2 bg-[var(--accent)] text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full">
-                  {item.badge}
-                </span>
-              )}
-            </div>
-            <span className="text-[10px] font-medium">{item.label}</span>
-          </Link>
-        ))}
+    <div className="lg:hidden fixed bottom-0 left-0 w-full z-50">
+      <div className="bg-white border-t-2 border-[#FF4500] rounded-t-[2rem] shadow-[0_-8px_30px_rgb(0,0,0,0.08)] px-4 pb-safe h-18 flex justify-around items-center">
+        {navItems.map((item) => {
+          const active = isActive(item.path);
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`flex flex-col items-center justify-center relative w-full py-3 transition-all duration-300 ${
+                active ? 'text-[#FF4500]' : 'text-gray-400 dark:text-gray-500'
+              }`}
+            >
+
+              <div className={`transition-all duration-300 ${active ? '-translate-y-1 scale-110' : ''}`}>
+                {item.icon}
+              </div>
+              <span className={`text-[10px] font-bold tracking-tight mt-1 transition-all duration-300 ${active ? 'opacity-100' : 'opacity-70'}`}>
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
+
+
 };

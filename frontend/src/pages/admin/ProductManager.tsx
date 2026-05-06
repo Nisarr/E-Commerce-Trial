@@ -153,85 +153,153 @@ export const ProductManager: React.FC<ProductManagerProps> = ({ products, catego
       </div>
 
       <div className="bg-white rounded-[2rem] shadow-xl shadow-primary/5 border-2 border-gray-100 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-gray-50 border-b-2 border-gray-100">
-            <tr>
-              <th className="px-6 py-3 font-black text-primary text-[10px] uppercase tracking-[0.2em] border-r border-gray-100 last:border-r-0">Product Details</th>
-              <th className="px-6 py-3 font-black text-primary text-[10px] uppercase tracking-[0.2em] border-r border-gray-100 last:border-r-0">Inventory Status</th>
-              <th className="px-6 py-3 font-black text-primary text-[10px] uppercase tracking-[0.2em] text-right border-r border-gray-100 last:border-r-0">Actions</th>
-            </tr>
-          </thead>
-        <tbody className="divide-y-2 divide-gray-100">
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="bg-gray-50 border-b-2 border-gray-100">
+              <tr>
+                <th className="px-6 py-3 font-black text-primary text-[10px] uppercase tracking-[0.2em] border-r border-gray-100 last:border-r-0">Product Details</th>
+                <th className="px-6 py-3 font-black text-primary text-[10px] uppercase tracking-[0.2em] border-r border-gray-100 last:border-r-0">Inventory Status</th>
+                <th className="px-6 py-3 font-black text-primary text-[10px] uppercase tracking-[0.2em] text-right border-r border-gray-100 last:border-r-0">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y-2 divide-gray-100">
+              {filteredProducts.map(product => {
+                const images = JSON.parse(product.images || '[]');
+                const mainImage = images[0] || '';
+                
+                return (
+                  <tr 
+                    key={product.id} 
+                    className="hover:bg-gray-50/50 transition-colors group"
+                  >
+                    <td 
+                      className="px-6 py-3 border-r border-gray-50 last:border-r-0 cursor-pointer"
+                      onClick={() => navigate(`/adm/products/${product.id}/buyers`)}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden">
+                          {mainImage ? (
+                            <img src={mainImage} alt={product.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="font-black text-muted text-[10px]">NO IMG</span>
+                          )}
+                        </div>
+                        <div>
+                          <div className="font-bold text-primary group-hover:text-accent transition-colors">{product.title}</div>
+                          <div className="text-xs text-muted font-medium">৳{product.price} • {product.brand}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td 
+                      className="px-6 py-3 border-r border-gray-50 last:border-r-0 cursor-pointer"
+                      onClick={() => navigate(`/adm/products/${product.id}/buyers`)}
+                    >
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${product.stock > 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                        {product.stock > 0 ? `In Stock (${product.stock})` : 'Out of Stock'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3 text-right relative">
+                      <div className="flex justify-end gap-2">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit(product);
+                          }}
+                          className="p-2 text-muted hover:text-primary transition-colors hover:bg-white rounded-lg shadow-sm border border-transparent hover:border-gray-100"
+                          title="Edit Product"
+                        >
+                          <Edit3 size={18} />
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm('Are you sure you want to delete this product?')) {
+                              onDelete(product.id);
+                            }
+                          }}
+                          className="p-2 text-muted hover:text-red-500 transition-colors hover:bg-white rounded-lg shadow-sm border border-transparent hover:border-gray-100"
+                          title="Delete Product"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="md:hidden divide-y divide-gray-100">
           {filteredProducts.map(product => {
             const images = JSON.parse(product.images || '[]');
             const mainImage = images[0] || '';
             
             return (
-              <tr 
+              <div 
                 key={product.id} 
-                className="hover:bg-gray-50/50 transition-colors group cursor-pointer"
-                onClick={() => navigate(`/adm/products/${product.id}/buyers`)}
+                className="p-4 hover:bg-gray-50 transition-colors"
               >
-                <td className="px-6 py-3 border-r border-gray-50 last:border-r-0">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden">
-                      {mainImage ? (
-                        <img src={mainImage} alt={product.title} className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="font-black text-muted text-[10px]">NO IMG</span>
-                      )}
+                <div className="flex items-start gap-4">
+                  <div 
+                    className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer"
+                    onClick={() => navigate(`/adm/products/${product.id}/buyers`)}
+                  >
+                    {mainImage ? (
+                      <img src={mainImage} alt={product.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="font-black text-muted text-[8px]">NO IMG</span>
+                    )}
+                  </div>
+                  <div className="flex-grow min-w-0">
+                    <div 
+                      className="cursor-pointer group"
+                      onClick={() => navigate(`/adm/products/${product.id}/buyers`)}
+                    >
+                      <div className="font-bold text-primary truncate group-hover:text-accent transition-colors">{product.title}</div>
+                      <div className="text-xs text-muted font-medium mb-2">৳{product.price} • {product.brand}</div>
                     </div>
-                    <div>
-                      <div className="font-bold text-primary">{product.title}</div>
-                      <div className="text-xs text-muted font-medium">৳{product.price} • {product.brand}</div>
+                    <div className="flex items-center justify-between">
+                      <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest ${product.stock > 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                        {product.stock > 0 ? `${product.stock} in stock` : 'Out of Stock'}
+                      </span>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); onEdit(product); }}
+                          className="p-2 text-muted hover:text-primary transition-colors bg-white border border-gray-100 rounded-lg shadow-sm active:scale-95"
+                        >
+                          <Edit3 size={16} />
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm('Are you sure?')) onDelete(product.id);
+                          }}
+                          className="p-2 text-muted hover:text-red-500 transition-colors bg-white border border-gray-100 rounded-lg shadow-sm active:scale-95"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </td>
-                <td className="px-6 py-3 border-r border-gray-50 last:border-r-0">
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${product.stock > 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
-                    {product.stock > 0 ? `In Stock (${product.stock})` : 'Out of Stock'}
-                  </span>
-                </td>
-                <td className="px-6 py-3 text-right relative">
-                  <div className="flex justify-end gap-2">
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEdit(product);
-                      }}
-                      className="p-2 text-muted hover:text-primary transition-colors hover:bg-white rounded-lg shadow-sm"
-                    >
-                      <Edit3 size={18} />
-                    </button>
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (confirm('Are you sure you want to delete this product?')) {
-                          onDelete(product.id);
-                        }
-                      }}
-                      className="p-2 text-muted hover:text-red-500 transition-colors hover:bg-white rounded-lg shadow-sm"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
+                </div>
+              </div>
             );
           })}
-            {filteredProducts.length === 0 && (
-              <tr>
-                <td colSpan={3} className="px-8 py-20 text-center">
-                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
-                    <Search size={32} />
-                  </div>
-                  <h3 className="text-lg font-black text-primary">No Products Found</h3>
-                  <p className="text-sm text-muted font-bold uppercase tracking-widest mt-1">Try adjusting your search or filters</p>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+        </div>
+
+        {filteredProducts.length === 0 && (
+          <div className="px-8 py-20 text-center">
+            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
+              <Search size={32} />
+            </div>
+            <h3 className="text-lg font-black text-primary">No Products Found</h3>
+            <p className="text-sm text-muted font-bold uppercase tracking-widest mt-1">Try adjusting your search or filters</p>
+          </div>
+        )}
       </div>
     </div>
   );

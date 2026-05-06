@@ -9,19 +9,19 @@
  */
 
 interface CacheEntry {
-  data: any;
+  data: unknown;
   expiry: number;
 }
 
 const cache = new Map<string, CacheEntry>();
-const inflight = new Map<string, Promise<any>>();
+const inflight = new Map<string, Promise<unknown>>();
 
 const DEFAULT_TTL_MS = 30_000; // 30 seconds
 
 /**
  * Get a cached response if it exists and hasn't expired.
  */
-export function getCached(key: string): any | null {
+export function getCached(key: string): unknown | null {
   const entry = cache.get(key);
   if (!entry) return null;
   if (Date.now() > entry.expiry) {
@@ -34,21 +34,21 @@ export function getCached(key: string): any | null {
 /**
  * Store a response in the cache.
  */
-export function setCache(key: string, data: any, ttlMs: number = DEFAULT_TTL_MS): void {
+export function setCache(key: string, data: unknown, ttlMs: number = DEFAULT_TTL_MS): void {
   cache.set(key, { data, expiry: Date.now() + ttlMs });
 }
 
 /**
  * Get an in-flight promise for deduplication.
  */
-export function getInflight(key: string): Promise<any> | null {
+export function getInflight(key: string): Promise<unknown> | null {
   return inflight.get(key) || null;
 }
 
 /**
  * Register an in-flight request promise.
  */
-export function setInflight(key: string, promise: Promise<any>): void {
+export function setInflight(key: string, promise: Promise<unknown>): void {
   inflight.set(key, promise);
   // Clean up on completion (success or failure)
   promise.finally(() => {

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useAuthStore } from '../../store/authStore';
-import { getReturns } from '../../services/api';
-import type { ReturnRequest } from '../../types';
+import { useUserStore } from '../../store/userStore';
+
 import {
   XCircle, Package, Clock,
   CheckCircle2, AlertTriangle, Calendar, Ban
@@ -9,23 +9,14 @@ import {
 
 export const MyCancellations: React.FC = () => {
   const { user } = useAuthStore();
-  const [cancellations, setCancellations] = useState<ReturnRequest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: userData, loading, fetchUserData } = useUserStore();
+  const cancellations = userData?.cancellations?.items || [];
 
   useEffect(() => {
-    if (user?.id) fetchCancellations();
-  }, [user?.id]);
-
-  const fetchCancellations = async () => {
-    try {
-      const data = await getReturns(user!.id!, 'cancellation');
-      setCancellations(data);
-    } catch {
-      setCancellations([]);
-    } finally {
-      setLoading(false);
+    if (user?.id) {
+      fetchUserData(user.id, user.username);
     }
-  };
+  }, [user, fetchUserData]);
 
   const getStatusConfig = (status: string) => {
     const s = status.toLowerCase();

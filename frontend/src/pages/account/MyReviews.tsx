@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../../store/authStore';
-import { getUserReviews, deleteReview } from '../../services/api';
-import type { Review } from '../../types';
+import { useUserStore } from '../../store/userStore';
+import { deleteReview } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 import {
   Star, Trash2, MessageSquare, Package,
@@ -11,31 +11,22 @@ import {
 export const MyReviews: React.FC = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: userData, loading, fetchUserData } = useUserStore();
+  const reviews = userData?.reviews?.items || [];
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (user?.id) fetchReviews();
-  }, [user?.id]);
-
-  const fetchReviews = async () => {
-    try {
-      const data = await getUserReviews(user!.id!);
-      setReviews(data);
-    } catch {
-      setReviews([]);
-    } finally {
-      setLoading(false);
+    if (user?.id) {
+      fetchUserData(user.id, user.username);
     }
-  };
+  }, [user, fetchUserData]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this review? This action cannot be undone.')) return;
     try {
       await deleteReview(id);
-      setReviews((prev) => prev.filter((r) => r.id !== id));
+      if (user?.id) fetchUserData(user.id, user.username, true);
       setSuccess('Review deleted successfully.');
       setTimeout(() => setSuccess(''), 3000);
     } catch {

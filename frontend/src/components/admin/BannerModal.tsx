@@ -20,14 +20,24 @@ export const BannerModal: React.FC<BannerModalProps> = ({ banner, onClose, onSav
 
   useEffect(() => {
     if (banner) {
-      setFormData({
-        image: banner.image,
-        link: banner.link,
-        position: banner.position,
-        order: banner.order,
-      });
+      const isDifferent = 
+        formData.image !== banner.image ||
+        formData.link !== banner.link ||
+        formData.position !== banner.position ||
+        formData.order !== banner.order;
+
+      if (isDifferent) {
+        Promise.resolve().then(() => {
+          setFormData({
+            image: banner.image,
+            link: banner.link,
+            position: banner.position,
+            order: banner.order,
+          });
+        });
+      }
     }
-  }, [banner]);
+  }, [banner, formData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

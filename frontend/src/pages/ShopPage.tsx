@@ -27,7 +27,7 @@ export const ShopPage: React.FC = () => {
       try {
         const cats = await getCategories();
         setCategories(cats);
-      } catch (err) {
+      } catch {
         console.error('Failed to fetch categories');
       }
     };
@@ -48,14 +48,14 @@ export const ShopPage: React.FC = () => {
           ...(isNewArrivals ? { tag: 'new-arrival' } : {})
         });
         setProducts(response.items);
-      } catch (error) {
+      } catch {
         console.error('Failed to fetch products');
       } finally {
         setLoading(false);
       }
     };
     fetchProducts();
-  }, [query, category, sort, isOffers, isBestSellers]);
+  }, [query, category, sort, isOffers, isBestSellers, isNewArrivals]);
 
   const handleSortChange = (newSort: string) => {
     const params = new URLSearchParams(searchParams);

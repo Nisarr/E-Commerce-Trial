@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useAuthStore } from '../../store/authStore';
-import { getReturns } from '../../services/api';
-import type { ReturnRequest } from '../../types';
+import { useUserStore } from '../../store/userStore';
 import {
   RotateCcw, Package, Clock,
   CheckCircle2, XCircle, AlertTriangle, Calendar
@@ -9,23 +8,14 @@ import {
 
 export const MyReturns: React.FC = () => {
   const { user } = useAuthStore();
-  const [returns, setReturns] = useState<ReturnRequest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: userData, loading, fetchUserData } = useUserStore();
+  const returns = userData?.returns?.items || [];
 
   useEffect(() => {
-    if (user?.id) fetchReturns();
-  }, [user?.id]);
-
-  const fetchReturns = async () => {
-    try {
-      const data = await getReturns(user!.id!, 'return');
-      setReturns(data);
-    } catch {
-      setReturns([]);
-    } finally {
-      setLoading(false);
+    if (user?.id) {
+      fetchUserData(user.id, user.username);
     }
-  };
+  }, [user, fetchUserData]);
 
   const getStatusConfig = (status: string) => {
     const s = status.toLowerCase();

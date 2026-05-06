@@ -28,11 +28,7 @@ export const CustomerManager: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchUsers();
-  }, [page, search]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = React.useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), limit: '15' });
@@ -42,19 +38,29 @@ export const CustomerManager: React.FC = () => {
       setUsers(data.items || []);
       setTotal(data.pagination?.total || 0);
       setTotalPages(data.pagination?.pages || 1);
-    } catch {
+    } catch (err) {
+      console.error("Failed to fetch users", err);
       setUsers([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, search]);
+
+  useEffect(() => {
+    const init = async () => {
+      await fetchUsers();
+    };
+    init();
+  }, [fetchUsers]);
 
   const handleToggleBlock = async (userId: string) => {
     setActionLoading(userId);
     try {
       await fetch(`/api/v1/users/${userId}/block`, { method: 'PATCH' });
       await fetchUsers();
-    } catch {} finally {
+    } catch (err) {
+      console.error("Failed to toggle block status", err);
+    } finally {
       setActionLoading(null);
     }
   };
@@ -64,7 +70,9 @@ export const CustomerManager: React.FC = () => {
     try {
       await fetch(`/api/v1/users/${userId}/verify`, { method: 'PATCH' });
       await fetchUsers();
-    } catch {} finally {
+    } catch (err) {
+      console.error("Failed to toggle verify status", err);
+    } finally {
       setActionLoading(null);
     }
   };

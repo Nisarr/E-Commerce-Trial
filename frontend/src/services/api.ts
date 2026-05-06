@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Banner, Product, Category, User, Address, Review, ReviewStats, ReturnRequest, HomeBulkResponse } from "../types";
+import type { Banner, Product, Category, User, Address, Review, ReviewStats, ReturnRequest, HomeBulkResponse, UserBulkResponse, PopupSettings } from "../types";
 import { getCached, setCache, getInflight, setInflight, invalidate, getResourceBase } from "./apiCache";
 
 
@@ -8,7 +8,7 @@ const api = axios.create({
   // In dev: Cloudflare Pages dev server proxies /api → Hono
   // In prod: same origin, no CORS issue
   baseURL: "/api/v1",
-  timeout: 8000,
+  timeout: 15000,
 });
 
 // Add request interceptor for auth — prefer JWT from authStore, fall back to admin API key
@@ -24,7 +24,9 @@ api.interceptors.request.use((config) => {
         return config;
       }
     }
-  } catch {}
+  } catch {
+    // Ignore parsing errors
+  }
 
   // Fallback: admin API key for admin operations
   const apiKey = import.meta.env.VITE_ADMIN_API_KEY;
@@ -40,7 +42,13 @@ api.interceptors.response.use((response) => {
   const method = response.config.method;
   if (method && ['post', 'patch', 'put', 'delete'].includes(method)) {
     const url = `${response.config.baseURL}${response.config.url}`;
-    invalidate(getResourceBase(url));
+    const base = getResourceBase(url);
+    invalidate(base);
+    
+    // Broaden invalidation for user data if related resources change
+    if (base.includes('/orders') || base.includes('/addresses') || base.includes('/reviews') || base.includes('/wallet')) {
+      invalidate('/api/v1/bulk/user');
+    }
   }
   return response;
 });
@@ -52,7 +60,7 @@ api.interceptors.response.use((response) => {
 
 const _rawGet = api.get.bind(api);
 
-function buildCacheKey(url: string, params?: Record<string, any>): string {
+function buildCacheKey(url: string, params?: Record<string, string | number | boolean | null>): string {
   let key = `/api/v1${url}`;
   if (params && Object.keys(params).length > 0) {
     const sorted = Object.entries(params).sort(([a], [b]) => a.localeCompare(b));
@@ -61,11 +69,11 @@ function buildCacheKey(url: string, params?: Record<string, any>): string {
   return key;
 }
 
-api.get = (async function cachedGet(url: string, config?: any): Promise<any> {
+api.get = (async function cachedGet(url: string, config?: { params?: Record<string, string | number | boolean | null>, bypassCache?: boolean }): Promise<unknown> {
   const cacheKey = buildCacheKey(url, config?.params);
 
-  // 1. Return from memory cache if fresh
-  const cached = getCached(cacheKey);
+  // 1. Return from memory cache if fresh (unless bypassed)
+  const cached = config?.bypassCache ? null : getCached(cacheKey);
   if (cached) {
     return { data: cached, status: 200, statusText: 'OK (cached)', headers: {}, config: config || {} };
   }
@@ -80,10 +88,10 @@ api.get = (async function cachedGet(url: string, config?: any): Promise<any> {
   // 3. Make the actual request & track for dedup
   const responsePromise = _rawGet(url, config);
 
-  const dataPromise = responsePromise.then((res: any) => {
+  const dataPromise = responsePromise.then((res: { data: unknown }) => {
     setCache(cacheKey, res.data); // cache on success
     return res.data;
-  }).catch((err: any) => {
+  }).catch((err: unknown) => {
     // Don't cache errors, just propagate
     throw err;
   });
@@ -154,6 +162,28 @@ export const getProductBySlug = async (slug: string): Promise<Product | null> =>
     return res.data;
   } catch {
     return null;
+  }
+};
+
+export const getProductDetailsBulk = async (slug: string, recentlyViewedIds: string[] = [], userId?: string, logView: boolean = true): Promise<{
+  product: Product;
+  relatedProducts: Product[];
+  reviews: { items: Review[]; stats: ReviewStats };
+} | null> => {
+  try {
+    const ids = recentlyViewedIds.join(',');
+    const res = await api.get(`/products/by-slug/${slug}/bulk?recentlyViewed=${ids}&logView=${logView}${userId ? `&userId=${userId}` : ''}`);
+    return res.data;
+  } catch {
+    return null;
+  }
+};
+
+export const logInteraction = async (productId: string, type: string, userId?: string, sessionId?: string) => {
+  try {
+    await api.post('/products/interactions', { productId, type, userId, sessionId });
+  } catch (error) {
+    console.error('Failed to log interaction:', error);
   }
 };
 
@@ -261,8 +291,20 @@ export const deleteAddress = async (id: string) => {
 
 // ─── Reviews ─────────────────────────────────────────
 
-export const getProductReviews = async (productId: string): Promise<{ items: Review[]; stats: ReviewStats | null }> => {
-  const res = await api.get(`/reviews?productId=${productId}`);
+export const getProductReviews = async (
+  productId: string, 
+  sort?: "latest" | "helpful", 
+  hasImages?: boolean
+): Promise<{ items: Review[]; stats: ReviewStats | null }> => {
+  const params = new URLSearchParams({ productId });
+  if (sort) params.append('sort', sort);
+  if (hasImages) params.append('hasImages', 'true');
+  const res = await api.get(`/reviews?${params.toString()}`);
+  return res.data;
+};
+
+export const markReviewHelpful = async (id: string) => {
+  const res = await api.patch(`/reviews/${id}/helpful`);
   return res.data;
 };
 
@@ -315,6 +357,17 @@ export const submitReturn = async (data: {
   return res.data;
 };
 
+// ─── Orders ──────────────────────────────────────────────
+export const createOrder = async (data: any) => {
+  const res = await api.post("/orders", data);
+  return res.data;
+};
+
+export const cancelOrder = async (orderId: string, reason?: string) => {
+  const res = await api.post(`/orders/${orderId}/cancel`, { reason });
+  return res.data;
+};
+
 // ─── Wallet ──────────────────────────────────────────────
 export const getWallet = async (userId: string) => {
   const res = await api.get(`/wallet?userId=${userId}`);
@@ -334,6 +387,24 @@ export const chargeWallet = async (data: { userId: string; amount: number; refer
 // ─── Bulk Fetch ──────────────────────────────────────────
 export const getHomeBulk = async (): Promise<HomeBulkResponse> => {
   const res = await api.get("/bulk/home");
+  return res.data;
+};
+
+export const getUserBulk = async (userId: string, customerName?: string, bypassCache = false): Promise<UserBulkResponse> => {
+  const params = new URLSearchParams({ userId });
+  if (customerName) params.append('customerName', customerName);
+  const res = await api.get(`/bulk/user?${params.toString()}`, { bypassCache } as any);
+  return res.data;
+};
+
+// ─── Popup Settings ─────────────────────────────────────
+export const getPopupSettings = async (): Promise<PopupSettings> => {
+  const res = await api.get("/popup");
+  return res.data;
+};
+
+export const updatePopupSettings = async (settings: Partial<PopupSettings>) => {
+  const res = await api.put("/popup", settings);
   return res.data;
 };
 

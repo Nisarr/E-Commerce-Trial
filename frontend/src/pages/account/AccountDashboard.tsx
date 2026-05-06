@@ -1,49 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../../store/authStore';
+import { useUserStore } from '../../store/userStore';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { UserOrderDetailsModal } from '../../components/ui/UserOrderDetailsModal';
 import {
   Package, Heart, ShoppingCart, Star,
   ArrowRight, MapPin, TrendingUp
 } from 'lucide-react';
+import type { Order } from '../../types';
 
 export const AccountDashboard: React.FC = () => {
   const { user } = useAuthStore();
+  const { data: userData, loading, fetchUserData } = useUserStore();
   const navigate = useNavigate();
   const location = useLocation();
-  const [orders, setOrders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  const orders = userData?.orders?.items || [];
 
   useEffect(() => {
-    if (user?.username) {
-      fetchOrders();
+    if (user?.id) {
+      fetchUserData(user.id, user.username, !!location.state?.orderPlaced);
     }
-  }, [user]);
-
-  const fetchOrders = async () => {
-    try {
-      const res = await fetch(`/api/v1/orders?customerName=${encodeURIComponent(user?.username || '')}`);
-      if (res.ok) {
-        const data = await res.json();
-        setOrders(data.items || []);
-      }
-    } catch (error) {
-      console.error("Failed to fetch orders:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [user, fetchUserData, location.state?.orderPlaced]);
 
   const handleOrderClick = async (orderId: string) => {
+    // We can still fetch details for a specific order if needed, 
+    // or we could have included them in the bulk if they are small.
+    // For now, keeping the individual fetch for details is fine.
     try {
       const res = await fetch(`/api/v1/orders/${orderId}`);
       if (res.ok) {
         const data = await res.json();
         setSelectedOrder(data);
       }
-    } catch (error) {
-      console.error("Failed to fetch order details:", error);
+    } catch (_error) {
+      console.error("Failed to fetch order details:", _error);
     }
   };
 

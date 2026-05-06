@@ -34,16 +34,24 @@ export const ReturnManager: React.FC = () => {
   const [notesModal, setNotesModal] = useState<ReturnRecord | null>(null);
   const [adminNote, setAdminNote] = useState('');
 
-  useEffect(() => { fetchReturns(); }, []);
-
   const fetchReturns = async () => {
     try {
       const res = await fetch('/api/v1/returns');
       const data = await res.json();
       setReturns(data.items || []);
-    } catch { setReturns([]); }
-    finally { setLoading(false); }
+    } catch { 
+      setReturns([]); 
+    } finally { 
+      setLoading(false); 
+    }
   };
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      fetchReturns();
+    }, 0);
+    return () => clearTimeout(timeout);
+  }, []);
 
   const handleStatusUpdate = async (id: string, status: string, notes?: string) => {
     setActionLoading(id);
@@ -58,7 +66,11 @@ export const ReturnManager: React.FC = () => {
       await fetchReturns();
       setNotesModal(null);
       setAdminNote('');
-    } catch {} finally { setActionLoading(null); }
+    } catch {
+      // Ignore update errors
+    } finally { 
+      setActionLoading(null); 
+    }
   };
 
   const filteredReturns = returns.filter((r) => filter === 'All' || r.status === filter);
@@ -142,7 +154,9 @@ export const ReturnManager: React.FC = () => {
                             </div>
                           );
                         }
-                      } catch {} return null;
+                      } catch {
+                        // Ignore parse errors
+                      } return null;
                     })()}
 
                     {r.adminNotes && (

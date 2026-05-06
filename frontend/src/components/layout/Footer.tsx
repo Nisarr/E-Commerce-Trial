@@ -111,7 +111,7 @@ export const Footer: React.FC = () => {
               <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#B8860B] mb-3">Categories</h3>
               <div className="h-px w-6 bg-[#B8860B]/30 mb-3" />
               <ul className="flex flex-col gap-0.5">
-                {categories.slice(0, 4).map((cat, i, arr) => (
+                {categories.slice(0, 4).map((cat) => (
                   <li key={cat.id}>
                     <Link 
                       to={`/category/${cat.slug}`} 
@@ -120,17 +120,17 @@ export const Footer: React.FC = () => {
                       <ArrowRight size={10} className="opacity-0 -translate-x-2 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all text-[#FF4500]" />
                       <span className="group-hover/link:translate-x-0 -translate-x-4 transition-transform">{cat.name}</span>
                     </Link>
-                    {i < arr.length - 1 && <ItemDivider />}
+                    <ItemDivider />
                   </li>
                 ))}
-                {categories.length === 0 && (
-                  <li>
-                    <Link to="/categories" className="text-gray-600 text-xs hover:text-[#FF4500] transition-colors flex items-center gap-2 group/link py-1">
-                      <ArrowRight size={10} className="opacity-0 -translate-x-2 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all text-[#FF4500]" />
-                      <span className="group-hover/link:translate-x-0 -translate-x-4 transition-transform">All Collections</span>
-                    </Link>
-                  </li>
-                )}
+                <li>
+                  <Link 
+                    to="/categories" 
+                    className="text-[#FF4500] text-[10px] font-bold uppercase tracking-widest hover:underline pt-2 inline-block"
+                  >
+                    View All Collections →
+                  </Link>
+                </li>
               </ul>
             </div>
 

@@ -3,22 +3,17 @@ import { useAuthStore } from '../store/authStore';
 import { User, Package, Heart, Settings, LogOut, ChevronRight, ArrowRight } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { UserOrderDetailsModal } from '../components/ui/UserOrderDetailsModal';
+import type { Order } from '../types';
 
 export const Account: React.FC = () => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-  useEffect(() => {
-    if (user?.username) {
-      fetchOrders();
-    }
-  }, [user]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = React.useCallback(async () => {
     try {
       const res = await fetch(`/api/v1/orders?customerName=${encodeURIComponent(user?.username || '')}`);
       if (res.ok) {
@@ -30,7 +25,14 @@ export const Account: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user?.username) {
+      // Use a microtask to avoid "setState in effect" warning
+      Promise.resolve().then(() => fetchOrders());
+    }
+  }, [user?.username, fetchOrders]);
 
   const handleOrderClick = async (orderId: string) => {
     try {

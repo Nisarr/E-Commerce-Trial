@@ -1,8 +1,10 @@
 import React from 'react';
 import { Printer, X } from 'lucide-react';
 
+import type { Order } from '../../types';
+
 interface InvoiceProps {
-  order: any;
+  order: Order;
   onClose: () => void;
 }
 
@@ -65,7 +67,7 @@ export const Invoice: React.FC<InvoiceProps> = ({ order, onClose }) => {
               </tr>
             </thead>
             <tbody>
-              {order.items?.map((item: any, idx: number) => (
+              {order.items?.map((item, idx) => (
                 <tr key={idx} className="border-b border-gray-50">
                   <td className="py-4 text-primary font-medium">{item.productName || `Product ID: ${item.productId.slice(0, 8)}`}</td>
                   <td className="py-4 text-center text-gray-600">{item.quantity}</td>
@@ -80,11 +82,11 @@ export const Invoice: React.FC<InvoiceProps> = ({ order, onClose }) => {
             <div className="w-64 space-y-3">
               <div className="flex justify-between text-sm text-gray-500">
                 <span>Subtotal (Items)</span>
-                <span>৳{(order.items?.reduce((sum:number, item:any) => sum + (item.quantity * item.price), 0) || 0).toLocaleString()}</span>
+                <span>৳{(order.items?.reduce((sum, item) => sum + (item.quantity * item.price), 0) || 0).toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm text-gray-500 border-b border-gray-100 pb-3">
                 <span>Shipping & Adjustments</span>
-                <span>৳{(order.totalAmount - (order.items?.reduce((sum:number, item:any) => sum + (item.quantity * item.price), 0) || 0)).toLocaleString()}</span>
+                <span>৳{(order.totalAmount - (order.items?.reduce((sum, item) => sum + (item.quantity * item.price), 0) || 0)).toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-lg font-black text-primary pt-1">
                 <span>Total</span>

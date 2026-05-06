@@ -13,6 +13,52 @@ export const AdminSettings: React.FC = () => {
   const [testSending, setTestSending] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
+  // ── Payment Settings ──
+  const [paymentSettings, setPaymentSettings] = useState({
+    bkash_number: '',
+    nagad_number: ''
+  });
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsSaved, setSettingsSaved] = useState(false);
+
+  React.useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch('/api/v1/settings');
+        if (res.ok) {
+          const data = await res.json();
+          setPaymentSettings({
+            bkash_number: data.bkash_number || '',
+            nagad_number: data.nagad_number || ''
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch settings:", err);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  const handleSavePaymentSettings = async () => {
+    setSettingsLoading(true);
+    setSettingsSaved(false);
+    try {
+      const res = await fetch('/api/v1/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(paymentSettings),
+      });
+      if (res.ok) {
+        setSettingsSaved(true);
+        setTimeout(() => setSettingsSaved(false), 3000);
+      }
+    } catch (err) {
+      console.error("Failed to save settings:", err);
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
   const copyToClipboard = () => {
     if (uploadedUrl) {
       navigator.clipboard.writeText(uploadedUrl);
@@ -49,7 +95,7 @@ export const AdminSettings: React.FC = () => {
       } else {
         setTestResult({ ok: false, msg: data.message || 'Failed to send test email.' });
       }
-    } catch (err: any) {
+    } catch {
       setTestResult({ ok: false, msg: 'Network error. Is the backend running?' });
     } finally {
       setTestSending(false);
@@ -132,6 +178,58 @@ export const AdminSettings: React.FC = () => {
             <code className="bg-blue-100 px-1.5 py-0.5 rounded text-blue-700 text-[10px] font-black mx-1">GOOGLE_SCRIPT_URL</code>
             environment variable configured for email delivery.
           </p>
+        </div>
+      </div>
+
+      {/* ── Payment Settings ── */}
+      <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-primary/5 border border-gray-100">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="h-10 w-10 bg-orange-50 rounded-xl flex items-center justify-center">
+            <CheckCircle className="text-orange-500" size={20} />
+          </div>
+          <div>
+            <h2 className="text-2xl font-black text-primary">Payment Settings</h2>
+            <p className="text-muted font-medium text-sm">Configure MFS numbers for customer payments</p>
+          </div>
+        </div>
+
+        <div className="mt-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-1.5">
+              <label className="text-xs font-black text-[#e2136e] uppercase tracking-widest ml-1">Personal bKash Number</label>
+              <input
+                type="text"
+                value={paymentSettings.bkash_number}
+                onChange={(e) => setPaymentSettings({ ...paymentSettings, bkash_number: e.target.value })}
+                className="block w-full px-4 py-4 border border-gray-200 rounded-2xl text-sm placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-[#e2136e]/10 focus:border-[#e2136e] transition-all bg-gray-50/50"
+                placeholder="01XXXXXXXXX"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-black text-[#f7941d] uppercase tracking-widest ml-1">Personal Nagad Number</label>
+              <input
+                type="text"
+                value={paymentSettings.nagad_number}
+                onChange={(e) => setPaymentSettings({ ...paymentSettings, nagad_number: e.target.value })}
+                className="block w-full px-4 py-4 border border-gray-200 rounded-2xl text-sm placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-[#f7941d]/10 focus:border-[#f7941d] transition-all bg-gray-50/50"
+                placeholder="01XXXXXXXXX"
+              />
+            </div>
+          </div>
+
+          <button
+            onClick={handleSavePaymentSettings}
+            disabled={settingsLoading}
+            className="w-full flex items-center justify-center gap-2 py-4 px-4 border border-transparent text-sm font-black rounded-2xl text-white bg-accent hover:bg-accent/90 transition-all shadow-lg shadow-accent/20 active:scale-[0.98] disabled:opacity-50"
+          >
+            {settingsLoading ? (
+              <><Loader2 className="animate-spin" size={18} /> Saving...</>
+            ) : settingsSaved ? (
+              <><CheckCircle size={18} /> Settings Saved Successfully!</>
+            ) : (
+              'Save Payment Settings'
+            )}
+          </button>
         </div>
       </div>
 

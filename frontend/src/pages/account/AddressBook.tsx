@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../../store/authStore';
-import { getAddresses, createAddress, updateAddress, deleteAddress } from '../../services/api';
+import { useUserStore } from '../../store/userStore';
+import { createAddress, updateAddress, deleteAddress } from '../../services/api';
 import type { Address } from '../../types';
 import {
   MapPin, Plus, Pencil, Trash2, Loader2, Home, Building2,
@@ -15,8 +16,8 @@ const LABEL_OPTIONS = [
 
 export const AddressBook: React.FC = () => {
   const { user } = useAuthStore();
-  const [addresses, setAddresses] = useState<Address[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: userData, loading, fetchUserData } = useUserStore();
+  const addresses = userData?.addresses?.items || [];
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Address | null>(null);
   const [saving, setSaving] = useState(false);
@@ -34,18 +35,13 @@ export const AddressBook: React.FC = () => {
   });
 
   useEffect(() => {
-    if (user?.id) fetchAddresses();
-  }, [user?.id]);
-
-  const fetchAddresses = async () => {
-    try {
-      const data = await getAddresses(user!.id!);
-      setAddresses(data);
-    } catch {
-      setAddresses([]);
-    } finally {
-      setLoading(false);
+    if (user?.id) {
+      fetchUserData(user.id, user.username);
     }
+  }, [user, fetchUserData]);
+
+  const refreshData = () => {
+    if (user?.id) fetchUserData(user.id, user.username, true);
   };
 
   const resetForm = () => {
@@ -83,7 +79,7 @@ export const AddressBook: React.FC = () => {
         await updateAddress(editing.id, {
           ...form,
           isDefault: form.isDefault ? 1 : 0,
-        } as any);
+        });
       } else {
         await createAddress({
           userId: user!.id!,
@@ -96,9 +92,10 @@ export const AddressBook: React.FC = () => {
       setSuccess(editing ? 'Address updated!' : 'Address added!');
       setTimeout(() => setSuccess(''), 3000);
       resetForm();
-      await fetchAddresses();
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Failed to save address.');
+      refreshData();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to save address.';
+      setError(message);
     } finally {
       setSaving(false);
     }
@@ -108,7 +105,7 @@ export const AddressBook: React.FC = () => {
     if (!confirm('Delete this address?')) return;
     try {
       await deleteAddress(id);
-      await fetchAddresses();
+      refreshData();
     } catch {
       setError('Failed to delete address.');
     }
@@ -116,8 +113,8 @@ export const AddressBook: React.FC = () => {
 
   const handleSetDefault = async (addr: Address) => {
     try {
-      await updateAddress(addr.id, { isDefault: 1 } as any);
-      await fetchAddresses();
+      await updateAddress(addr.id, { isDefault: 1 });
+      refreshData();
     } catch {
       setError('Failed to set default.');
     }
@@ -198,14 +195,14 @@ export const AddressBook: React.FC = () => {
                 <input type="text" value={form.postalCode} onChange={(e) => setForm({ ...form, postalCode: e.target.value })} placeholder="1200" />
               </div>
             </div>
-            <label className="address-default-check">
-              <input type="checkbox" checked={form.isDefault} onChange={(e) => setForm({ ...form, isDefault: e.target.checked })} />
-              <span>Set as default address</span>
-            </label>
             <div className="address-form-actions">
+              <label className="address-default-check" style={{ marginBottom: 0, marginRight: 'auto' }}>
+                <input type="checkbox" checked={form.isDefault} onChange={(e) => setForm({ ...form, isDefault: e.target.checked })} />
+                <span>Set as default</span>
+              </label>
               <button type="button" onClick={resetForm} className="address-cancel-btn">Cancel</button>
               <button type="submit" disabled={saving} className="profile-save-btn">
-                {saving ? <><Loader2 className="animate-spin" size={16} /> Saving...</> : <><Check size={16} /> {editing ? 'Update' : 'Save'} Address</>}
+                {saving ? <><Loader2 className="animate-spin" size={16} /> Saving...</> : <><Check size={16} /> {editing ? 'Update' : 'Save'}</>}
               </button>
             </div>
           </form>

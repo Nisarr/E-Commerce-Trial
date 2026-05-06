@@ -3,6 +3,8 @@ import { X, ShoppingCart, Heart, Star, ChevronLeft, ChevronRight } from 'lucide-
 import type { Product } from '../../types';
 import { useCart } from '../../hooks/useCart';
 import { useWishlist } from '../../hooks/useWishlist';
+import { useAuthStore } from '../../store/authStore';
+import { useNavigate } from 'react-router-dom';
 
 interface QuickViewModalProps {
   product: Product;
@@ -12,6 +14,8 @@ interface QuickViewModalProps {
 export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose }) => {
   const { addItem } = useCart();
   const { toggleItem, isInWishlist } = useWishlist();
+  const { isAuthenticated } = useAuthStore();
+  const navigate = useNavigate();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   
@@ -141,6 +145,10 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
               </div>
               <button 
                 onClick={() => {
+                  if (!isAuthenticated) {
+                    navigate('/account/login');
+                    return;
+                  }
                   for(let i=0; i<quantity; i++) addItem(product);
                   onClose();
                 }}
@@ -150,7 +158,13 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
                 Add to Cart
               </button>
               <button 
-                onClick={() => toggleItem(product)}
+                onClick={() => {
+                  if (!isAuthenticated) {
+                    navigate('/account/login');
+                    return;
+                  }
+                  toggleItem(product);
+                }}
                 className={`h-14 w-14 flex items-center justify-center rounded-2xl border-2 transition-all duration-300 ${isWishlisted ? 'bg-red-500 border-red-500 text-white' : 'border-gray-100 text-gray-400 hover:border-red-500 hover:text-red-500'}`}
               >
                 <Heart size={20} fill={isWishlisted ? "currentColor" : "none"} />

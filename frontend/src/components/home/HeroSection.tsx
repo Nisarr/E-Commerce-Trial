@@ -103,25 +103,25 @@ export const HeroSection: React.FC = () => {
               </p>
             </div>
             
-            <div className="flex flex-wrap items-center gap-6 mt-8">
+            <div className="flex items-center gap-2.5 md:gap-6 mt-8">
               <button 
-                className="relative overflow-hidden group bg-primary text-white rounded-xl px-8 py-4 text-lg font-bold transition-all duration-500 hover:-translate-y-1 active:scale-95 flex items-center gap-2"
+                className="relative overflow-hidden group bg-primary text-white rounded-lg md:rounded-xl px-3 py-2 md:px-8 md:py-4 text-xs md:text-lg font-bold transition-all duration-500 hover:-translate-y-1 active:scale-95 flex items-center gap-1 md:gap-2 whitespace-nowrap"
                 onClick={() => window.location.href = banner.link || '/category/all'}
               >
-                <span className="relative z-10">Start Shopping</span>
-                <ArrowRight className="group-hover:translate-x-2 transition-transform duration-500" size={20} />
+                <span className="relative z-10">Shop</span>
+                <ArrowRight className="group-hover:translate-x-2 transition-transform duration-500" size={14} />
                 <div className="absolute inset-0 bg-gradient-to-r from-accent to-accent-light translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
               </button>
               
-              <div className="flex -space-x-2 items-center">
-                {[1,2,3,4].map(i => (
-                  <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-100 overflow-hidden shadow-sm">
+              <div className="flex -space-x-2 items-center shrink-0">
+                {[1,2,3,4].map((i, idx) => (
+                  <div key={i} className={`w-7 h-7 md:w-10 md:h-10 rounded-full border-2 border-white bg-gray-100 overflow-hidden shadow-sm ${idx === 3 ? 'hidden sm:block' : ''}`}>
                     <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="user" />
                   </div>
                 ))}
-                <div className="pl-4">
-                  <div className="text-base font-black text-primary">4.9/5 Trust Score</div>
-                  <div className="text-[10px] text-muted font-bold uppercase tracking-wider">Trusted by 5k+ Parents</div>
+                <div className="pl-2 md:pl-4">
+                  <div className="text-[11px] md:text-base font-black text-primary leading-tight">4.9/5 Trust Score</div>
+                  <div className="text-[8px] md:text-[10px] text-muted font-bold uppercase tracking-wider">5k+ Parents</div>
                 </div>
               </div>
             </div>

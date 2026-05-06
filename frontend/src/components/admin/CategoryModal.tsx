@@ -20,14 +20,24 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ category, onClose,
 
   useEffect(() => {
     if (category) {
-      setFormData({
-        name: category.name,
-        image: category.image,
-        isActive: category.isActive,
-        isFeatured: category.isFeatured,
-      });
+      const isDifferent = 
+        formData.name !== category.name ||
+        formData.image !== category.image ||
+        formData.isActive !== category.isActive ||
+        formData.isFeatured !== category.isFeatured;
+      
+      if (isDifferent) {
+        Promise.resolve().then(() => {
+          setFormData({
+            name: category.name,
+            image: category.image,
+            isActive: category.isActive,
+            isFeatured: category.isFeatured,
+          });
+        });
+      }
     }
-  }, [category]);
+  }, [category, formData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

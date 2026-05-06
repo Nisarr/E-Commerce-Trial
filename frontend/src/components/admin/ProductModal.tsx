@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Loader2, Trash2, Package, Tag, DollarSign, Box, Image as ImageIcon, Star, Users } from 'lucide-react';
+import { X, Loader2, Trash2, Package, Tag, DollarSign, Box, Image as ImageIcon, Star, Users, Video, ShieldCheck, Truck, Clock } from 'lucide-react';
 import { ImageUpload } from './ImageUpload';
 import { getCategories } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +22,21 @@ export const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, on
     categoryId: '',
     images: '[]',
     tags: '[]',
+    overview: '',
+    specification: '',
+    highlights: '[]',
+    howItWorks: '[]',
+    benefits: '[]',
+    videoUrl: '',
+    faqs: '[]',
+    specSheetUrl: '',
+    comparisonData: '{"headers":[], "rows":[]}',
+    bundleProducts: '[]',
+    qna: '[]',
+    deliveryInfo: '',
+    warrantyInfo: '',
+    offerDeadline: '',
+    trustBadges: '[]',
   });
   const [categories, setCategories] = useState<Category[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -34,7 +49,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, on
       try {
         const cats = await getCategories();
         setCategories(cats);
-      } catch (err) {
+      } catch {
         console.error('Failed to fetch categories');
       }
     };
@@ -44,22 +59,77 @@ export const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, on
   useEffect(() => {
     if (product) {
       setFormData({
-        title: product.title,
-        brand: product.brand,
-        price: product.price,
-        salePrice: product.salePrice,
-        stock: product.stock,
-        categoryId: product.categoryId,
-        images: product.images,
-        tags: product.tags,
+        title: product.title || '',
+        brand: product.brand || '',
+        price: product.price || 0,
+        salePrice: product.salePrice || null,
+        stock: product.stock || 0,
+        categoryId: product.categoryId || '',
+        images: product.images || '[]',
+        tags: product.tags || '[]',
+        overview: product.overview || '',
+        specification: product.specification || '',
+        highlights: product.highlights || '[]',
+        howItWorks: product.howItWorks || '[]',
+        benefits: product.benefits || '[]',
+        videoUrl: product.videoUrl || '',
+        faqs: product.faqs || '[]',
+        specSheetUrl: product.specSheetUrl || '',
+        comparisonData: product.comparisonData || '{"headers":[], "rows":[]}',
+        bundleProducts: product.bundleProducts || '[]',
+        qna: product.qna || '[]',
+        deliveryInfo: product.deliveryInfo || '',
+        warrantyInfo: product.warrantyInfo || '',
+        offerDeadline: product.offerDeadline ? new Date(product.offerDeadline).toISOString().slice(0, 16) : '',
+        trustBadges: product.trustBadges || '[]',
       });
       try {
         setImages(JSON.parse(product.images || '[]'));
         setTags(JSON.parse(product.tags || '[]'));
-      } catch (e) {
+      } catch {
         setImages([]);
         setTags([]);
       }
+    } else {
+      setFormData({
+        title: '',
+        brand: '',
+        price: 0,
+        salePrice: null,
+        stock: 0,
+        categoryId: '',
+        images: '[]',
+        tags: '[]',
+        overview: '',
+        specification: '',
+      });
+      setImages([]);
+      setTags([]);
+      setFormData({
+        title: '',
+        brand: '',
+        price: 0,
+        salePrice: null,
+        stock: 0,
+        categoryId: '',
+        images: '[]',
+        tags: '[]',
+        overview: '',
+        specification: '',
+        highlights: '[]',
+        howItWorks: '[]',
+        benefits: '[]',
+        videoUrl: '',
+        faqs: '[]',
+        specSheetUrl: '',
+        comparisonData: '{"headers":[], "rows":[]}',
+        bundleProducts: '[]',
+        qna: '[]',
+        deliveryInfo: '',
+        warrantyInfo: '',
+        offerDeadline: '',
+        trustBadges: '[]',
+      });
     }
   }, [product]);
 
@@ -78,8 +148,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, on
         tags: JSON.stringify(tags),
       });
       onClose();
-    } catch (error) {
-      console.error('Save failed:', error);
+    } catch {
       alert('Failed to save product');
     } finally {
       setIsSaving(false);
@@ -275,6 +344,136 @@ export const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, on
                     >
                       <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all ${tags.includes('special-offer') ? 'right-1' : 'left-1 shadow-sm'}`} />
                     </button>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <h3 className="text-lg font-black text-primary flex items-center gap-3">
+                    <div className="w-9 h-9 bg-primary/5 rounded-lg flex items-center justify-center">
+                      <Box size={20} className="text-primary" />
+                    </div>
+                    Product Details
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-black text-muted/60 uppercase tracking-widest ml-1">Overview</label>
+                      <textarea 
+                        value={formData.overview || ''}
+                        onChange={(e) => setFormData({ ...formData, overview: e.target.value })}
+                        className="w-full bg-gray-50/80 border-2 border-gray-100 rounded-2xl px-6 py-4 text-base font-bold text-primary focus:border-accent/30 focus:bg-white focus:ring-[10px] focus:ring-accent/5 transition-all outline-none placeholder:text-gray-300 shadow-sm border-b-accent/10 min-h-[120px] resize-none"
+                        placeholder="Detailed product overview..."
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-black text-muted/60 uppercase tracking-widest ml-1">Specification</label>
+                      <textarea 
+                        value={formData.specification || ''}
+                        onChange={(e) => setFormData({ ...formData, specification: e.target.value })}
+                        className="w-full bg-gray-50/80 border-2 border-gray-100 rounded-2xl px-6 py-4 text-base font-bold text-primary focus:border-accent/30 focus:bg-white focus:ring-[10px] focus:ring-accent/5 transition-all outline-none placeholder:text-gray-300 shadow-sm border-b-accent/10 min-h-[120px] resize-none"
+                        placeholder="Technical specifications..."
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Advanced Marketing Section */}
+                <div className="space-y-6">
+                  <h3 className="text-lg font-black text-primary flex items-center gap-3">
+                    <div className="w-9 h-9 bg-accent/5 rounded-lg flex items-center justify-center">
+                      <ShieldCheck size={20} className="text-accent" />
+                    </div>
+                    Advanced Marketing & Content
+                  </h3>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-black text-muted/60 uppercase tracking-widest ml-1">Delivery Info</label>
+                      <div className="relative">
+                        <input 
+                          type="text"
+                          value={formData.deliveryInfo || ''}
+                          onChange={(e) => setFormData({ ...formData, deliveryInfo: e.target.value })}
+                          className="w-full bg-gray-50/80 border-2 border-gray-100 rounded-2xl px-6 py-4 pl-12 text-sm font-bold text-primary focus:border-accent/30 focus:bg-white focus:ring-[10px] focus:ring-accent/5 transition-all outline-none shadow-sm"
+                          placeholder="e.g. ৩-৫ দিনে ডেলিভারি"
+                        />
+                        <Truck size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted/40" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-black text-muted/60 uppercase tracking-widest ml-1">Warranty Info</label>
+                      <div className="relative">
+                        <input 
+                          type="text"
+                          value={formData.warrantyInfo || ''}
+                          onChange={(e) => setFormData({ ...formData, warrantyInfo: e.target.value })}
+                          className="w-full bg-gray-50/80 border-2 border-gray-100 rounded-2xl px-6 py-4 pl-12 text-sm font-bold text-primary focus:border-accent/30 focus:bg-white focus:ring-[10px] focus:ring-accent/5 transition-all outline-none shadow-sm"
+                          placeholder="e.g. 1 Year Warranty"
+                        />
+                        <ShieldCheck size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted/40" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-black text-muted/60 uppercase tracking-widest ml-1">Offer Deadline (Timer)</label>
+                      <div className="relative">
+                        <input 
+                          type="datetime-local"
+                          value={formData.offerDeadline as string || ''}
+                          onChange={(e) => setFormData({ ...formData, offerDeadline: e.target.value })}
+                          className="w-full bg-gray-50/80 border-2 border-gray-100 rounded-2xl px-6 py-4 pl-12 text-sm font-bold text-primary focus:border-accent/30 focus:bg-white focus:ring-[10px] focus:ring-accent/5 transition-all outline-none shadow-sm"
+                        />
+                        <Clock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted/40" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-black text-muted/60 uppercase tracking-widest ml-1">Video URL (Demo/Unboxing)</label>
+                      <div className="relative">
+                        <input 
+                          type="text"
+                          value={formData.videoUrl || ''}
+                          onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                          className="w-full bg-gray-50/80 border-2 border-gray-100 rounded-2xl px-6 py-4 pl-12 text-sm font-bold text-primary focus:border-accent/30 focus:bg-white focus:ring-[10px] focus:ring-accent/5 transition-all outline-none shadow-sm"
+                          placeholder="YouTube or Video Link"
+                        />
+                        <Video size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted/40" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-black text-muted/60 uppercase tracking-widest ml-1">Feature Highlights (JSON: {"{"}icon, title, desc{"}"}[])</label>
+                      <textarea 
+                        value={formData.highlights || '[]'}
+                        onChange={(e) => setFormData({ ...formData, highlights: e.target.value })}
+                        className="w-full bg-gray-50/80 border-2 border-gray-100 rounded-2xl px-6 py-4 text-xs font-mono font-bold text-primary focus:border-accent/30 focus:bg-white focus:ring-[10px] focus:ring-accent/5 transition-all outline-none min-h-[100px] resize-none"
+                        placeholder='[{"icon": "Music", "title": "Melodies", "description": "12 soothing songs"}]'
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-black text-muted/60 uppercase tracking-widest ml-1">FAQs (JSON: {"{"}question, answer{"}"}[])</label>
+                      <textarea 
+                        value={formData.faqs || '[]'}
+                        onChange={(e) => setFormData({ ...formData, faqs: e.target.value })}
+                        className="w-full bg-gray-50/80 border-2 border-gray-100 rounded-2xl px-6 py-4 text-xs font-mono font-bold text-primary focus:border-accent/30 focus:bg-white focus:ring-[10px] focus:ring-accent/5 transition-all outline-none min-h-[100px] resize-none"
+                        placeholder='[{"question": "Safe for 6m?", "answer": "Yes, totally safe."}]'
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-black text-muted/60 uppercase tracking-widest ml-1">Trust Badges (JSON: {"{"}icon, label{"}"}[])</label>
+                      <textarea 
+                        value={formData.trustBadges || '[]'}
+                        onChange={(e) => setFormData({ ...formData, trustBadges: e.target.value })}
+                        className="w-full bg-gray-50/80 border-2 border-gray-100 rounded-2xl px-6 py-4 text-xs font-mono font-bold text-primary focus:border-accent/30 focus:bg-white focus:ring-[10px] focus:ring-accent/5 transition-all outline-none min-h-[80px] resize-none"
+                        placeholder='[{"icon": "Shield", "label": "EN71 Certified"}]'
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

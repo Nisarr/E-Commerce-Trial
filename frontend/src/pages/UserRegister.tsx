@@ -75,15 +75,11 @@ export const UserRegister: React.FC = () => {
 
       setUserId(data.id);
       
-      // If email was provided, go to OTP step; otherwise auto-login
-      if (form.email) {
-        setStep('otp');
-      } else {
-        // Auto-login after registration
-        await autoLogin();
-      }
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Registration failed.';
+      // Always go to OTP step as backend now requires it for all registrations
+      setStep('otp');
+    } catch (err: unknown) {
+      const errorData = err as { response?: { data?: { message?: string } }; message?: string };
+      const msg = errorData?.response?.data?.message || errorData?.message || 'Registration failed.';
       setError(msg);
     } finally {
       setLoading(false);
@@ -128,8 +124,9 @@ export const UserRegister: React.FC = () => {
 
       // Auto-login after verification
       await autoLogin();
-    } catch (err: any) {
-      setError(err.message || 'Verification failed.');
+    } catch (err: unknown) {
+      const message = (err as Error).message || 'Verification failed.';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -151,35 +148,35 @@ export const UserRegister: React.FC = () => {
   // ── OTP Step ──
   if (step === 'otp') {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center pt-12 pb-32 px-4 sm:px-6 lg:px-8 bg-gray-50/50">
-        <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-[2.5rem] shadow-2xl shadow-primary/5 border border-gray-100">
+      <div className="min-h-[70vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50/50">
+        <div className="max-w-md w-full space-y-6 bg-white p-8 rounded-[2rem] shadow-2xl shadow-primary/5 border border-gray-100">
           <div className="text-center">
-            <div className="mx-auto h-16 w-16 bg-green-50 rounded-2xl flex items-center justify-center mb-4">
-              <Shield className="text-green-500" size={32} />
+            <div className="mx-auto h-12 w-12 bg-green-50 rounded-xl flex items-center justify-center mb-3">
+              <Shield className="text-green-500" size={24} />
             </div>
-            <h2 className="text-3xl font-black text-primary tracking-tight font-garamond">Verify Your Email</h2>
-            <p className="mt-2 text-sm text-muted font-medium">
+            <h2 className="text-2xl font-black text-primary tracking-tight font-garamond">Verify Your Email</h2>
+            <p className="mt-1 text-sm text-muted font-medium">
               We've sent a verification code to<br />
               <strong className="text-primary">{form.email}</strong>
             </p>
           </div>
 
-          <form className="mt-8 space-y-6" onSubmit={handleVerifyOtp}>
+          <form className="mt-6 space-y-4" onSubmit={handleVerifyOtp}>
             {error && (
-              <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-xs font-bold flex items-center gap-2 border border-red-100">
-                <AlertCircle size={16} />
+              <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold flex items-center gap-2 border border-red-100">
+                <AlertCircle size={14} />
                 {error}
               </div>
             )}
 
             <div className="space-y-1">
-              <label className="text-xs font-black text-primary uppercase tracking-widest ml-1">Verification Code</label>
+              <label className="text-[10px] font-black text-primary uppercase tracking-widest ml-1">Verification Code</label>
               <input
                 type="text"
                 maxLength={6}
                 value={otpCode}
                 onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                className="block w-full px-4 py-4 border border-gray-200 rounded-2xl text-2xl font-black text-center tracking-[0.5em] placeholder-gray-300 focus:outline-none focus:ring-4 focus:ring-accent/10 focus:border-accent transition-all bg-gray-50/50"
+                className="block w-full px-4 py-3 border border-gray-200 rounded-xl text-2xl font-black text-center tracking-[0.5em] placeholder-gray-300 focus:outline-none focus:ring-4 focus:ring-accent/10 focus:border-accent transition-all bg-gray-50/50"
                 placeholder="000000"
                 disabled={loading}
               />
@@ -188,27 +185,21 @@ export const UserRegister: React.FC = () => {
             <button
               type="submit"
               disabled={loading || otpCode.length < 4}
-              className="w-full flex justify-center py-4 px-4 border border-transparent text-sm font-black rounded-2xl text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-500/20 transition-all shadow-xl shadow-green-500/20 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-black rounded-xl text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-500/20 transition-all shadow-xl shadow-green-500/20 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? (
-                <span className="flex items-center gap-2"><Loader2 className="animate-spin" size={20} /> Verifying...</span>
+                <span className="flex items-center gap-2"><Loader2 className="animate-spin" size={18} /> Verifying...</span>
               ) : 'Verify & Continue'}
             </button>
           </form>
 
-          <div className="text-center space-y-3 pt-2">
-            <p className="text-xs text-muted">
+          <div className="text-center pt-2">
+            <p className="text-[10px] text-muted">
               Didn't receive the code?{' '}
               <button onClick={handleResendOtp} className="font-black text-accent hover:text-accent-dark underline decoration-2 underline-offset-4">
                 Resend
               </button>
             </p>
-            <button
-              onClick={autoLogin}
-              className="text-xs font-bold text-muted hover:text-primary underline decoration-1 underline-offset-4"
-            >
-              Skip verification for now
-            </button>
           </div>
         </div>
       </div>
@@ -235,7 +226,6 @@ export const UserRegister: React.FC = () => {
             </div>
           )}
           
-          {/* Full Name */}
           <div className="space-y-1">
             <label className="text-[10px] font-black text-primary uppercase tracking-widest ml-1">Full Name</label>
             <div className="relative">
@@ -254,7 +244,6 @@ export const UserRegister: React.FC = () => {
             </div>
           </div>
 
-          {/* Username */}
           <div className="space-y-1">
             <label className="text-[10px] font-black text-primary uppercase tracking-widest ml-1">Username *</label>
             <div className="relative">
@@ -274,7 +263,6 @@ export const UserRegister: React.FC = () => {
             </div>
           </div>
 
-          {/* Email & Phone Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-[10px] font-black text-primary uppercase tracking-widest ml-1">Email</label>
@@ -312,7 +300,6 @@ export const UserRegister: React.FC = () => {
             </div>
           </div>
 
-          {/* Password */}
           <div className="space-y-1">
             <label className="text-[10px] font-black text-primary uppercase tracking-widest ml-1">Password *</label>
             <div className="relative">
@@ -352,7 +339,6 @@ export const UserRegister: React.FC = () => {
             )}
           </div>
 
-          {/* Confirm Password */}
           <div className="space-y-1">
             <label className="text-[10px] font-black text-primary uppercase tracking-widest ml-1">Confirm Password *</label>
             <div className="relative">

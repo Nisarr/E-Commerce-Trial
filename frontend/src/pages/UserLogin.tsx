@@ -36,8 +36,9 @@ export const UserLogin: React.FC = () => {
       }, data.token);
 
       navigate('/account');
-    } catch (err: any) {
-      const message = err?.response?.data?.message || err?.message || 'Login failed. Please try again.';
+    } catch (err: unknown) {
+      const errorData = err as { response?: { data?: { message?: string } }; message?: string };
+      const message = errorData?.response?.data?.message || errorData?.message || 'Login failed. Please try again.';
       setError(message);
     } finally {
       setLoading(false);
@@ -45,37 +46,37 @@ export const UserLogin: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center pt-12 pb-32 px-4 sm:px-6 lg:px-8 bg-gray-50/50">
-      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-[2.5rem] shadow-2xl shadow-primary/5 border border-gray-100">
+    <div className="min-h-[70vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50/50">
+      <div className="max-w-md w-full space-y-6 bg-white p-8 rounded-[2rem] shadow-2xl shadow-primary/5 border border-gray-100">
         <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-accent/10 rounded-2xl flex items-center justify-center mb-4">
-            <LogIn className="text-accent" size={32} />
+          <div className="mx-auto h-12 w-12 bg-accent/10 rounded-xl flex items-center justify-center mb-3">
+            <LogIn className="text-accent" size={24} />
           </div>
-          <h2 className="text-4xl font-black text-primary tracking-tight font-garamond">Welcome Back</h2>
-          <p className="mt-2 text-sm text-muted font-medium">Please enter your details to sign in</p>
+          <h2 className="text-3xl font-black text-primary tracking-tight font-garamond">Welcome Back</h2>
+          <p className="mt-1 text-sm text-muted font-medium">Please enter your details to sign in</p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
           {error && (
-            <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-xs font-bold flex items-center gap-2 border border-red-100 animate-in fade-in zoom-in-95">
-              <AlertCircle size={16} />
+            <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold flex items-center gap-2 border border-red-100 animate-in fade-in zoom-in-95">
+              <AlertCircle size={14} />
               {error}
             </div>
           )}
           
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="space-y-1">
-              <label className="text-xs font-black text-primary uppercase tracking-widest ml-1">Username or Email</label>
+              <label className="text-[10px] font-black text-primary uppercase tracking-widest ml-1">Username or Email</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
+                  <Mail className="h-4 w-4 text-gray-400" />
                 </div>
                 <input
                   type="text"
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="block w-full pl-11 pr-4 py-4 border border-gray-200 rounded-2xl text-sm placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-accent/10 focus:border-accent transition-all bg-gray-50/50"
+                  className="block w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-accent/10 focus:border-accent transition-all bg-gray-50/50"
                   placeholder="john_doe or john@example.com"
                   disabled={loading}
                 />
@@ -83,17 +84,17 @@ export const UserLogin: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-black text-primary uppercase tracking-widest ml-1">Password</label>
+              <label className="text-[10px] font-black text-primary uppercase tracking-widest ml-1">Password</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
+                  <Lock className="h-4 w-4 text-gray-400" />
                 </div>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-11 pr-12 py-4 border border-gray-200 rounded-2xl text-sm placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-accent/10 focus:border-accent transition-all bg-gray-50/50"
+                  className="block w-full pl-11 pr-12 py-3 border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-accent/10 focus:border-accent transition-all bg-gray-50/50"
                   placeholder="••••••••"
                   disabled={loading}
                 />
@@ -102,7 +103,7 @@ export const UserLogin: React.FC = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
@@ -113,14 +114,14 @@ export const UserLogin: React.FC = () => {
               <input
                 id="remember-me"
                 type="checkbox"
-                className="h-4 w-4 text-accent focus:ring-accent border-gray-300 rounded"
+                className="h-3 w-3 text-accent focus:ring-accent border-gray-300 rounded"
               />
-              <label htmlFor="remember-me" className="ml-2 block text-xs font-bold text-muted">
+              <label htmlFor="remember-me" className="ml-2 block text-[10px] font-bold text-muted">
                 Remember me
               </label>
             </div>
 
-            <div className="text-xs">
+            <div className="text-[10px]">
               <Link to="/account/forgot-password" className="font-bold text-accent hover:text-accent-dark transition-colors">
                 Forgot your password?
               </Link>
@@ -130,18 +131,18 @@ export const UserLogin: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="group relative w-full flex justify-center py-4 px-4 border border-transparent text-sm font-black rounded-2xl text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-4 focus:ring-primary/20 transition-all shadow-xl shadow-primary/20 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-black rounded-xl text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-4 focus:ring-primary/20 transition-all shadow-xl shadow-primary/20 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {loading ? (
-              <span className="flex items-center gap-2"><Loader2 className="animate-spin" size={20} /> Signing in...</span>
+              <span className="flex items-center gap-2"><Loader2 className="animate-spin" size={18} /> Signing in...</span>
             ) : (
               'Sign In'
             )}
           </button>
         </form>
 
-        <div className="text-center pt-4">
-          <p className="text-xs font-medium text-muted">
+        <div className="text-center pt-2">
+          <p className="text-[10px] font-medium text-muted">
             Don't have an account?{' '}
             <Link to="/account/register" className="font-black text-accent hover:text-accent-dark transition-colors underline decoration-2 underline-offset-4">
               Sign up for free

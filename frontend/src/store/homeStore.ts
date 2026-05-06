@@ -28,8 +28,8 @@ export const useHomeStore = create<HomeState>((set, get) => ({
       try {
         const data = await getHomeBulk();
         set({ data, loading: false, _promise: null });
-      } catch (err: any) {
-        set({ error: err.message || 'Failed to fetch home data', loading: false, _promise: null });
+      } catch (err: unknown) {
+        set({ error: err instanceof Error ? err.message : 'Failed to fetch home data', loading: false, _promise: null });
       }
     })();
 

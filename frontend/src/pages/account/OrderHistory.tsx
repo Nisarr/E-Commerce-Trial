@@ -1,34 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../../store/authStore';
+import { useUserStore } from '../../store/userStore';
 import { UserOrderDetailsModal } from '../../components/ui/UserOrderDetailsModal';
-import { Package, ArrowRight, Search, Filter } from 'lucide-react';
+import { Package, ArrowRight, Search, Filter, Ban, Loader2 } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { cancelOrder } from '../../services/api';
+import toast from 'react-hot-toast';
+import type { Order } from '../../types';
 
 const STATUS_FILTERS = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
 
 export const OrderHistory: React.FC = () => {
   const { user } = useAuthStore();
-  const [orders, setOrders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const { data: userData, loading, fetchUserData } = useUserStore();
+  const location = useLocation();
+  const orderPlaced = location.state?.orderPlaced;
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+
+  const orders = userData?.orders?.items || [];
 
   useEffect(() => {
-    if (user?.username) fetchOrders();
-  }, [user]);
-
-  const fetchOrders = async () => {
-    try {
-      const res = await fetch(`/api/v1/orders?customerName=${encodeURIComponent(user?.username || '')}`);
-      if (res.ok) {
-        const data = await res.json();
-        setOrders(data.items || []);
-      }
-    } catch (error) {
-      console.error("Failed to fetch orders:", error);
-    } finally {
-      setLoading(false);
+    if (user?.id) {
+      fetchUserData(user.id, user.username, !!orderPlaced);
     }
+  }, [user, fetchUserData, orderPlaced]);
+
+  const refreshData = () => {
+    if (user?.id) fetchUserData(user.id, user.username, true);
   };
 
   const handleOrderClick = async (orderId: string) => {
@@ -42,7 +43,21 @@ export const OrderHistory: React.FC = () => {
       console.error("Failed to fetch order details:", error);
     }
   };
+  const handleCancelOrder = async (e: React.MouseEvent, orderId: string) => {
+    e.stopPropagation(); // Don't open the modal
+    if (!window.confirm('Are you sure you want to cancel this order?')) return;
 
+    setCancellingId(orderId);
+    try {
+      await cancelOrder(orderId, 'Cancelled from order history');
+      toast.success('Order cancelled successfully');
+      refreshData();
+    } catch (err: unknown) {
+      toast.error((err as Error).message || 'Failed to cancel order');
+    } finally {
+      setCancellingId(null);
+    }
+  };
   const filteredOrders = orders.filter((order) => {
     const matchesFilter = activeFilter === 'All' || order.status?.toLowerCase() === activeFilter.toLowerCase();
     const matchesSearch = !searchQuery || order.invoiceId?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -124,7 +139,23 @@ export const OrderHistory: React.FC = () => {
                 </p>
               </div>
               <div className="dashboard-order-amount">
-                <span className="dashboard-order-total">৳{(order.totalAmount).toLocaleString()}</span>
+                <div className="flex flex-col items-end gap-2">
+                  <span className="dashboard-order-total">৳{(order.totalAmount).toLocaleString()}</span>
+                  {order.status?.toLowerCase() === 'pending' && (
+                    <button
+                      onClick={(e) => handleCancelOrder(e, order.id)}
+                      disabled={cancellingId === order.id}
+                      className="text-[10px] font-black text-red-500 hover:text-red-700 flex items-center gap-1 uppercase tracking-tighter bg-red-50 px-2 py-1 rounded-lg border border-red-100 transition-colors"
+                    >
+                      {cancellingId === order.id ? (
+                        <Loader2 size={10} className="animate-spin" />
+                      ) : (
+                        <Ban size={10} />
+                      )}
+                      Cancel
+                    </button>
+                  )}
+                </div>
                 <ArrowRight size={16} className="dashboard-order-arrow" />
               </div>
             </button>
@@ -138,7 +169,7 @@ export const OrderHistory: React.FC = () => {
           onClose={() => setSelectedOrder(null)}
           onOrderUpdated={() => {
             setSelectedOrder(null);
-            fetchOrders();
+            refreshData();
           }}
         />
       )}

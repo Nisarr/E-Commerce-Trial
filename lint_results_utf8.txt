@@ -1,0 +1,360 @@
+﻿
+> play-pen-house@1.0.0 lint
+> cd frontend && eslint .
+
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\components\admin\BannerModal.tsx
+  23:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\components\admin\BannerModal.tsx:23:7
+  21 |   useEffect(() => {
+  22 |     if (banner) {
+> 23 |       setFormData({
+     |       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  24 |         image: banner.image,
+  25 |         link: banner.link,
+  26 |         position: banner.position,  react-hooks/set-state-in-effect
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\components\admin\CategoryModal.tsx
+  23:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\components\admin\CategoryModal.tsx:23:7
+  21 |   useEffect(() => {
+  22 |     if (category) {
+> 23 |       setFormData({
+     |       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  24 |         name: category.name,
+  25 |         image: category.image,
+  26 |         isActive: category.isActive,  react-hooks/set-state-in-effect
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\components\admin\ImageUpload.tsx
+  53:14  error  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\components\admin\ProductModal.tsx
+  37:16  error  'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  46:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\components\admin\ProductModal.tsx:46:7
+  44 |   useEffect(() => {
+  45 |     if (product) {
+> 46 |       setFormData({
+     |       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  47 |         title: product.title,
+  48 |         brand: product.brand,
+  49 |         price: product.price,  react-hooks/set-state-in-effect
+  59:16  error  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\components\admin\SpecialOfferPriceModal.tsx
+  25:14  error  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\components\home\NewArrivalsTabbed.tsx
+  24:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\components\home\NewArrivalsTabbed.tsx:24:7
+  22 |   useEffect(() => {
+  23 |     if (activeTab === 'all' && data?.products?.newArrivals?.items) {
+> 24 |       setProducts(data.products.newArrivals.items);
+     |       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  25 |       setLoading(false);
+  26 |       return;
+  27 |     }  react-hooks/set-state-in-effect
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\components\home\ProductCard.tsx
+  36:12  error  'e' is defined but never used  @typescript-eslint/no-unused-vars
+  36:15  error  Empty block statement          no-empty
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\components\home\TrustBadges.tsx
+  38:72  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\components\layout\Navbar.tsx
+  34:6  warning  React Hook useEffect has a missing dependency: 'user.username'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\components\ui\Invoice.tsx
+   5:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  68:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  83:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  87:85  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\components\ui\UserOrderDetailsModal.tsx
+    6:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   49:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  145:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  174:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\Account.tsx
+  11:40  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+  13:54  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+  17:7   error    Error: Cannot access variable before it is declared
+
+`fetchOrders` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\Account.tsx:17:7
+  15 |   useEffect(() => {
+  16 |     if (user?.username) {
+> 17 |       fetchOrders();
+     |       ^^^^^^^^^^^ `fetchOrders` accessed before it is declared
+  18 |     }
+  19 |   }, [user]);
+  20 |
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\Account.tsx:21:3
+  19 |   }, [user]);
+  20 |
+> 21 |   const fetchOrders = async () => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 22 |     try {
+     | ^^^^^^^^^
+> 23 |       const res = await fetch(`/api/v1/orders?customerName=${encodeURIComponent(user?.username || '')}`);
+     ΓÇª
+     | ^^^^^^^^^
+> 32 |     }
+     | ^^^^^^^^^
+> 33 |   };
+     | ^^^^^ `fetchOrders` is declared here
+  34 |
+  35 |   const handleOrderClick = async (orderId: string) => {
+  36 |     try {  react-hooks/immutability
+  19:6   warning  React Hook useEffect has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   react-hooks/exhaustive-deps
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\Cart.tsx
+   49:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\Cart.tsx:49:7
+  47 |   useEffect(() => {
+  48 |     if (user) {
+> 49 |       setFormData((prev) => ({
+     |       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  50 |         customerName: user.fullName || user.username || prev.customerName,
+  51 |         customerEmail: user.email || prev.customerEmail,
+  52 |         customerPhone: user.phone || prev.customerPhone,                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/set-state-in-effect
+   70:13  error    Error: Cannot access variable before it is declared
+
+`applyAddress` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\Cart.tsx:70:13
+  68 |           const defaultAddr = addrs.find((a) => a.isDefault);
+  69 |           if (defaultAddr && !formData.shippingAddress) {
+> 70 |             applyAddress(defaultAddr);
+     |             ^^^^^^^^^^^^ `applyAddress` accessed before it is declared
+  71 |           }
+  72 |         })
+  73 |         .catch(() => {});
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\Cart.tsx:77:3
+  75 |   }, [isAuthenticated, user?.id]);
+  76 |
+> 77 |   const applyAddress = (addr: Address) => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 78 |     const fullAddress = [addr.address, addr.city, addr.postalCode].filter(Boolean).join(', ');
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 79 |     setFormData((prev) => ({
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 93 |     setShowAddressPicker(false);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 94 |   };
+     | ^^^^^ `applyAddress` is declared here
+  95 |
+  96 |   const subtotal = items.reduce((sum, item) => sum + (item.product.salePrice || item.product.price) * item.quantity, 0);
+  97 |   const shipping = items.length > 0 ? (shippingZone === 'dhaka' ? 60 : 120) : 0;  react-hooks/immutability
+   75:6   warning  React Hook useEffect has a missing dependency: 'formData.shippingAddress'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   react-hooks/exhaustive-deps
+  209:19  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-explicit-any
+  252:32  error    'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\CategoryPage.tsx
+  41:16  error  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\ProductDetails.tsx
+   22:42  error    Unexpected any. Specify a different type                                                                                              @typescript-eslint/no-explicit-any
+   23:50  error    Unexpected any. Specify a different type                                                                                              @typescript-eslint/no-explicit-any
+   44:16  error    'err' is defined but never used                                                                                                       @typescript-eslint/no-unused-vars
+   61:16  error    'err' is defined but never used                                                                                                       @typescript-eslint/no-unused-vars
+   76:6   warning  React Hook useEffect has missing dependencies: 'addRecentlyViewed' and 'product'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  310:55  error    Unexpected any. Specify a different type                                                                                              @typescript-eslint/no-explicit-any
+  392:79  error    Unexpected any. Specify a different type                                                                                              @typescript-eslint/no-explicit-any
+  448:38  error    'e' is defined but never used                                                                                                         @typescript-eslint/no-unused-vars
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\ShopPage.tsx
+  30:16  error    'err' is defined but never used                                                                                   @typescript-eslint/no-unused-vars
+  51:16  error    'error' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+  58:6   warning  React Hook useEffect has a missing dependency: 'isNewArrivals'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\UserLogin.tsx
+  39:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\UserRegister.tsx
+   80:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  126:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\account\AccountDashboard.tsx
+  16:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\account\AccountLayout.tsx
+  13:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\account\AccountLayout.tsx:13:5
+  11 |   // Close mobile sidebar on route change
+  12 |   React.useEffect(() => {
+> 13 |     setIsMobileSidebarOpen(false);
+     |     ^^^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  14 |   }, [location.pathname]);
+  15 |
+  16 |   return (  react-hooks/set-state-in-effect
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\account\AddressBook.tsx
+   82:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   96:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  115:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\account\ForgotPassword.tsx
+  25:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\account\MyProfile.tsx
+   41:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\account\MyProfile.tsx:41:7
+  39 |   useEffect(() => {
+  40 |     if (userData?.profile) {
+> 41 |       setForm({
+     |       ^^^^^^^ Avoid calling setState() directly within an effect
+  42 |         fullName: userData.profile.fullName || '',
+  43 |         email: userData.profile.email || '',
+  44 |         phone: userData.profile.phone || '',  react-hooks/set-state-in-effect
+   71:19  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  100:19  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\account\OrderHistory.tsx
+  12:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\account\ResetPassword.tsx
+  41:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\account\WalletPage.tsx
+  55:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\admin\AdminNavbar.tsx
+  79:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\admin\BestSellingManager.tsx
+   24:14  error  'err' is defined but never used                                    @typescript-eslint/no-unused-vars
+   38:28  error  Unexpected any. Specify a different type                           @typescript-eslint/no-explicit-any
+   51:14  error  'e' is defined but never used                                      @typescript-eslint/no-unused-vars
+   72:14  error  'err' is defined but never used                                    @typescript-eslint/no-unused-vars
+   82:14  error  'err' is defined but never used                                    @typescript-eslint/no-unused-vars
+  182:19  error  The value assigned to 'imgs' is not used in subsequent statements  no-useless-assignment
+  225:19  error  The value assigned to 'imgs' is not used in subsequent statements  no-useless-assignment
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\admin\CouponManager.tsx
+   46:44  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+   47:48  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+   74:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\admin\CouponManager.tsx:74:5
+  72 |
+  73 |   useEffect(() => { 
+> 74 |     fetchCoupons(); 
+     |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  75 |     fetchProductsAndCategories();
+  76 |   }, []);
+  77 |  react-hooks/set-state-in-effect
+  128:19  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  148:13  error  Empty block statement                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                no-empty
+  151:35  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\admin\CouponManager.tsx:151:35
+  149 |   };
+  150 |
+> 151 |   const now = React.useMemo(() => Date.now(), []);
+      |                                   ^^^^^^^^^^ Cannot call impure function
+  152 |
+  153 |   return (
+  154 |     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">                                                                                                                                                                                                                                                                                                    react-hooks/purity
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\admin\CustomerManager.tsx
+  50:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\admin\CustomerManager.tsx:50:5
+  48 |
+  49 |   useEffect(() => {
+> 50 |     fetchUsers();
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  51 |   }, [fetchUsers]);
+  52 |
+  53 |   const handleToggleBlock = async (userId: string) => {  react-hooks/set-state-in-effect
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\admin\NotificationManager.tsx
+  43:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Adnan\Desktop\baby_pen_house\frontend\src\pages\admin\NotificationManager.tsx:43:5
+  41 |
+  42 |   useEffect(() => {
+> 43 |     fetchCustomers();
+     |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  44 |   }, [fetchCustomers]);
+  45 |
+  46 |   const handleSend = async (e: React.FormEvent) => {  react-hooks/set-state-in-effect
+
+Γ£û 72 problems (67 errors, 5 warnings)
+

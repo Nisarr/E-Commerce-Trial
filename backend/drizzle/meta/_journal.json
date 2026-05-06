@@ -50,6 +50,55 @@
       "when": 1777973249248,
       "tag": "0006_nice_annihilus",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1777981265203,
+      "tag": "0007_woozy_thanos",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1778040342238,
+      "tag": "0008_early_karma",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1778040886640,
+      "tag": "0009_spicy_sue_storm",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1778042350586,
+      "tag": "0010_wealthy_sersi",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1778044840573,
+      "tag": "0011_redundant_mandarin",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1778045492249,
+      "tag": "0012_opposite_lizard",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1778049106118,
+      "tag": "0013_busy_secret_warriors",
+      "breakpoints": true
     }
   ]
 }

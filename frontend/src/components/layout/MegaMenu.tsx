@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
 import { useHomeStore } from '../../store/homeStore';
 
 export const MegaMenu: React.FC = () => {
@@ -22,6 +23,15 @@ export const MegaMenu: React.FC = () => {
         ) : (
           <p className="text-sm text-muted">No categories available</p>
         )}
+      </div>
+      <div className="mt-6 pt-6 border-t border-gray-100 flex justify-end">
+        <Link 
+          to="/categories" 
+          className="text-[var(--accent)] text-xs font-bold uppercase tracking-widest hover:underline flex items-center gap-2"
+        >
+          View All Collections
+          <ChevronRight size={14} />
+        </Link>
       </div>
     </div>
   );
