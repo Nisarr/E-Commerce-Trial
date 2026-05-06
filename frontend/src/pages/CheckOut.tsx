@@ -174,10 +174,10 @@ export const CheckOut: React.FC = () => {
 
     try {
       let walletCharged = 0;
-      if (useWallet && walletBalance > 0) {
+      if (useWallet && walletBalance > 0 && user?.id) {
         walletCharged = Math.min(walletBalance, total);
         await chargeWallet({
-          userId: user?.id,
+          userId: user.id,
           amount: walletCharged,
           reference: 'Payment for Order'
         });

@@ -12,7 +12,7 @@ interface UserState {
 }
 
 export const useUserStore = create<UserState>((set, get) => {
-  let pollInterval: ReturnType<typeof setInterval> | null = null;
+  let pollInterval: ReturnType<typeof setInterval> | undefined = undefined;
 
   return {
     data: null,
@@ -57,14 +57,14 @@ export const useUserStore = create<UserState>((set, get) => {
       return () => {
         if (pollInterval) {
           clearInterval(pollInterval);
-          pollInterval = null;
+          pollInterval = undefined;
         }
       };
     },
 
     clearData: () => {
       if (pollInterval) clearInterval(pollInterval);
-      pollInterval = null;
+      pollInterval = undefined;
       set({ data: null, error: null, loading: false });
     },
   };

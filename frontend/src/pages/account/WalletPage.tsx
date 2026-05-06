@@ -198,7 +198,7 @@ export const WalletPage: React.FC = () => {
                     {txn.type === 'credit' ? '+' : '-'}৳ {txn.amount.toLocaleString()}
                   </p>
                   <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
-                    Bal: ৳ {txn.balanceAfter.toLocaleString()}
+                    Bal: ৳ {txn.balanceAfter?.toLocaleString() ?? '0'}
                   </p>
                 </div>
               </div>

@@ -287,7 +287,7 @@ export const CouponManager: React.FC = () => {
                           className="w-4 h-4 text-accent border-gray-300 rounded focus:ring-accent"
                         />
                         <span className="text-sm font-bold text-primary truncate">
-                          {item.title || item.name}
+                          {(item as any).title || (item as any).name}
                         </span>
                       </label>
                     );
