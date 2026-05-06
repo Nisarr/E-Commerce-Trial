@@ -1,17 +1,17 @@
-import type { LibSQLDatabase } from "drizzle-orm/libsql";
+import type { DrizzleD1Database } from "drizzle-orm/d1";
 import * as schema from "../../backend/server/db/schema";
 
 export type Bindings = {
-  TURSO_URL: string;
-  TURSO_AUTH_TOKEN: string;
+  DB: D1Database;
   ADMIN_API_KEY: string;
   JWT_SECRET: string;
   GOOGLE_SCRIPT_URL: string;
   GMAIL_SENDER_EMAIL: string;
   ADMIN_NOTIFICATION_EMAIL: string;
   EMAIL_WEBHOOK_SECRET: string;
+  NODE_ENV?: string;
 };
 
 export type Variables = {
-  db: LibSQLDatabase<typeof schema>;
+  db: DrizzleD1Database<typeof schema>;
 };

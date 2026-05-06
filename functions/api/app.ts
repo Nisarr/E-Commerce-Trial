@@ -6,8 +6,7 @@ import { Hono } from "hono";
 import { handle } from "hono/cloudflare-pages";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import { createClient } from "@libsql/client/web";
-import { drizzle } from "drizzle-orm/libsql";
+import { drizzle } from "drizzle-orm/d1";
 import * as schema from "../../backend/server/db/schema";
 
 // Types
@@ -49,24 +48,21 @@ app.use("*", logger());
 
 // DB Connection Middleware
 app.use("*", async (c, next) => {
-  // Skip DB for health checks (actually return to stop execution here)
+  // Skip DB for health checks
   if (c.req.path === "/api/health" || c.req.path === "/api/v1/health") {
     return await next();
   }
 
-  const url = c.env.TURSO_URL;
-  const authToken = c.env.TURSO_AUTH_TOKEN;
-
-  if (!url || url.includes("your-db-url")) {
-    return await next(); // let health check handle it if it doesn't need DB
+  if (!c.env.DB) {
+    console.error("DB Binding not found");
+    return await next();
   }
 
   try {
-    const client = createClient({ url, authToken });
-    c.set("db", drizzle(client, { schema }));
+    c.set("db", drizzle(c.env.DB, { schema }));
     await next();
   } catch (error: any) {
-    console.error("DB Connection Error:", error);
+    console.error("DB Initialization Error:", error);
     await next();
   }
 });
@@ -97,7 +93,7 @@ app.onError((err, c) => {
   return c.json({
     error: "InternalServerError",
     message: "An unexpected error occurred.",
-    details: process.env.NODE_ENV === 'development' ? err.message : undefined,
+    details: (c.env.NODE_ENV === 'development') ? err.message : undefined,
     timestamp: new Date().toISOString(),
     path: c.req.path
   }, 500);

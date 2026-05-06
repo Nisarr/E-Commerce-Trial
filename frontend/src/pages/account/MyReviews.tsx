@@ -264,7 +264,7 @@ export const MyReviews: React.FC = () => {
         )}
       </div>
 
-      {showReviewModal && selectedProduct && user && (
+      {showReviewModal && selectedProduct && user?.id && (
         <ReviewModal 
           productId={selectedProduct.id}
           productTitle={selectedProduct.title}
