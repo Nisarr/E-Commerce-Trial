@@ -28,7 +28,7 @@ export const Navbar: React.FC = () => {
   // Start intelligent polling when logged in
   useEffect(() => {
     if (user?.id) {
-      const stop = startPolling(user.id, user.username, user.email);
+      const stop = startPolling(user.id!, user.username, user.email);
       return () => stop();
     }
   }, [user?.id, user?.username, user?.email, startPolling]);
@@ -49,7 +49,7 @@ export const Navbar: React.FC = () => {
     try {
       await fetch(`/api/v1/notifications/${id}/read`, { method: 'POST' });
       // Refresh user data to get updated count
-      if (user?.id) useUserStore.getState().fetchUserData(user.id, user.username, user.email, true);
+      if (user?.id) useUserStore.getState().fetchUserData(user.id!, user.username, user.email, true);
     } catch (err) {
       console.error(err);
     }

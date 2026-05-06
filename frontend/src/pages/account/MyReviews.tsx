@@ -38,7 +38,7 @@ export const MyReviews: React.FC = () => {
 
   useEffect(() => {
     if (user?.id) {
-      fetchUserData(user.id, user.username, user.email);
+      fetchUserData(user.id!, user.username, user.email);
     }
   }, [user, fetchUserData]);
 
@@ -46,7 +46,7 @@ export const MyReviews: React.FC = () => {
     if (!confirm('Delete this review? This action cannot be undone.')) return;
     try {
       await deleteReview(id);
-      if (user?.id) fetchUserData(user.id, user.username, user.email, true);
+      if (user?.id) fetchUserData(user.id!, user.username, user.email, true);
       setSuccess('Review deleted successfully.');
       setTimeout(() => setSuccess(''), 3000);
     } catch {
@@ -268,13 +268,13 @@ export const MyReviews: React.FC = () => {
         <ReviewModal 
           productId={selectedProduct.id}
           productTitle={selectedProduct.title}
-          userId={user.id}
+          userId={user.id!}
           username={user.username}
           orderId={selectedProduct.orderId}
           onClose={() => setShowReviewModal(false)}
           onSuccess={() => {
             setShowReviewModal(false);
-            if (user?.id) fetchUserData(user.id, user.username, user.email, true);
+            if (user?.id) fetchUserData(user.id!, user.username, user.email, true);
             setSuccess('Review submitted! It will appear once approved by our team.');
             setTimeout(() => setSuccess(''), 5000);
           }}

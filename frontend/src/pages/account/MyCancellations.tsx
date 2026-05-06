@@ -35,7 +35,7 @@ export const MyCancellations: React.FC = () => {
 
   useEffect(() => {
     if (user?.id) {
-      fetchUserData(user.id, user.username, user.email);
+      fetchUserData(user.id!, user.username, user.email);
     }
   }, [user, fetchUserData]);
 

@@ -24,7 +24,7 @@ export const AccountDashboard: React.FC = () => {
 
   useEffect(() => {
     if (user?.id) {
-      fetchUserData(user.id, user.username, user.email, !!location.state?.orderPlaced);
+      fetchUserData(user.id!, user.username, user.email, !!location.state?.orderPlaced);
     }
   }, [user, fetchUserData, location.state?.orderPlaced]);
 

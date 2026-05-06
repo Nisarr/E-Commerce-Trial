@@ -15,7 +15,7 @@ export const MyNotifications: React.FC = () => {
     if (!user?.id) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/v1/notifications?userId=${user.id}`);
+      const res = await fetch(`/api/v1/notifications?userId=${user.id!}`);
       if (res.ok) {
         const data = await res.json();
         setNotifications(data.items || []);
@@ -37,7 +37,7 @@ export const MyNotifications: React.FC = () => {
       // Update local state
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: 1 } : n));
       // Refresh global count
-      if (user?.id) fetchUserData(user.id, user.username, user.email, true);
+      if (user?.id) fetchUserData(user.id!, user.username, user.email, true);
     } catch (err) {
       console.error(err);
     }

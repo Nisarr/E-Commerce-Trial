@@ -26,7 +26,7 @@ export const OrderHistory: React.FC = () => {
 
   useEffect(() => {
     if (user?.id) {
-      fetchUserData(user.id, user.username, user.email, !!orderPlaced);
+      fetchUserData(user.id!, user.username, user.email, !!orderPlaced);
     }
   }, [user, fetchUserData, orderPlaced]);
 
@@ -39,7 +39,7 @@ export const OrderHistory: React.FC = () => {
   }, [searchParams, orders.length]);
 
   const refreshData = () => {
-    if (user?.id) fetchUserData(user.id, user.username, user.email, true);
+    if (user?.id) fetchUserData(user.id!, user.username, user.email, true);
   };
 
   const handleOrderClick = async (orderId: string) => {

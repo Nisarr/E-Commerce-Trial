@@ -20,12 +20,12 @@ export const WalletPage: React.FC = () => {
 
   useEffect(() => {
     if (user?.id) {
-      fetchUserData(user.id, user.username, user.email);
+      fetchUserData(user.id!, user.username, user.email);
     }
   }, [user, fetchUserData]);
 
   const refreshData = () => {
-    if (user?.id) fetchUserData(user.id, user.username, user.email, true);
+    if (user?.id) fetchUserData(user.id!, user.username, user.email, true);
   };
 
   const handleTopup = async (e: React.FormEvent) => {

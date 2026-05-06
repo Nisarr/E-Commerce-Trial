@@ -79,7 +79,7 @@ export const CheckOut: React.FC = () => {
       }));
 
       if (user.id) {
-        getWallet(user.id).then(data => setWalletBalance(data.balance)).catch(() => {});
+        getWallet(user.id!).then(data => setWalletBalance(data.balance)).catch(() => {});
       }
     }
   }, [user]);
@@ -104,7 +104,7 @@ export const CheckOut: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated && user?.id) {
-      getAddresses(user.id)
+      getAddresses(user.id!)
         .then((addrs) => {
           setSavedAddresses(addrs);
           const defaultAddr = addrs.find((a) => a.isDefault);
@@ -177,7 +177,7 @@ export const CheckOut: React.FC = () => {
       if (useWallet && walletBalance > 0 && user?.id) {
         walletCharged = Math.min(walletBalance, total);
         await chargeWallet({
-          userId: user.id,
+          userId: user.id!,
           amount: walletCharged,
           reference: 'Payment for Order'
         });
