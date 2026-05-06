@@ -229,8 +229,9 @@ export const SpecialOfferManager: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-[2.5rem] shadow-xl shadow-primary/5 border border-gray-100 overflow-hidden">
-        <table className="w-full text-left">
+      <div className="bg-white md:rounded-[2.5rem] md:shadow-xl md:shadow-primary/5 md:border border-gray-100 overflow-hidden">
+        {/* Desktop Table View */}
+        <table className="w-full text-left hidden md:table">
           <thead className="bg-gray-50/50 border-b border-gray-100">
             <tr>
               <th className="px-8 py-5 font-black text-primary text-[10px] uppercase tracking-[0.2em]">Active Special Offers</th>
@@ -301,6 +302,49 @@ export const SpecialOfferManager: React.FC = () => {
             )}
           </tbody>
         </table>
+
+        {/* Mobile Card View */}
+        <div className="md:hidden divide-y divide-gray-100">
+          {filteredOffers.map(product => {
+            let parsedImgs: string[];
+            try {
+              parsedImgs = typeof product.images === 'string' ? JSON.parse(product.images) : (product.images || []);
+            } catch { 
+              parsedImgs = []; 
+            }
+
+            return (
+              <div key={product.id} className="p-4 space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-gray-100 rounded-xl overflow-hidden shrink-0">
+                    <img src={parsedImgs[0] || '/placeholder.jpg'} alt="" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-grow min-w-0">
+                    <h3 className="font-bold text-primary text-sm truncate">{product.title}</h3>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-black text-orange-600">৳{product.salePrice || product.price}</span>
+                      {product.salePrice && product.salePrice < product.price && (
+                        <span className="text-[10px] text-muted line-through font-bold">৳{product.price}</span>
+                      )}
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => removeFromOffers(product)}
+                    className="p-2.5 bg-red-50 text-red-500 rounded-xl active:scale-95 transition-all"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+          {offers.length === 0 && (
+            <div className="p-12 text-center text-gray-400">
+              <Tag size={32} className="mx-auto mb-2 opacity-20" />
+              <p className="text-xs font-black uppercase tracking-widest">No active offers</p>
+            </div>
+          )}
+        </div>
       </div>
       
       <div className="bg-orange-50/50 rounded-3xl p-6 border-2 border-dashed border-orange-200 flex items-center gap-6">

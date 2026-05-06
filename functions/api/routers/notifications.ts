@@ -96,7 +96,26 @@ notificationsRouter.post("/:id/read", async (c) => {
 
     return c.json({ message: "Notification marked as read." });
   } catch (error: any) {
-    console.error("Mark read error:", error.message);
+    return c.json({ error: error.message }, 400);
+  }
+});
+
+notificationsRouter.post("/read-all", async (c) => {
+  try {
+    const db = c.get("db");
+    const userId = c.req.query("userId");
+
+    const whereFilter = userId
+      ? and(eq(schema.notifications.userId, userId), eq(schema.notifications.isRead, 0))
+      : and(isNull(schema.notifications.userId), eq(schema.notifications.isRead, 0));
+
+    await db.update(schema.notifications)
+      .set({ isRead: 1 })
+      .where(whereFilter);
+
+    return c.json({ message: "All notifications marked as read." });
+  } catch (error: any) {
+    console.error("Mark read all error:", error.message);
     return c.json({ error: error.message }, 400);
   }
 });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, 
   Package, 
@@ -36,6 +36,33 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, isOpen, onClose }) 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    orders: 0,
+    returns: 0,
+    reviews: 0,
+    notifications: 0
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const adminKey = localStorage.getItem('admin_key') || 'adm_sk_72e829fc89d4e37decb405dace50ba5c';
+        const res = await fetch('/api/v1/bulk/admin/stats', {
+          headers: { 'Authorization': `Bearer ${adminKey}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch admin stats:', err);
+      }
+    };
+
+    fetchStats();
+    const interval = setInterval(fetchStats, 60000); // refresh every minute
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -77,7 +104,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, isOpen, onClose }) 
       )}
 
       <aside 
-        className={`bg-[#f8f9fa]/60 backdrop-blur-3xl border-2 border-[#ff6b6b]/20 flex flex-col transition-all duration-500 fixed md:sticky top-4 z-[80] md:z-[60] shadow-[0_8px_32px_rgba(255,107,107,0.05)] flex-shrink-0 my-4 ml-4 rounded-[2.5rem] h-[calc(100vh-2rem)] ${
+        className={`bg-[var(--adm-bg)]/95 backdrop-blur-xl border-2 border-[#ff6b6b]/30 flex flex-col transition-all duration-500 fixed md:sticky top-4 z-[80] md:z-[60] shadow-[0_8px_32px_rgba(255,107,107,0.08)] flex-shrink-0 my-4 ml-4 rounded-[2.5rem] h-[calc(100vh-2rem)] admin-theme-transition ${
           isAdminModalOpen ? 'hidden' : ''
         } ${
           isCollapsed ? 'md:w-24' : 'md:w-64'
@@ -87,22 +114,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, isOpen, onClose }) 
       >
         {/* Brand Logo & Collapse Toggle */}
         <div className={`p-5 pb-2 relative flex flex-col ${isCollapsed ? 'md:items-center' : ''}`}>
-          <div className={`flex items-center h-14 bg-white border border-[#ff6b6b]/10 shadow-sm rounded-[1.25rem] transition-all duration-300 relative ${isCollapsed ? 'md:w-14 md:justify-center px-0' : 'w-full px-4 gap-3'}`}>
+          <div className={`flex items-center h-14 bg-[var(--adm-card-bg)] border border-[#ff6b6b]/10 shadow-sm rounded-[1.25rem] transition-all duration-300 relative ${isCollapsed ? 'md:w-14 md:justify-center px-0' : 'w-full px-4 gap-3'}`}>
             <div className="w-9 h-9 bg-[#ff6b6b]/10 rounded-xl flex items-center justify-center text-[#ff6b6b] flex-shrink-0">
               <ShoppingBasket size={22} strokeWidth={2.5} />
             </div>
             {(!isCollapsed || isOpen) && (
               <>
-                <h1 className="text-lg font-black text-[#3e4b5b] tracking-tighter animate-in fade-in slide-in-from-left-2 duration-300 flex-grow">PlayHouse</h1>
+                <h1 className="text-lg font-black text-[var(--adm-text-primary)] tracking-tighter animate-in fade-in slide-in-from-left-2 duration-300 flex-grow">PlayHouse</h1>
                 <button 
                   onClick={() => setIsCollapsed(!isCollapsed)}
-                  className="hidden md:flex w-7 h-7 bg-gray-50 border border-gray-100 rounded-lg items-center justify-center text-gray-400 hover:text-[#ff6b6b] hover:border-[#ff6b6b]/30 transition-all shadow-sm"
+                  className="hidden md:flex w-7 h-7 bg-[var(--adm-bg)] border border-[var(--adm-border)] rounded-lg items-center justify-center text-[var(--adm-text-secondary)] hover:text-[#ff6b6b] hover:border-[#ff6b6b]/30 transition-all shadow-sm"
                 >
                   <ChevronLeft size={14} strokeWidth={3} className={isCollapsed ? 'rotate-180' : ''} />
                 </button>
                 <button 
                   onClick={onClose}
-                  className="md:hidden w-7 h-7 bg-gray-50 border border-gray-100 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#ff6b6b] transition-all shadow-sm"
+                  className="md:hidden w-7 h-7 bg-[var(--adm-bg)] border border-[var(--adm-border)] rounded-lg flex items-center justify-center text-[var(--adm-text-secondary)] hover:text-[#ff6b6b] transition-all shadow-sm"
                 >
                   <ChevronLeft size={14} strokeWidth={3} />
                 </button>
@@ -113,7 +140,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, isOpen, onClose }) 
           {isCollapsed && !isOpen && (
             <button 
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="mt-3 w-9 h-9 bg-white border border-[#ff6b6b]/10 rounded-xl flex items-center justify-center text-gray-400 hover:text-[#ff6b6b] shadow-sm transition-all hidden md:flex"
+              className="mt-3 w-9 h-9 bg-[var(--adm-card-bg)] border border-[#ff6b6b]/10 rounded-xl flex items-center justify-center text-[var(--adm-text-secondary)] hover:text-[#ff6b6b] shadow-sm transition-all hidden md:flex"
             >
               <ChevronLeft size={18} strokeWidth={3} className="rotate-180" />
             </button>
@@ -125,7 +152,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, isOpen, onClose }) 
           {sections.map((section, sIndex) => (
             <div key={sIndex} className="space-y-3">
               {(!isCollapsed || isOpen) && (
-                <h3 className="px-2 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                <h3 className="px-2 text-[10px] font-black text-[var(--adm-text-secondary)] uppercase tracking-[0.2em]">
                   {section.title}
                 </h3>
               )}
@@ -143,24 +170,54 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, isOpen, onClose }) 
                         isCollapsed && !isOpen ? 'md:justify-center p-3' : 'px-4 py-3.5 gap-3'
                       } ${
                         isActive 
-                          ? 'bg-white text-[#ff6b6b] border-[#ff6b6b]/20 shadow-md scale-[1.02]' 
-                          : 'bg-white/40 border-white/40 text-[#8692a0] hover:bg-white hover:text-[#3e4b5b] hover:scale-[1.01]'
+                          ? 'bg-[var(--adm-card-bg)] text-[#ff6b6b] border-[#ff6b6b]/40 shadow-md scale-[1.02]' 
+                          : 'bg-[var(--adm-card-bg)]/70 border-[var(--adm-border)] text-[var(--adm-text-secondary)] hover:bg-[var(--adm-card-bg)] hover:text-[#ff6b6b] hover:border-[#ff6b6b]/40 hover:scale-[1.01]'
                       }`}
                     >
                       {isActive && (!isCollapsed || isOpen) && (
                         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-[#ff6b6b] rounded-r-full shadow-[2px_0_10px_rgba(255,107,107,0.4)]" />
                       )}
                       
-                      <item.icon size={18} strokeWidth={isActive ? 2.5 : 2} className={`transition-transform ${isActive ? 'text-[#ff6b6b]' : 'text-[#8692a0] group-hover:text-[#3e4b5b]'}`} />
+                      <item.icon size={18} strokeWidth={isActive ? 2.5 : 2} className={`transition-transform ${isActive ? 'text-[#ff6b6b]' : 'text-[#64748b] group-hover:text-[#ff6b6b]'}`} />
                       
                       {(!isCollapsed || isOpen) && (
                         <span className="flex-grow text-left">{item.label}</span>
                       )}
 
+                      {/* Notification Badges */}
+                      {(!isCollapsed || isOpen) && (
+                        <>
+                          {item.id === 'orders' && stats.orders > 0 && (
+                            <span className="bg-[#ff6b6b] text-white text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-sm animate-pulse">{stats.orders}</span>
+                          )}
+                          {item.id === 'returns' && stats.returns > 0 && (
+                            <span className="bg-[#ff6b6b] text-white text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-sm animate-pulse">{stats.returns}</span>
+                          )}
+                          {item.id === 'reviews' && stats.reviews > 0 && (
+                            <span className="bg-[#ff6b6b] text-white text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-sm animate-pulse">{stats.reviews}</span>
+                          )}
+                          {item.id === 'notifications' && stats.notifications > 0 && (
+                            <span className="bg-[#ff6b6b] text-white text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-sm animate-pulse">{stats.notifications}</span>
+                          )}
+                        </>
+                      )}
+
+                      {/* Collapsed Badge */}
+                      {isCollapsed && !isOpen && (
+                        <>
+                          {((item.id === 'orders' && stats.orders > 0) || 
+                            (item.id === 'returns' && stats.returns > 0) || 
+                            (item.id === 'reviews' && stats.reviews > 0) || 
+                            (item.id === 'notifications' && stats.notifications > 0)) && (
+                            <div className="absolute top-2 right-2 w-2 h-2 bg-[#ff6b6b] rounded-full border-2 border-white shadow-sm" />
+                          )}
+                        </>
+                      )}
+
                       {/* Tooltip for collapsed state */}
                       {isCollapsed && !isOpen && (
                         <div className="absolute left-full ml-4 px-3 py-2 bg-[#3e4b5b] text-white text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none md:group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0 whitespace-nowrap shadow-2xl z-[100] border border-white/10">
-                          <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 border-y-[6px] border-y-transparent border-r-[6px] border-r-[#3e4b5b]" />
+                          <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 border-y-[6px] border-y-transparent border-r-[6px] border-r-[var(--adm-text-primary)]" />
                           {item.label}
                         </div>
                       )}
@@ -202,7 +259,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, isOpen, onClose }) 
             className={`flex items-center rounded-2xl font-bold text-[13px] transition-all duration-500 group border shadow-sm hover:scale-[1.02] ${
               isRefreshing 
                 ? 'bg-amber-50 border-amber-200 text-amber-400 cursor-not-allowed' 
-                : 'bg-white/40 border-white/40 text-amber-600 hover:bg-white hover:shadow-md'
+                : 'bg-[var(--adm-card-bg)]/70 border-[var(--adm-border)] text-amber-600 hover:bg-[var(--adm-card-bg)] hover:shadow-md'
             } ${
               isCollapsed && !isOpen ? 'md:justify-center p-3' : 'w-full px-4 py-3.5 gap-3'
             }`}
@@ -224,7 +281,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, isOpen, onClose }) 
 
           <button 
             onClick={handleLogout}
-            className={`flex items-center rounded-2xl font-bold text-[13px] text-red-500 hover:bg-white hover:shadow-md transition-all duration-300 group border shadow-sm bg-white/40 border-white/40 hover:scale-[1.02] ${
+            className={`flex items-center rounded-2xl font-bold text-[13px] text-red-500 hover:bg-[var(--adm-card-bg)] hover:shadow-md transition-all duration-300 group border shadow-sm bg-[var(--adm-card-bg)]/70 border-[var(--adm-border)] hover:scale-[1.02] ${
               isCollapsed && !isOpen ? 'md:justify-center p-3' : 'w-full px-4 py-3.5 gap-3'
             }`}
           >

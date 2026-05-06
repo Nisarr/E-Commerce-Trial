@@ -537,12 +537,12 @@
 }
 
 .shimmer-skeleton {
-  background: #f1f5f9;
+  background: var(--shimmer-bg);
   background-image: linear-gradient(
     90deg,
-    #f1f5f9 0px,
-    #f8fafc 40px,
-    #f1f5f9 80px
+    var(--shimmer-bg) 0px,
+    var(--shimmer-via) 50%,
+    var(--shimmer-bg) 100%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite linear;

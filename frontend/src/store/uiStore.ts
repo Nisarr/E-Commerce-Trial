@@ -5,6 +5,8 @@ interface UIState {
   setActiveProductTitle: (title: string | null) => void;
   isAdminModalOpen: boolean;
   setIsAdminModalOpen: (isOpen: boolean) => void;
+  adminTheme: 'light' | 'dark';
+  toggleAdminTheme: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -12,4 +14,10 @@ export const useUIStore = create<UIState>((set) => ({
   setActiveProductTitle: (title) => set({ activeProductTitle: title }),
   isAdminModalOpen: false,
   setIsAdminModalOpen: (isOpen) => set({ isAdminModalOpen: isOpen }),
+  adminTheme: (localStorage.getItem('adminTheme') as 'light' | 'dark') || 'light',
+  toggleAdminTheme: () => set((state) => {
+    const newTheme = state.adminTheme === 'light' ? 'dark' : 'light';
+    localStorage.setItem('adminTheme', newTheme);
+    return { adminTheme: newTheme };
+  }),
 }));

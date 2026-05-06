@@ -21,7 +21,7 @@ interface DashboardProduct {
 
 interface DashboardStats {
   counts: { products: number; categories: number; users: number; orders: number; reviews: number; totalSold: number };
-  revenue: number;
+  revenue: { total: number; currency: string };
   ordersByStatus: Record<string, number>;
   recentOrders: DashboardOrder[];
   lowStockProducts: DashboardProduct[];
@@ -126,7 +126,7 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
 
   // Initial fallback if data is null while loading
   const counts = data?.counts || { products: 0, categories: 0, users: 0, orders: 0, reviews: 0, totalSold: 0 };
-  const revenue = data?.revenue || 0;
+  const revenue = typeof data?.revenue === 'object' ? data.revenue.total : (data?.revenue || 0);
   const ordersByStatus = data?.ordersByStatus || {};
   const recentOrders = data?.recentOrders || [];
   const lowStockProducts = data?.lowStockProducts || [];
@@ -141,19 +141,19 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
       {/* Welcome + Timeline Selector */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h2 className="text-xl md:text-2xl font-black text-[#3e4b5b] tracking-tight">Welcome Back, Admin!</h2>
-          <p className="text-[13px] md:text-sm font-medium text-gray-400 mt-1">Here's what's happening with your store today.</p>
+          <h2 className="text-xl md:text-2xl font-black text-[var(--adm-text-primary)] tracking-tight">Welcome Back, Admin!</h2>
+          <p className="text-[13px] md:text-sm font-medium text-[var(--adm-text-secondary)] mt-1">Here's what's happening with your store today.</p>
         </div>
 
         {/* Timeline Picker */}
         <div className="relative">
           <button
             onClick={() => setIsTimelineOpen(!isTimelineOpen)}
-            className="flex items-center gap-2.5 px-5 py-3 bg-white border-2 border-gray-100 rounded-2xl shadow-sm hover:border-[#ff6b6b]/30 hover:shadow-md transition-all group"
+            className="flex items-center gap-2.5 px-5 py-3 bg-[var(--adm-card-bg)] border-2 border-[var(--adm-border)] rounded-2xl shadow-sm hover:border-[#ff6b6b]/30 hover:shadow-md transition-all group"
           >
             <Calendar size={16} className="text-[#ff6b6b]" />
-            <span className="text-[12px] font-black text-[#3e4b5b] uppercase tracking-wider">{getActiveLabel()}</span>
-            <ChevronDown size={14} className={`text-gray-400 group-hover:text-[#ff6b6b] transition-all ${isTimelineOpen ? 'rotate-180' : ''}`} />
+            <span className="text-[12px] font-black text-[var(--adm-text-primary)] uppercase tracking-wider">{getActiveLabel()}</span>
+            <ChevronDown size={14} className={`text-[var(--adm-text-secondary)] group-hover:text-[#ff6b6b] transition-all ${isTimelineOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {/* Secondary loading indicator removed as per user request */}
@@ -161,10 +161,10 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
           {isTimelineOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setIsTimelineOpen(false)} />
-              <div className="absolute left-0 sm:left-auto right-0 top-full mt-2 w-full sm:w-56 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-gray-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+              <div className="absolute left-0 sm:left-auto right-0 top-full mt-2 w-full sm:w-56 bg-[var(--adm-card-bg)] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-[var(--adm-border)] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 <div className="p-2">
                   <div className="px-3 py-2 mb-1">
-                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Select Period</span>
+                    <span className="text-[9px] font-black text-[var(--adm-text-secondary)] uppercase tracking-[0.2em]">Select Period</span>
                   </div>
                   {TIMELINE_OPTIONS.map(option => (
                     <button
@@ -173,7 +173,7 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
                       className={`w-full text-left px-4 py-2.5 rounded-xl text-[12px] font-bold transition-all ${
                         timeline === option.id
                           ? 'bg-[#ff6b6b]/10 text-[#ff6b6b] font-black'
-                          : 'text-[#3e4b5b] hover:bg-gray-50'
+                          : 'text-[var(--adm-text-primary)] hover:bg-[var(--adm-bg)]'
                       }`}
                     >
                       {option.label}
@@ -188,31 +188,31 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
 
       {/* Custom Date Range Picker */}
       {timeline === 'custom' && (
-        <div className="bg-white p-4 md:p-6 rounded-2xl border-2 border-[#ff6b6b]/20 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="bg-[var(--adm-card-bg)] p-4 md:p-6 rounded-2xl border-2 border-[#ff6b6b]/20 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             <div className="flex items-center gap-3">
               <Calendar size={18} className="text-[#ff6b6b] flex-shrink-0" />
-              <span className="text-[11px] font-black text-[#3e4b5b] uppercase tracking-widest">Custom Range</span>
+              <span className="text-[11px] font-black text-[var(--adm-text-primary)] uppercase tracking-widest">Custom Range</span>
             </div>
             
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-grow">
               <div className="flex-1">
-                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">From</label>
+                <label className="text-[9px] font-black text-[var(--adm-text-secondary)] uppercase tracking-widest block mb-1">From</label>
                 <input
                   type="date"
                   value={customFrom}
                   onChange={e => setCustomFrom(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 text-[12px] font-bold text-[#3e4b5b] outline-none focus:border-[#ff6b6b]/30 focus:bg-white transition-all"
+                  className="w-full bg-[var(--adm-bg)] border border-[var(--adm-border)] rounded-xl px-3 py-2.5 text-[12px] font-bold text-[var(--adm-text-primary)] outline-none focus:border-[#ff6b6b]/30 focus:bg-[var(--adm-card-bg)] transition-all"
                 />
               </div>
               <span className="hidden sm:block text-gray-300 font-bold mt-4">—</span>
               <div className="flex-1">
-                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">To</label>
+                <label className="text-[9px] font-black text-[var(--adm-text-secondary)] uppercase tracking-widest block mb-1">To</label>
                 <input
                   type="date"
                   value={customTo}
                   onChange={e => setCustomTo(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 text-[12px] font-bold text-[#3e4b5b] outline-none focus:border-[#ff6b6b]/30 focus:bg-white transition-all"
+                  className="w-full bg-[var(--adm-bg)] border border-[var(--adm-border)] rounded-xl px-3 py-2.5 text-[12px] font-bold text-[var(--adm-text-primary)] outline-none focus:border-[#ff6b6b]/30 focus:bg-[var(--adm-card-bg)] transition-all"
                 />
               </div>
             </div>
@@ -227,7 +227,7 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
               </button>
               <button
                 onClick={() => { setTimeline('lifetime'); setActiveRange({ from: null, to: null }); setCustomFrom(''); setCustomTo(''); }}
-                className="p-2.5 text-gray-400 hover:text-[#ff6b6b] transition-colors bg-gray-50 rounded-xl border border-gray-100"
+                className="p-2.5 text-[var(--adm-text-secondary)] hover:text-[#ff6b6b] transition-colors bg-[var(--adm-bg)] rounded-xl border border-[var(--adm-border)]"
               >
                 <X size={16} />
               </button>
@@ -279,62 +279,64 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Revenue Chart */}
-        <div className="lg:col-span-2 bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
+        <div className="lg:col-span-2 bg-[var(--adm-card-bg)] rounded-[2rem] p-8 border border-[var(--adm-border)] shadow-sm">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-black text-[#3e4b5b]">Monthly Revenue</h3>
+            <h3 className="text-lg font-black text-[var(--adm-text-primary)]">Monthly Revenue</h3>
             <ChartLegend label="Revenue" color="#ff6b6b" />
           </div>
-          <div className="h-64 w-full relative">
-            {loading ? (
-              <div className="absolute inset-0 flex flex-col justify-between py-2">
-                {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="h-0.5 w-full bg-gray-50 skeleton" />
-                ))}
-                <div className="flex items-end justify-around h-48 px-4">
-                  {[1, 2, 3, 4, 5, 6].map(i => (
-                    <div key={i} className="w-10 bg-gray-100 rounded-t-lg skeleton" style={{ height: `${20 * i}%` }} />
+          <div className="h-64 w-full relative overflow-x-auto scrollbar-hide">
+            <div className="min-w-[500px] h-full">
+              {loading ? (
+                <div className="absolute inset-0 flex flex-col justify-between py-2">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="h-0.5 w-full bg-[var(--adm-bg)] skeleton" />
                   ))}
+                  <div className="flex items-end justify-around h-48 px-4">
+                    {[1, 2, 3, 4, 5, 6].map(i => (
+                      <div key={i} className="w-10 bg-gray-100 rounded-t-lg skeleton" style={{ height: `${20 * i}%` }} />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ) : monthlyRevenue.length > 0 ? (
-              <svg viewBox="0 0 600 200" className="w-full h-full overflow-visible">
-                {/* Grid */}
-                {[0, 1, 2, 3].map(i => (
-                  <line key={i} x1="0" y1={i * 50} x2="600" y2={i * 50} stroke="#f1f5f9" strokeWidth="1" />
-                ))}
-                {(() => {
-                  const maxVal = Math.max(...monthlyRevenue.map(m => m.total), 1);
-                  const barW = Math.min(50, 500 / monthlyRevenue.length);
-                  return monthlyRevenue.map((m, i) => {
-                    const x = (600 / (monthlyRevenue.length)) * i + barW;
-                    const h = (m.total / maxVal) * 170;
-                    const MONTH_NAMES = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-                    const [, mm] = m.month.split('-');
-                    const monthLabel = MONTH_NAMES[parseInt(mm) - 1] || mm;
-                    return (
-                      <g key={i}>
-                        <rect x={x - barW / 2} y={200 - h} width={barW} height={h} rx={6} fill="#ff6b6b" className="opacity-70 hover:opacity-100 transition-opacity cursor-pointer" />
-                        <text x={x} y={200 - h - 8} textAnchor="middle" className="text-[10px] font-bold fill-[#3e4b5b]">
-                          ৳{Math.round(m.total)}
-                        </text>
-                        <text x={x} y={218} textAnchor="middle" className="text-[9px] font-bold fill-gray-400 uppercase">
-                          {monthLabel}
-                        </text>
-                      </g>
-                    );
-                  });
-                })()}
-              </svg>
-            ) : (
-              <div className="flex items-center justify-center h-full text-gray-400 text-sm font-bold">No revenue data yet</div>
-            )}
+              ) : monthlyRevenue.length > 0 ? (
+                <svg viewBox="0 0 600 200" className="w-full h-full overflow-visible">
+                  {/* Grid */}
+                  {[0, 1, 2, 3].map(i => (
+                    <line key={i} x1="0" y1={i * 50} x2="600" y2={i * 50} stroke="#f1f5f9" strokeWidth="1" />
+                  ))}
+                  {(() => {
+                    const maxVal = Math.max(...monthlyRevenue.map(m => m.total), 1);
+                    const barW = Math.min(50, 500 / monthlyRevenue.length);
+                    return monthlyRevenue.map((m, i) => {
+                      const x = (600 / (monthlyRevenue.length)) * i + barW;
+                      const h = (m.total / maxVal) * 170;
+                      const MONTH_NAMES = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+                      const [, mm] = m.month.split('-');
+                      const monthLabel = MONTH_NAMES[parseInt(mm) - 1] || mm;
+                      return (
+                        <g key={i}>
+                          <rect x={x - barW / 2} y={200 - h} width={barW} height={h} rx={6} fill="#ff6b6b" className="opacity-70 hover:opacity-100 transition-opacity cursor-pointer" />
+                          <text x={x} y={200 - h - 8} textAnchor="middle" className="text-[10px] font-bold fill-[var(--adm-text-primary)]">
+                            ৳{Math.round(m.total)}
+                          </text>
+                          <text x={x} y={218} textAnchor="middle" className="text-[9px] font-bold fill-[var(--adm-text-secondary)] uppercase">
+                            {monthLabel}
+                          </text>
+                        </g>
+                      );
+                    });
+                  })()}
+                </svg>
+              ) : (
+                <div className="flex items-center justify-center h-full text-[var(--adm-text-secondary)] text-sm font-bold">No revenue data yet</div>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Order Status Breakdown */}
-        <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm flex flex-col">
-          <h3 className="text-lg font-black text-[#3e4b5b] mb-2">Order Status</h3>
-          <p className="text-xs font-medium text-gray-400 mb-6">Breakdown of all orders</p>
+        <div className="bg-[var(--adm-card-bg)] rounded-[2rem] p-8 border border-[var(--adm-border)] shadow-sm flex flex-col">
+          <h3 className="text-lg font-black text-[var(--adm-text-primary)] mb-2">Order Status</h3>
+          <p className="text-xs font-medium text-[var(--adm-text-secondary)] mb-6">Breakdown of all orders</p>
           <div className="flex-grow space-y-4">
             {loading ? (
               <div className="space-y-6">
@@ -359,8 +361,8 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
               return (
                 <div key={status}>
                   <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-[12px] font-bold text-[#3e4b5b]">{status}</span>
-                    <span className="text-[11px] font-black text-gray-400">{count as number} ({pct}%)</span>
+                    <span className="text-[12px] font-bold text-[var(--adm-text-primary)]">{status}</span>
+                    <span className="text-[11px] font-black text-[var(--adm-text-secondary)]">{count as number} ({pct}%)</span>
                   </div>
                   <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, backgroundColor: barColor }} />
@@ -369,7 +371,7 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
               );
             })}
             {Object.keys(ordersByStatus).length === 0 && (
-              <p className="text-sm text-gray-400 font-medium text-center py-8">No orders yet</p>
+              <p className="text-sm text-[var(--adm-text-secondary)] font-medium text-center py-8">No orders yet</p>
             )}
           </div>
         </div>
@@ -378,9 +380,9 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Low Stock Alerts */}
-        <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
+        <div className="bg-[var(--adm-card-bg)] rounded-[2rem] p-8 border border-[var(--adm-border)] shadow-sm">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-black text-[#3e4b5b] flex items-center gap-2">
+            <h3 className="text-lg font-black text-[var(--adm-text-primary)] flex items-center gap-2">
               <AlertTriangle size={18} className="text-amber-500" /> Low Stock
             </h3>
             <span className="text-[10px] font-black text-amber-500 bg-amber-50 px-2.5 py-1 rounded-lg">{lowStockProducts.length} items</span>
@@ -388,11 +390,11 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
           {loading ? (
             <div className="space-y-3">
               {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} className="h-12 w-full bg-gray-50 rounded-xl skeleton" />
+                <div key={i} className="h-12 w-full bg-[var(--adm-bg)] rounded-xl skeleton" />
               ))}
             </div>
           ) : lowStockProducts.length === 0 ? (
-            <p className="text-sm text-gray-400 font-medium text-center py-6">All products are well stocked! 🎉</p>
+            <p className="text-sm text-[var(--adm-text-secondary)] font-medium text-center py-6">All products are well stocked! 🎉</p>
           ) : (
             <div className="space-y-3">
               {lowStockProducts.map((p) => (
@@ -401,7 +403,7 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
                   to={`/adm/products/${p.id}/buyers`}
                   className="flex items-center justify-between p-3 bg-amber-50/50 rounded-xl border border-amber-100 hover:bg-amber-100/50 transition-all cursor-pointer group"
                 >
-                  <span className="text-[12px] font-bold text-[#3e4b5b] truncate max-w-[160px] group-hover:text-accent transition-colors">{p.title}</span>
+                  <span className="text-[12px] font-bold text-[var(--adm-text-primary)] truncate max-w-[160px] group-hover:text-accent transition-colors">{p.title}</span>
                   <span className={`text-[11px] font-black px-2 py-0.5 rounded-lg ${
                     (p.stock ?? 0) === 0 ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'
                   }`}>
@@ -414,33 +416,34 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
         </div>
 
         {/* Recent Orders */}
-        <div className="lg:col-span-2 bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
+        <div className="lg:col-span-2 bg-[var(--adm-card-bg)] rounded-[2rem] p-8 border border-[var(--adm-border)] shadow-sm">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-black text-[#3e4b5b]">Recent Orders</h3>
+            <h3 className="text-lg font-black text-[var(--adm-text-primary)]">Recent Orders</h3>
           </div>
           {loading ? (
             <div className="space-y-4">
               {[1, 2, 3, 4].map(i => (
-                <div key={i} className="h-14 w-full bg-gray-50 rounded-xl skeleton" />
+                <div key={i} className="h-14 w-full bg-[var(--adm-bg)] rounded-xl skeleton" />
               ))}
             </div>
           ) : recentOrders.length === 0 ? (
-            <p className="text-sm text-gray-400 font-medium text-center py-8">No orders yet</p>
+            <p className="text-sm text-[var(--adm-text-secondary)] font-medium text-center py-8">No orders yet</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              {/* Desktop Table View */}
+              <table className="w-full hidden md:table">
                 <thead>
                   <tr className="text-left border-b border-gray-50">
-                    <th className="pb-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Invoice</th>
-                    <th className="pb-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Customer</th>
-                    <th className="pb-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
-                    <th className="pb-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Amount</th>
+                    <th className="pb-3 text-[10px] font-black text-[var(--adm-text-secondary)] uppercase tracking-widest">Invoice</th>
+                    <th className="pb-3 text-[10px] font-black text-[var(--adm-text-secondary)] uppercase tracking-widest">Customer</th>
+                    <th className="pb-3 text-[10px] font-black text-[var(--adm-text-secondary)] uppercase tracking-widest">Status</th>
+                    <th className="pb-3 text-[10px] font-black text-[var(--adm-text-secondary)] uppercase tracking-widest text-right">Amount</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {recentOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-gray-50/50 transition-all">
-                      <td className="py-3 text-[12px] font-black text-[#3e4b5b]">{order.invoiceId}</td>
+                    <tr key={order.id} className="hover:bg-[var(--adm-bg)]/50 transition-all">
+                      <td className="py-3 text-[12px] font-black text-[var(--adm-text-primary)]">{order.invoiceId}</td>
                       <td className="py-3 text-[12px] font-bold text-gray-500">{order.customerName}</td>
                       <td className="py-3">
                         <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-lg ${
@@ -453,11 +456,35 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
                           {order.status}
                         </span>
                       </td>
-                      <td className="py-3 text-right text-[12px] font-black text-[#3e4b5b]">৳{(order.totalAmount || 0).toFixed(2)}</td>
+                      <td className="py-3 text-right text-[12px] font-black text-[var(--adm-text-primary)]">৳{(order.totalAmount || 0).toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-3">
+                {recentOrders.map((order) => (
+                  <div key={order.id} className="p-4 bg-[var(--adm-bg)] rounded-2xl border border-[var(--adm-border)] space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[12px] font-black text-[var(--adm-text-primary)]">{order.invoiceId}</span>
+                      <span className="text-[12px] font-black text-[var(--adm-text-primary)]">৳{(order.totalAmount || 0).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[11px] font-bold text-gray-500">{order.customerName}</span>
+                      <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-lg ${
+                        order.status === 'Delivered' ? 'bg-green-50 text-green-600' :
+                        order.status === 'Cancelled' ? 'bg-red-50 text-red-500' :
+                        order.status === 'Shipped' ? 'bg-purple-50 text-purple-600' :
+                        order.status === 'Processing' ? 'bg-blue-50 text-blue-600' :
+                        'bg-amber-50 text-amber-600'
+                      }`}>
+                        {order.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -487,22 +514,22 @@ const StatCard: React.FC<{ label: string; value: string; icon: React.ElementType
         </div>
       ) : (
         <>
-          <h4 className="text-lg md:text-xl font-black text-[#3e4b5b] tracking-tight mb-0.5">{value}</h4>
-          <p className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</p>
+          <h4 className="text-lg md:text-xl font-black text-[var(--adm-text-primary)] tracking-tight mb-0.5">{value}</h4>
+          <p className="text-[8px] md:text-[10px] font-black text-[var(--adm-text-secondary)] uppercase tracking-widest">{label}</p>
         </>
       )}
       {subtitle && (
         loading ? (
-          <div className="h-3 w-20 bg-gray-50 rounded mt-2 skeleton" />
+          <div className="h-3 w-20 bg-[var(--adm-bg)] rounded mt-2 skeleton" />
         ) : (
-          <p className="text-[9px] md:text-[10px] font-medium text-gray-400 mt-1 line-clamp-1">{subtitle}</p>
+          <p className="text-[9px] md:text-[10px] font-medium text-[var(--adm-text-secondary)] mt-1 line-clamp-1">{subtitle}</p>
         )
       )}
       <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#ff6b6b]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
     </>
   );
 
-  const className = "bg-white p-4 md:p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all group relative overflow-hidden block cursor-pointer";
+  const className = "bg-[var(--adm-card-bg)] p-4 md:p-5 rounded-2xl border border-[var(--adm-border)] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all group relative overflow-hidden block cursor-pointer";
 
   if (to) {
     return (
@@ -522,6 +549,6 @@ const StatCard: React.FC<{ label: string; value: string; icon: React.ElementType
 const ChartLegend: React.FC<{ label: string; color: string }> = ({ label, color }) => (
   <div className="flex items-center gap-2">
     <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-    <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">{label}</span>
+    <span className="text-[11px] font-black text-[var(--adm-text-secondary)] uppercase tracking-widest">{label}</span>
   </div>
 );

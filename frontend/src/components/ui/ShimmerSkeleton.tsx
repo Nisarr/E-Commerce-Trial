@@ -15,10 +15,10 @@ export const ShimmerSkeleton: React.FC<ShimmerSkeletonProps> = ({
 }) => {
   return (
     <div 
-      className={`relative overflow-hidden bg-gray-100 ${className}`}
+      className={`relative overflow-hidden bg-[var(--shimmer-bg)] ${className}`}
       style={{ width, height, borderRadius }}
     >
-      <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+      <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-[var(--shimmer-via)] to-transparent" />
     </div>
   );
 };

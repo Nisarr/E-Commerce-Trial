@@ -61,14 +61,14 @@ export const PopupManager: React.FC = () => {
   if (!settings) return null;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center justify-between">
+    <div className="max-w-4xl mx-auto space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2 md:px-0">
         <div>
-          <h1 className="text-3xl font-black text-primary">Popup Manager</h1>
-          <p className="text-muted font-medium">Configure the promotional popup shown to new visitors</p>
+          <h1 className="text-2xl md:text-3xl font-black text-primary">Popup Manager</h1>
+          <p className="text-muted font-medium text-[10px] md:text-sm">Configure the promotional popup shown to new visitors</p>
         </div>
-        <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm ${settings.isActive ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
-          {settings.isActive ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
+        <div className={`w-fit flex items-center gap-2 px-4 py-2 rounded-full font-bold text-[10px] md:text-sm ${settings.isActive ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+          {settings.isActive ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
           {settings.isActive ? 'Active' : 'Disabled'}
         </div>
       </div>
@@ -195,9 +195,9 @@ export const PopupManager: React.FC = () => {
         {/* Preview */}
         <div className="space-y-4">
           <label className="text-xs font-black text-primary uppercase tracking-widest ml-1">Live Preview</label>
-          <div className="sticky top-8 bg-gray-100 rounded-[3rem] p-8 border-4 border-white shadow-inner flex items-center justify-center min-h-[500px] overflow-hidden">
+          <div className="md:sticky md:top-8 bg-gray-100 rounded-[2rem] md:rounded-[3rem] p-4 md:p-8 border-4 border-white shadow-inner flex items-center justify-center min-h-[400px] md:min-h-[500px] overflow-hidden">
              {/* Simulating the popup inside a container */}
-             <div className="relative w-full max-w-sm bg-white rounded-[2rem] overflow-hidden shadow-2xl scale-90 origin-center">
+             <div className="relative w-full max-w-sm bg-white rounded-[1.5rem] md:rounded-[2rem] overflow-hidden shadow-2xl scale-90 md:scale-100 origin-center">
                 <button className="absolute top-4 right-4 p-2 bg-gray-100 rounded-full">
                   <X size={16} className="text-gray-400" />
                 </button>

@@ -93,15 +93,17 @@ export const ReturnManager: React.FC = () => {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <Filter size={14} className="text-gray-400" />
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap">
+        <div className="flex-shrink-0">
+          <Filter size={14} className="text-gray-400" />
+        </div>
         {STATUS_FILTERS.map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider transition-colors ${
+            className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap active:scale-95 ${
               filter === f
-                ? 'bg-primary text-white shadow'
+                ? 'bg-primary text-white shadow-lg shadow-primary/20'
                 : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
             }`}
           >

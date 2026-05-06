@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq, and, desc, isNull } from "drizzle-orm";
+import { eq, and, desc, isNull, or, inArray, sql } from "drizzle-orm";
 import * as schema from "../../../backend/server/db/schema";
 import type { Bindings, Variables } from "../types";
 
@@ -100,8 +100,63 @@ bulkRouter.get("/user", async (c) => {
       timestamp: new Date().toISOString()
     });
   } catch (error: any) {
-    console.error("Bulk user fetch error:", error.message);
     return c.json({ error: "Bulk user fetch failed", details: error.message }, 500);
+  }
+});
+
+/**
+ * Admin Stats for Sidebar badges.
+ */
+bulkRouter.get("/admin/stats", async (c) => {
+  const db = c.get("db");
+
+  try {
+    const [
+      pendingOrders,
+      pendingReturns,
+      pendingReviews,
+      unreadNotifications
+    ] = await Promise.all([
+      // 1. Pending Orders
+      db.select({ value: sql<number>`count(*)` })
+        .from(schema.orders)
+        .where(or(
+          eq(schema.orders.status, "Pending"),
+          eq(schema.orders.status, "pending"),
+          eq(schema.orders.status, "Pending Verification"),
+          eq(schema.orders.status, "Processing"),
+          eq(schema.orders.status, "processing")
+        )),
+      // 2. Pending Returns
+      db.select({ value: sql<number>`count(*)` })
+        .from(schema.returns)
+        .where(eq(schema.returns.status, "Requested")),
+      // 3. Pending Reviews
+      db.select({ value: sql<number>`count(*)` })
+        .from(schema.reviews)
+        .where(or(
+          eq(schema.reviews.status, "pending"),
+          eq(schema.reviews.status, "Pending")
+        )),
+      // 4. Unread Admin Notifications
+      db.select({ value: sql<number>`count(*)` })
+        .from(schema.notifications)
+        .where(and(
+          isNull(schema.notifications.userId),
+          eq(schema.notifications.isRead, 0)
+        ))
+    ]);
+
+    return c.json({
+      orders: pendingOrders[0]?.value ?? 0,
+      returns: pendingReturns[0]?.value ?? 0,
+      reviews: pendingReviews[0]?.value ?? 0,
+      notifications: unreadNotifications[0]?.value ?? 0,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error: any) {
+    console.error("Admin stats fetch error:", error.message);
+    return c.json({ orders: 0, returns: 0, reviews: 0, notifications: 0 }, 500);
   }
 });
 

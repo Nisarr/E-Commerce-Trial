@@ -61,6 +61,35 @@
   }
 }
 
+/* Admin Panel Theme Variables */
+:root {
+  --adm-bg: #f4f7fa;
+  --adm-card-bg: #ffffff;
+  --adm-card-border: #f3f4f6;
+  --adm-text-primary: #3e4b5b;
+  --adm-text-secondary: #9ca3af;
+  --adm-border: #e5e4e7;
+  --adm-nav-bg: rgba(244, 247, 250, 0.8);
+  --adm-sidebar-bg: #ffffff;
+  --adm-hover: #f8fafc;
+}
+
+[data-theme='dark'] {
+  --adm-bg: #0f172a;
+  --adm-card-bg: #1e293b;
+  --adm-card-border: #334155;
+  --adm-text-primary: #f8fafc;
+  --adm-text-secondary: #94a3b8;
+  --adm-border: #334155;
+  --adm-nav-bg: rgba(15, 23, 42, 0.8);
+  --adm-sidebar-bg: #1e293b;
+  --adm-hover: #334155;
+}
+
+.admin-theme-transition {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
 #root {
   width: 1126px;
   max-width: 100%;

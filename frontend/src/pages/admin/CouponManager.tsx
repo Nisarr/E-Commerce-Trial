@@ -312,7 +312,7 @@ export const CouponManager: React.FC = () => {
       )}
 
       {/* Coupon List */}
-      <div className="bg-white rounded-[2rem] shadow-xl shadow-primary/5 border border-gray-100 overflow-hidden">
+      <div className="bg-white md:rounded-[2rem] md:shadow-xl md:shadow-primary/5 md:border border-gray-100 overflow-hidden">
         {loading ? (
           <div className="p-8 space-y-4">
             {[1, 2, 3, 4, 5, 6].map(i => (
@@ -325,68 +325,129 @@ export const CouponManager: React.FC = () => {
             <p className="mt-4 font-bold">No coupons created yet</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-100 bg-gray-50/50">
-                  <th className="text-left px-6 py-4 font-black text-xs uppercase tracking-wider text-gray-400">Code</th>
-                  <th className="text-left px-4 py-4 font-black text-xs uppercase tracking-wider text-gray-400">Discount</th>
-                  <th className="text-center px-4 py-4 font-black text-xs uppercase tracking-wider text-gray-400">Usage</th>
-                  <th className="text-center px-4 py-4 font-black text-xs uppercase tracking-wider text-gray-400">Expires</th>
-                  <th className="text-center px-4 py-4 font-black text-xs uppercase tracking-wider text-gray-400">Active</th>
-                  <th className="text-center px-4 py-4 font-black text-xs uppercase tracking-wider text-gray-400">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {coupons.map((c) => {
-                  const isExpired = c.expiresAt && new Date(c.expiresAt).getTime() < now;
-                  return (
-                    <tr key={c.id} className={`border-b border-gray-50 hover:bg-gray-50/50 transition-colors ${isExpired ? 'opacity-50' : ''}`}>
-                      <td className="px-6 py-4">
-                        <span className="font-black text-primary bg-gray-100 px-3 py-1 rounded-lg text-xs tracking-wider">{c.code}</span>
-                        {c.description && <p className="text-xs text-muted mt-1">{c.description}</p>}
-                        <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${c.applicableType === 'all' ? 'bg-green-100 text-green-700' : c.applicableType === 'category' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                          {c.applicableType === 'all' ? 'All Products' : c.applicableType === 'category' ? 'Categories' : 'Products'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className="font-bold text-accent">
-                          {c.type === 'percentage' ? `${c.value}%` : `$${c.value.toFixed(2)}`}
-                        </span>
-                        {c.minOrderAmount ? <p className="text-[10px] text-muted">Min: ${c.minOrderAmount}</p> : null}
-                      </td>
-                      <td className="px-4 py-4 text-center text-xs font-bold text-muted">
-                        {c.usedCount || 0}{c.usageLimit ? ` / ${c.usageLimit}` : ' / ∞'}
-                      </td>
-                      <td className="px-4 py-4 text-center text-xs text-muted">
-                        {c.expiresAt ? (
-                          <span className="flex items-center justify-center gap-1">
-                            <Calendar size={11} />
-                            {new Date(c.expiresAt).toLocaleDateString()}
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100 bg-gray-50/50">
+                    <th className="text-left px-6 py-4 font-black text-xs uppercase tracking-wider text-gray-400">Code</th>
+                    <th className="text-left px-4 py-4 font-black text-xs uppercase tracking-wider text-gray-400">Discount</th>
+                    <th className="text-center px-4 py-4 font-black text-xs uppercase tracking-wider text-gray-400">Usage</th>
+                    <th className="text-center px-4 py-4 font-black text-xs uppercase tracking-wider text-gray-400">Expires</th>
+                    <th className="text-center px-4 py-4 font-black text-xs uppercase tracking-wider text-gray-400">Active</th>
+                    <th className="text-center px-4 py-4 font-black text-xs uppercase tracking-wider text-gray-400">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {coupons.map((c) => {
+                    const isExpired = c.expiresAt && new Date(c.expiresAt).getTime() < now;
+                    return (
+                      <tr key={c.id} className={`border-b border-gray-50 hover:bg-gray-50/50 transition-colors ${isExpired ? 'opacity-50' : ''}`}>
+                        <td className="px-6 py-4">
+                          <span className="font-black text-primary bg-gray-100 px-3 py-1 rounded-lg text-xs tracking-wider">{c.code}</span>
+                          {c.description && <p className="text-xs text-muted mt-1">{c.description}</p>}
+                          <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${c.applicableType === 'all' ? 'bg-green-100 text-green-700' : c.applicableType === 'category' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                            {c.applicableType === 'all' ? 'All Products' : c.applicableType === 'category' ? 'Categories' : 'Products'}
                           </span>
-                        ) : 'Never'}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <button onClick={() => handleToggleActive(c)} className="text-gray-400 hover:text-accent transition-colors">
-                          {c.isActive ? <ToggleRight size={24} className="text-green-500" /> : <ToggleLeft size={24} />}
-                        </button>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center justify-center gap-2">
-                          <button onClick={() => openEdit(c)} className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
-                            <Pencil size={14} />
+                        </td>
+                        <td className="px-4 py-4">
+                          <span className="font-bold text-accent">
+                            {c.type === 'percentage' ? `${c.value}%` : `$${c.value.toFixed(2)}`}
+                          </span>
+                          {c.minOrderAmount ? <p className="text-[10px] text-muted">Min: ${c.minOrderAmount}</p> : null}
+                        </td>
+                        <td className="px-4 py-4 text-center text-xs font-bold text-muted">
+                          {c.usedCount || 0}{c.usageLimit ? ` / ${c.usageLimit}` : ' / ∞'}
+                        </td>
+                        <td className="px-4 py-4 text-center text-xs text-muted">
+                          {c.expiresAt ? (
+                            <span className="flex items-center justify-center gap-1">
+                              <Calendar size={11} />
+                              {new Date(c.expiresAt).toLocaleDateString()}
+                            </span>
+                          ) : 'Never'}
+                        </td>
+                        <td className="px-4 py-4 text-center">
+                          <button onClick={() => handleToggleActive(c)} className="text-gray-400 hover:text-accent transition-colors">
+                            {c.isActive ? <ToggleRight size={24} className="text-green-500" /> : <ToggleLeft size={24} />}
                           </button>
-                          <button onClick={() => handleDelete(c.id)} className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors">
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="flex items-center justify-center gap-2">
+                            <button onClick={() => openEdit(c)} className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
+                              <Pencil size={14} />
+                            </button>
+                            <button onClick={() => handleDelete(c.id)} className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors">
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {coupons.map((c) => {
+                const isExpired = c.expiresAt && new Date(c.expiresAt).getTime() < now;
+                return (
+                  <div key={c.id} className={`p-4 space-y-4 ${isExpired ? 'opacity-50 grayscale-[0.5]' : ''}`}>
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-1">
+                        <span className="font-black text-primary bg-gray-100 px-3 py-1 rounded-lg text-xs tracking-wider block w-fit">{c.code}</span>
+                        <p className="text-xs text-gray-500 font-medium">{c.description || 'No description'}</p>
+                      </div>
+                      <button onClick={() => handleToggleActive(c)} className="text-gray-400">
+                        {c.isActive ? <ToggleRight size={28} className="text-green-500" /> : <ToggleLeft size={28} />}
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 py-3 border-y border-gray-50">
+                      <div className="space-y-1">
+                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Discount</p>
+                        <p className="text-sm font-black text-accent">{c.type === 'percentage' ? `${c.value}%` : `$${c.value.toFixed(2)}`}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Usage</p>
+                        <p className="text-[10px] text-gray-600 font-bold">{c.usedCount || 0}{c.usageLimit ? ` / ${c.usageLimit}` : ' / Unlimited'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Applies To</p>
+                        <span className={`inline-block px-2 py-0.5 rounded-[4px] text-[8px] font-black uppercase tracking-wider ${c.applicableType === 'all' ? 'bg-green-100 text-green-700' : c.applicableType === 'category' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                          {c.applicableType}
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Expiry</p>
+                        <p className={`text-[10px] font-bold ${isExpired ? 'text-red-500' : 'text-gray-600'}`}>
+                          {c.expiresAt ? new Date(c.expiresAt).toLocaleDateString() : 'No expiry'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => openEdit(c)}
+                        className="flex-1 py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black tracking-widest uppercase transition-all active:scale-95 border border-blue-100 flex items-center justify-center gap-2"
+                      >
+                        <Pencil size={12} /> Edit Record
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(c.id)}
+                        className="flex-1 py-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black tracking-widest uppercase transition-all active:scale-95 border border-red-100 flex items-center justify-center gap-2"
+                      >
+                        <Trash2 size={12} /> Delete
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
     </div>

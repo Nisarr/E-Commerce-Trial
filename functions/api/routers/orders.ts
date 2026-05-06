@@ -156,6 +156,22 @@ ordersRouter.post("/", async (c) => {
     createdAt: new Date(),
   });
 
+  // Admin Notification: System Log
+  try {
+    await db.insert(schema.notifications).values({
+      id: crypto.randomUUID(),
+      userId: null, // Global/Admin
+      title: `New Order: ${invoiceId}`,
+      message: `A new order has been placed by ${body.customerName} for $${totalAmount.toFixed(2)}.`,
+      type: "new_order",
+      orderId: id,
+      isRead: 0,
+      createdAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error("Failed to insert admin order notification:", err);
+  }
+
   for (const item of body.items) {
     await db.insert(schema.orderItems).values({
       id: crypto.randomUUID(),

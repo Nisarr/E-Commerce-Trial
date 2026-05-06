@@ -25,14 +25,14 @@ export const AdminLogin: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
+    <div className="min-h-screen bg-[var(--adm-bg)] flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-[var(--adm-card-bg)] rounded-3xl shadow-2xl p-8 border border-[var(--adm-border)]">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Lock className="text-primary" size={32} />
+            <Lock className="text-[var(--adm-text-primary)]" size={32} />
           </div>
-          <h1 className="text-2xl font-black text-primary">Admin Portal</h1>
-          <p className="text-muted text-sm mt-2">Sign in to manage your store</p>
+          <h1 className="text-2xl font-black text-[var(--adm-text-primary)]">Admin Portal</h1>
+          <p className="text-[var(--adm-text-secondary)] text-sm mt-2">Sign in to manage your store</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -51,7 +51,7 @@ export const AdminLogin: React.FC = () => {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                className="w-full pl-12 pr-4 py-4 bg-[var(--adm-bg)] border border-[var(--adm-border)] rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 placeholder="Enter username"
                 required
               />
@@ -66,7 +66,7 @@ export const AdminLogin: React.FC = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                className="w-full pl-12 pr-4 py-4 bg-[var(--adm-bg)] border border-[var(--adm-border)] rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 placeholder="Enter password"
                 required
               />

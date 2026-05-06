@@ -89,6 +89,22 @@ returnsRouter.post("/", async (c) => {
     createdAt: new Date(),
   });
 
+  // Admin Notification: System Log
+  try {
+    await db.insert(schema.notifications).values({
+      id: crypto.randomUUID(),
+      userId: null, // Global/Admin
+      title: body.type === "cancellation" ? "New Cancellation" : "New Return Request",
+      message: `${body.type === "cancellation" ? "Cancellation" : "Return"} request for order ${order.invoiceId} by user ${body.userId}. Reason: ${body.reason}`,
+      type: body.type === "cancellation" ? "new_cancellation" : "new_return",
+      orderId: body.orderId,
+      isRead: 0,
+      createdAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error("Failed to insert admin return/cancellation notification:", err);
+  }
+
   // If cancellation, update order status immediately
   if (body.type === "cancellation") {
     await db.update(schema.orders)

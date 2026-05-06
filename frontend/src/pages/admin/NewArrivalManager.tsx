@@ -121,28 +121,28 @@ export const NewArrivalManager: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
-      <div className="flex justify-between items-end">
+    <div className="space-y-4 md:space-y-8 max-w-6xl mx-auto">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
         <div>
-          <h2 className="text-3xl font-black text-primary tracking-tight mb-2">New Arrival Products</h2>
-          <p className="text-muted font-medium">Manage products featured in the "New Arrivals" section.</p>
+          <h2 className="text-xl md:text-3xl font-black text-primary tracking-tight">New Arrivals</h2>
+          <p className="text-[10px] md:text-sm text-muted font-medium mt-0.5">Featured in the "New Arrivals" section.</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-2 w-full md:w-auto">
           <button 
             onClick={handleAutoSync}
             disabled={syncing}
-            className="flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-lg shadow-emerald-200 hover:bg-emerald-600 disabled:opacity-50"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-2.5 md:py-3 bg-emerald-500 text-white rounded-xl md:rounded-2xl font-black uppercase tracking-widest text-[10px] md:text-xs transition-all shadow-lg shadow-emerald-200 hover:bg-emerald-600 disabled:opacity-50"
           >
-            {syncing ? <Loader2 className="animate-spin" size={18} /> : <Zap size={18} />}
-            Auto Calculate
+            {syncing ? <Loader2 className="animate-spin" size={14} /> : <Zap size={14} />}
+            Auto Sync
           </button>
           <button 
             onClick={() => setIsAdding(!isAdding)}
-            className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all ${
+            className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-2.5 md:py-3 rounded-xl md:rounded-2xl font-black uppercase tracking-widest text-[10px] md:text-xs transition-all ${
               isAdding ? 'bg-gray-100 text-primary' : 'bg-orange-500 text-white shadow-lg shadow-orange-200 hover:bg-orange-600'
             }`}
           >
-            {isAdding ? 'Close Selector' : <><Plus size={18} /> Force Products</>}
+            {isAdding ? 'Close' : <><Plus size={14} /> Force</>}
           </button>
         </div>
       </div>
@@ -216,8 +216,9 @@ export const NewArrivalManager: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-[2.5rem] shadow-xl shadow-primary/5 border border-gray-100 overflow-hidden">
-        <table className="w-full text-left">
+      <div className="bg-white md:rounded-[2.5rem] md:shadow-xl shadow-primary/5 md:border border-gray-100 overflow-hidden">
+        {/* Desktop Table View */}
+        <table className="w-full text-left hidden md:table">
           <thead className="bg-gray-50/50 border-b border-gray-100">
             <tr>
               <th className="px-8 py-5 font-black text-primary text-[10px] uppercase tracking-[0.2em]">Active New Arrivals</th>
@@ -286,16 +287,57 @@ export const NewArrivalManager: React.FC = () => {
             )}
           </tbody>
         </table>
+
+        {/* Mobile Card View */}
+        <div className="md:hidden divide-y divide-gray-100">
+          {filteredItems.map(product => {
+            let imgs: string[];
+            try {
+              imgs = typeof product.images === 'string' ? JSON.parse(product.images) : (product.images || []);
+            } catch { 
+              imgs = []; 
+            }
+
+            return (
+              <div key={product.id} className="p-4 space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-gray-100 rounded-xl overflow-hidden shrink-0">
+                    <img src={imgs[0] || '/placeholder.jpg'} alt="" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-grow min-w-0">
+                    <h3 className="font-bold text-primary text-sm truncate">{product.title}</h3>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-black text-emerald-600">Added {new Date(product.createdAt || 0).toLocaleDateString()}</span>
+                      <span className="text-[10px] text-muted font-bold uppercase tracking-widest">{product.brand}</span>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => handleToggle(product)}
+                    className="p-2.5 bg-red-50 text-red-500 rounded-xl active:scale-95 transition-all"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+          {items.length === 0 && (
+            <div className="p-12 text-center text-gray-400">
+              <Sparkles size={32} className="mx-auto mb-2 opacity-20" />
+              <p className="text-xs font-black uppercase tracking-widest">No new arrivals</p>
+            </div>
+          )}
+        </div>
       </div>
       
-      <div className="bg-emerald-50/50 rounded-3xl p-6 border-2 border-dashed border-emerald-200 flex items-center gap-6">
-        <div className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 shrink-0">
-          <Package size={24} />
+      <div className="bg-emerald-50/50 rounded-2xl md:rounded-3xl p-4 md:p-6 border-2 border-dashed border-emerald-200 flex items-center gap-4 md:gap-6">
+        <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-100 rounded-xl md:rounded-2xl flex items-center justify-center text-emerald-600 shrink-0">
+          <Package size={20} />
         </div>
         <div>
-          <h4 className="font-black text-primary text-xs uppercase tracking-widest">Logic & Ranking</h4>
-          <p className="text-xs text-muted font-medium mt-1">
-            "Auto Calculate" picks the <span className="font-bold text-emerald-600">8 most recently added products</span>. 
+          <h4 className="font-black text-primary text-[10px] md:text-xs uppercase tracking-widest">Logic & Ranking</h4>
+          <p className="text-[10px] md:text-xs text-muted font-medium mt-0.5 md:mt-1">
+            "Auto Sync" picks the <span className="font-bold text-emerald-600">8 most recently added products</span>. 
             You can manually "Force" any product to be a New Arrival.
           </p>
         </div>

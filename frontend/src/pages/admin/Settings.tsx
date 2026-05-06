@@ -103,17 +103,17 @@ export const AdminSettings: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="max-w-2xl mx-auto space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
 
       {/* ── Email Notifications ── */}
-      <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-primary/5 border border-gray-100">
+      <div className="bg-white rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-8 shadow-xl shadow-primary/5 border border-gray-100">
         <div className="flex items-center gap-3 mb-2">
           <div className="h-10 w-10 bg-blue-50 rounded-xl flex items-center justify-center">
             <Bell className="text-blue-500" size={20} />
           </div>
           <div>
-            <h2 className="text-2xl font-black text-primary">Email Notifications</h2>
-            <p className="text-muted font-medium text-sm">Configure where order notification emails are sent</p>
+            <h2 className="text-xl md:text-2xl font-black text-primary">Email Notifications</h2>
+            <p className="text-muted font-medium text-[10px] md:text-sm">Configure where order notification emails are sent</p>
           </div>
         </div>
 
@@ -182,14 +182,14 @@ export const AdminSettings: React.FC = () => {
       </div>
 
       {/* ── Payment Settings ── */}
-      <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-primary/5 border border-gray-100">
+      <div className="bg-white rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-8 shadow-xl shadow-primary/5 border border-gray-100">
         <div className="flex items-center gap-3 mb-2">
           <div className="h-10 w-10 bg-orange-50 rounded-xl flex items-center justify-center">
             <CheckCircle className="text-orange-500" size={20} />
           </div>
           <div>
-            <h2 className="text-2xl font-black text-primary">Payment Settings</h2>
-            <p className="text-muted font-medium text-sm">Configure MFS numbers for customer payments</p>
+            <h2 className="text-xl md:text-2xl font-black text-primary">Payment Settings</h2>
+            <p className="text-muted font-medium text-[10px] md:text-sm">Configure MFS numbers for customer payments</p>
           </div>
         </div>
 
@@ -234,9 +234,9 @@ export const AdminSettings: React.FC = () => {
       </div>
 
       {/* ── Image Upload ── */}
-      <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-primary/5 border border-gray-100">
-        <h2 className="text-2xl font-black text-primary mb-2">Image Storage (ImgBB)</h2>
-        <p className="text-muted font-medium mb-8">Test your ImgBB integration here. Upload an image to get a permanent URL.</p>
+      <div className="bg-white rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-8 shadow-xl shadow-primary/5 border border-gray-100">
+        <h2 className="text-xl md:text-2xl font-black text-primary mb-2">Image Storage (ImgBB)</h2>
+        <p className="text-muted font-medium text-[10px] md:text-sm mb-8">Test your ImgBB integration here. Upload an image to get a permanent URL.</p>
 
         <div className="space-y-6">
           <ImageUpload 
@@ -278,7 +278,7 @@ export const AdminSettings: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-amber-50 rounded-[2.5rem] p-8 border border-amber-100">
+      <div className="bg-amber-50 rounded-[1.5rem] md:rounded-[2.5rem] p-6 md:p-8 border border-amber-100">
         <h3 className="text-lg font-black text-amber-800 mb-2">Technical Information</h3>
         <p className="text-sm font-medium text-amber-700/80 leading-relaxed">
           Your images are currently being uploaded to ImgBB using the API key provided in your environment variables. 

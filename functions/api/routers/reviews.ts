@@ -131,6 +131,22 @@ reviewsRouter.post("/", async (c) => {
     createdAt: new Date(),
   });
 
+  // Admin Notification: System Log
+  try {
+    await db.insert(schema.notifications).values({
+      id: crypto.randomUUID(),
+      userId: null, // Global/Admin
+      title: `New Review for Product`,
+      message: `User ${username} has submitted a new review for moderation.`,
+      type: "new_review",
+      orderId: deliveredOrders[0].orderId,
+      isRead: 0,
+      createdAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error("Failed to insert admin review notification:", err);
+  }
+
   return c.json({
     id,
     message: "Review submitted successfully and is awaiting approval.",
