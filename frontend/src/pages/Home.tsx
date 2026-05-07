@@ -8,8 +8,11 @@ import { NewArrivalsTabbed } from '../components/home/NewArrivalsTabbed';
 import { SpecialOfferCountdown } from '../components/home/SpecialOfferCountdown';
 import { BestSelling } from '../components/home/BestSelling';
 import { RecentlyViewed } from '../components/RecentlyViewed';
+import { useLicenseStore } from '../store/licenseStore';
 
 export const Home: React.FC = () => {
+  const isPremium = useLicenseStore((s) => s.isPremium);
+
   return (
     <main className="flex flex-col min-h-screen">
       <Helmet>
@@ -22,11 +25,11 @@ export const Home: React.FC = () => {
       <HeroSection />
       <FeaturedCategories />
       <TrendingProducts />
-      <PromoBanner position="mid-1" />
+      {isPremium && <PromoBanner position="mid-1" />}
       <NewArrivalsTabbed />
-      <SpecialOfferCountdown />
+      {isPremium && <SpecialOfferCountdown />}
       <BestSelling />
-      <PromoBanner position="mid-2" />
+      {isPremium && <PromoBanner position="mid-2" />}
       <RecentlyViewed />
     </main>
   );

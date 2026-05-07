@@ -111,37 +111,106 @@ const v1 = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 // API Security Middleware (for non-GET requests to protected paths)
 v1.use("*", async (c, next) => {
   const method = c.req.method;
-  if (method === 'GET') return await next();
-
   const path = c.req.path;
-  const publicPaths = [
-    "/api/v1/auth/", 
-    "/api/v1/orders", 
-    "/api/v1/reviews", 
-    "/api/v1/returns", 
-    "/api/v1/addresses", 
-    "/api/v1/users/", 
+  
+  // 1. Skip GET/OPTIONS/HEAD (Publicly accessible or handled by CORS)
+  if (['GET', 'OPTIONS', 'HEAD'].includes(method)) {
+    return await next();
+  }
+
+  // 2. Define Public Routes (Methods that are non-GET but public)
+  const publicPathPrefixes = [
+    "/api/v1/auth",
+    "/api/v1/orders",
+    "/api/v1/reviews",
+    "/api/v1/returns",
+    "/api/v1/addresses",
+    "/api/v1/users",
     "/api/v1/coupons/validate",
     "/api/v1/notifications"
   ];
   
-  const isPublic = publicPaths.some(p => path.startsWith(p));
+  const isPublic = publicPathPrefixes.some(p => path.startsWith(p));
   if (isPublic) return await next();
 
+  // 3. Security Check for Admin Operations
   const authHeader = c.req.header("Authorization");
   const apiKey = c.env.ADMIN_API_KEY;
 
   if (!apiKey || authHeader !== `Bearer ${apiKey}`) {
+    console.warn(`[Security] Unauthorized ${method} access to ${path}. Auth header: ${authHeader ? 'Present' : 'Missing'}`);
     return c.json({
       error: "Unauthorized",
       message: "Invalid or missing API key"
     }, 401);
   }
+  
   await next();
 });
 
+// ─── Premium Feature Guard Middleware (Orbit SaaS) ────────
+// Blocks access to premium-only API routes in trial mode.
+// Verifies license via Orbit SaaS API (cached per-request lifecycle).
+
+const PREMIUM_BLOCKED_ROUTES = [
+  "/api/v1/banners",
+  "/api/v1/coupons",
+  "/api/v1/wallet",
+  "/api/v1/popup",
+  "/api/v1/system/update-cache",
+];
+
+const PREMIUM_GET_BLOCKED = [
+  "/api/v1/dashboard/stats",
+  "/api/v1/bulk/admin",
+];
+
+let _premiumCache: { value: boolean; ts: number } | null = null;
+const PREMIUM_CACHE_TTL = 300_000; // 5 minutes
+
+async function checkPremiumLicense(licenseKey: string): Promise<boolean> {
+  if (_premiumCache && Date.now() - _premiumCache.ts < PREMIUM_CACHE_TTL) {
+    return _premiumCache.value;
+  }
+  try {
+    const res = await fetch("https://api.orbitsaas.cloud/license/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-License-Key": licenseKey },
+      body: JSON.stringify({ timestamp: Date.now() }),
+    });
+    const isPremium = res.ok ? ((await res.json()) as any).isPremium === true : false;
+    _premiumCache = { value: isPremium, ts: Date.now() };
+    return isPremium;
+  } catch {
+    // Network error → default to trial (safe fallback)
+    _premiumCache = { value: false, ts: Date.now() };
+    return false;
+  }
+}
+
+v1.use("*", async (c, next) => {
+  const path = c.req.path;
+  const method = c.req.method;
+
+  const isBlockedMutation = PREMIUM_BLOCKED_ROUTES.some(r => path.startsWith(r));
+  const isBlockedGet = method === "GET" && PREMIUM_GET_BLOCKED.some(r => path.startsWith(r));
+
+  if (!isBlockedMutation && !isBlockedGet) return await next();
+
+  // Check license
+  const licenseKey = c.env.LICENSE_KEY || "";
+  const isPremium = await checkPremiumLicense(licenseKey);
+
+  if (isPremium) return await next();
+
+  return c.json({
+    error: "PremiumRequired",
+    message: "This feature requires a Premium subscription. Contact Orbit SaaS to upgrade.",
+    upgradeUrl: "https://orbitsaas.cloud/"
+  }, 403);
+});
+
 // Mount Sub-routers
-v1.route("/", systemRouter);
 v1.route("/auth", authRouter);
 v1.route("/users", usersRouter);
 v1.route("/products", productsRouter);

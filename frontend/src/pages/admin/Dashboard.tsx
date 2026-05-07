@@ -4,6 +4,7 @@ import {
   AlertTriangle, Calendar, ChevronDown, X
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { PremiumGate } from '../../components/PremiumGate';
 
 interface DashboardOrder {
   id: string;
@@ -145,7 +146,8 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
           <p className="text-[13px] md:text-sm font-medium text-[var(--adm-text-secondary)] mt-1">Here's what's happening with your store today.</p>
         </div>
 
-        {/* Timeline Picker */}
+        {/* Timeline Picker — Premium Only */}
+        <PremiumGate inline>
         <div className="relative">
           <button
             onClick={() => setIsTimelineOpen(!isTimelineOpen)}
@@ -184,6 +186,7 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
             </>
           )}
         </div>
+        </PremiumGate>
       </div>
 
       {/* Custom Date Range Picker */}
@@ -238,6 +241,7 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
 
       {/* Quick Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <PremiumGate inline>
           <StatCard 
             label="Total Revenue" 
             value={`৳${(revenue || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`} 
@@ -247,6 +251,7 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
             to="/adm/orders" 
             loading={loading}
           />
+        </PremiumGate>
           <StatCard 
             label="Products" 
             value={counts.products.toLocaleString()} 
@@ -276,7 +281,8 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
           />
       </div>
 
-      {/* Charts Row */}
+      {/* Charts Row — Premium Only */}
+      <PremiumGate inline>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Revenue Chart */}
         <div className="lg:col-span-2 bg-[var(--adm-card-bg)] rounded-[2rem] p-8 border border-[var(--adm-border)] shadow-sm">
@@ -376,10 +382,12 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
           </div>
         </div>
       </div>
+      </PremiumGate>
 
       {/* Bottom Row */}
+      <PremiumGate inline>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Low Stock Alerts */}
+        {/* Low Stock Alerts — Premium */}
         <div className="bg-[var(--adm-card-bg)] rounded-[2rem] p-8 border border-[var(--adm-border)] shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-black text-[var(--adm-text-primary)] flex items-center gap-2">
@@ -489,6 +497,7 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
           )}
         </div>
       </div>
+      </PremiumGate>
     </div>
   );
 };

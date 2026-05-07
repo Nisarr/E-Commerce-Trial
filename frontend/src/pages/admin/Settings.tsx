@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ImageUpload } from '../../components/admin/ImageUpload';
 import { CheckCircle, Copy, ExternalLink, Mail, Bell, Send, Loader2, AlertCircle } from 'lucide-react';
+import { PremiumGate } from '../../components/PremiumGate';
 
 export const AdminSettings: React.FC = () => {
   const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
@@ -105,7 +106,8 @@ export const AdminSettings: React.FC = () => {
   return (
     <div className="max-w-2xl mx-auto space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
 
-      {/* ── Email Notifications ── */}
+      {/* ── Email Notifications (Premium) ── */}
+      <PremiumGate inline>
       <div className="bg-white rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-8 shadow-xl shadow-primary/5 border border-gray-100">
         <div className="flex items-center gap-3 mb-2">
           <div className="h-10 w-10 bg-blue-50 rounded-xl flex items-center justify-center">
@@ -180,8 +182,10 @@ export const AdminSettings: React.FC = () => {
           </p>
         </div>
       </div>
+      </PremiumGate>
 
-      {/* ── Payment Settings ── */}
+      {/* ── Payment Settings (Premium) ── */}
+      <PremiumGate inline>
       <div className="bg-white rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-8 shadow-xl shadow-primary/5 border border-gray-100">
         <div className="flex items-center gap-3 mb-2">
           <div className="h-10 w-10 bg-orange-50 rounded-xl flex items-center justify-center">
@@ -232,6 +236,7 @@ export const AdminSettings: React.FC = () => {
           </button>
         </div>
       </div>
+      </PremiumGate>
 
       {/* ── Image Upload ── */}
       <div className="bg-white rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-8 shadow-xl shadow-primary/5 border border-gray-100">

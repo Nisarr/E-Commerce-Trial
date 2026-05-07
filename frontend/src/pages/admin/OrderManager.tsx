@@ -31,7 +31,7 @@ export const OrderManager: React.FC = () => {
   const [isAdminEditing, setIsAdminEditing] = useState(false);
 
   // Using the admin key from local storage or config
-  const adminKey = localStorage.getItem('admin_key') || 'adm_sk_72e829fc89d4e37decb405dace50ba5c';
+  const adminKey = localStorage.getItem('admin_key') || import.meta.env.VITE_ADMIN_API_KEY;
 
   const fetchOrders = async () => {
     try {

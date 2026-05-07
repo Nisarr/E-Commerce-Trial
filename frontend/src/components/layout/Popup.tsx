@@ -4,13 +4,17 @@ import { Button } from '../ui/Button';
 import { getPopupSettings } from '../../services/api';
 import type { PopupSettings } from '../../types';
 import { useNavigate } from 'react-router-dom';
+import { useLicenseStore } from '../../store/licenseStore';
 
 export const Popup: React.FC = () => {
+  const isPremium = useLicenseStore((s) => s.isPremium);
   const [isOpen, setIsOpen] = useState(false);
   const [settings, setSettings] = useState<PopupSettings | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Popup is a premium-only feature — skip fetching in trial
+    if (!isPremium) return;
     const fetchSettings = async () => {
       try {
         const data = await getPopupSettings();
@@ -50,7 +54,7 @@ export const Popup: React.FC = () => {
     closePopup();
   };
 
-  if (!isOpen || !settings || !settings.isActive) return null;
+  if (!isPremium || !isOpen || !settings || !settings.isActive) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">

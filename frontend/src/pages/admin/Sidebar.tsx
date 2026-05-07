@@ -17,10 +17,13 @@ import {
   Sparkles,
   Gift,
   RefreshCw,
-  Loader2
+  Loader2,
+  Lock
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
+import { useLicenseStore } from '../../store/licenseStore';
+import { PREMIUM_SIDEBAR_IDS } from '../../utils/featureGate';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -46,7 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, isOpen, onClose }) 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const adminKey = localStorage.getItem('admin_key') || 'adm_sk_72e829fc89d4e37decb405dace50ba5c';
+        const adminKey = localStorage.getItem('admin_key') || import.meta.env.VITE_ADMIN_API_KEY;
         const res = await fetch('/api/v1/bulk/admin/stats', {
           headers: { 'Authorization': `Bearer ${adminKey}` }
         });
@@ -159,6 +162,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, isOpen, onClose }) 
               <div className="space-y-2">
                 {section.items.map((item) => {
                   const isActive = item.id === activeTab;
+                  const isLocked = PREMIUM_SIDEBAR_IDS.has(item.id) && !useLicenseStore.getState().isPremium;
                   return (
                     <Link
                       key={item.id}
@@ -181,7 +185,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, isOpen, onClose }) 
                       <item.icon size={18} strokeWidth={isActive ? 2.5 : 2} className={`transition-transform ${isActive ? 'text-[#ff6b6b]' : 'text-[#64748b] group-hover:text-[#ff6b6b]'}`} />
                       
                       {(!isCollapsed || isOpen) && (
-                        <span className="flex-grow text-left">{item.label}</span>
+                        <span className="flex-grow text-left flex items-center gap-2">
+                          {item.label}
+                          {isLocked && (
+                            <Lock size={11} className="text-amber-500 opacity-80" />
+                          )}
+                        </span>
                       )}
 
                       {/* Notification Badges */}
@@ -237,8 +246,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, isOpen, onClose }) 
               setIsRefreshing(true);
               const toastId = toast.loading('Refreshing system cache...');
               try {
-                const adminKey = localStorage.getItem('admin_key') || 'adm_sk_72e829fc89d4e37decb405dace50ba5c';
-                const res = await fetch('/api/v1/system/refresh-cache', { 
+                const adminKey = localStorage.getItem('admin_key') || import.meta.env.VITE_ADMIN_API_KEY || 'adm_sk_5f18068b0cacf03c26800b13dd620c54';
+                const res = await fetch('/api/v1/system/update-cache', { 
                   method: 'POST',
                   headers: { 'Authorization': `Bearer ${adminKey}` }
                 });

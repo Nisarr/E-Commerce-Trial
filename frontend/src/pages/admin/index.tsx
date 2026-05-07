@@ -22,10 +22,13 @@ import { NotificationManager } from './NotificationManager';
 import { ProductBuyers } from './ProductBuyers';
 import { PopupManager } from './PopupManager';
 import { useAuthStore } from '../../store/authStore';
+import { useLicenseStore } from '../../store/licenseStore';
 import { BannerModal } from '../../components/admin/BannerModal';
 import { ProductModal } from '../../components/admin/ProductModal';
 import { CategoryModal } from '../../components/admin/CategoryModal';
 import { useUIStore } from '../../store/uiStore';
+import { PremiumGate, TrialLimitBanner } from '../../components/PremiumGate';
+import toast from 'react-hot-toast';
 
 export const AdminIndex: React.FC = () => {
   const { setIsAdminModalOpen, adminTheme } = useUIStore();
@@ -80,6 +83,8 @@ export const AdminIndex: React.FC = () => {
     const timeout = setTimeout(() => {
       fetchData();
     }, 0);
+    // Verify license with Orbit SaaS on admin mount
+    useLicenseStore.getState().verify();
     return () => clearTimeout(timeout);
   }, [isAdmin, fetchData]);
 
@@ -167,7 +172,18 @@ export const AdminIndex: React.FC = () => {
     }
   };
 
+  const { isPremium, maxProducts, maxCategories } = useLicenseStore();
+
   const openAddModal = () => {
+    // Enforce trial limits
+    if (!isPremium && (activeTab === 'products' || activeTab === 'inventory') && data.products.length >= maxProducts) {
+      toast.error(`Trial limit reached (${maxProducts}/${maxProducts} products). Contact Orbit SaaS to upgrade.`, { icon: '🔒' });
+      return;
+    }
+    if (!isPremium && activeTab === 'categories' && data.categories.length >= maxCategories) {
+      toast.error(`Trial limit reached (${maxCategories}/${maxCategories} categories). Contact Orbit SaaS to upgrade.`, { icon: '🔒' });
+      return;
+    }
     setEditingBanner(null);
     setEditingProduct(null);
     setEditingCategory(null);
@@ -251,48 +267,36 @@ export const AdminIndex: React.FC = () => {
                         }} 
                       />
                     } />
-                    <Route path="banners" element={
-                      <BannerManager 
-                        banners={data.banners} 
-                        onEdit={openEditBannerModal}
-                        onDelete={handleDeleteBanner}
-                      />
-                    } />
+                    <Route path="banners" element={<PremiumGate><BannerManager banners={data.banners} onEdit={openEditBannerModal} onDelete={handleDeleteBanner} /></PremiumGate>} />
                     <Route path="categories" element={
-                      <CategoryManager 
-                        categories={data.categories} 
-                        products={data.products}
-                        onEdit={openEditCategoryModal}
-                        onDelete={handleDeleteCategory}
-                      />
+                      <>
+                        <TrialLimitBanner current={data.categories.length} max={maxCategories} label="categories" />
+                        <CategoryManager categories={data.categories} products={data.products} onEdit={openEditCategoryModal} onDelete={handleDeleteCategory} />
+                      </>
                     } />
                     <Route path="products" element={
-                      <ProductManager 
-                        products={data.products} 
-                        categories={data.categories}
-                        onEdit={openEditProductModal}
-                        onDelete={handleDeleteProduct}
-                      />
+                      <>
+                        <TrialLimitBanner current={data.products.length} max={maxProducts} label="products" />
+                        <ProductManager products={data.products} categories={data.categories} onEdit={openEditProductModal} onDelete={handleDeleteProduct} />
+                      </>
                     } />
                     <Route path="inventory" element={
-                      <ProductManager 
-                        products={data.products} 
-                        categories={data.categories}
-                        onEdit={openEditProductModal}
-                        onDelete={handleDeleteProduct}
-                      />
+                      <>
+                        <TrialLimitBanner current={data.products.length} max={maxProducts} label="products" />
+                        <ProductManager products={data.products} categories={data.categories} onEdit={openEditProductModal} onDelete={handleDeleteProduct} />
+                      </>
                     } />
                     <Route path="orders" element={<OrderManager />} />
-                    <Route path="customers" element={<CustomerManager />} />
-                    <Route path="notifications" element={<NotificationManager />} />
-                    <Route path="reviews" element={<ReviewModeration />} />
-                    <Route path="coupons" element={<CouponManager />} />
-                    <Route path="returns" element={<ReturnManager />} />
-                    <Route path="special-offers" element={<SpecialOfferManager />} />
-                    <Route path="best-selling" element={<BestSellingManager />} />
-                    <Route path="new-arrivals" element={<NewArrivalManager />} />
-                    <Route path="products/:id/buyers" element={<ProductBuyers />} />
-                    <Route path="popup" element={<PopupManager />} />
+                    <Route path="customers" element={<PremiumGate><CustomerManager /></PremiumGate>} />
+                    <Route path="notifications" element={<PremiumGate><NotificationManager /></PremiumGate>} />
+                    <Route path="reviews" element={<PremiumGate><ReviewModeration /></PremiumGate>} />
+                    <Route path="coupons" element={<PremiumGate><CouponManager /></PremiumGate>} />
+                    <Route path="returns" element={<PremiumGate><ReturnManager /></PremiumGate>} />
+                    <Route path="special-offers" element={<PremiumGate><SpecialOfferManager /></PremiumGate>} />
+                    <Route path="best-selling" element={<PremiumGate><BestSellingManager /></PremiumGate>} />
+                    <Route path="new-arrivals" element={<PremiumGate><NewArrivalManager /></PremiumGate>} />
+                    <Route path="products/:id/buyers" element={<PremiumGate><ProductBuyers /></PremiumGate>} />
+                    <Route path="popup" element={<PremiumGate><PopupManager /></PremiumGate>} />
                     <Route path="settings" element={<AdminSettings />} />
                     {/* Fallback */}
                     <Route path="*" element={<Navigate to="/adm/dashboard" replace />} />

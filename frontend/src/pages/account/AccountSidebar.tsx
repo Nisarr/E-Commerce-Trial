@@ -5,8 +5,9 @@ import {
   User, MapPin, CreditCard, Wallet,
   Package, RotateCcw, XCircle,
   Star, Heart, LogOut,
-  ShieldCheck, Bell
+  ShieldCheck, Bell, Lock
 } from 'lucide-react';
+import { useLicenseStore } from '../../store/licenseStore';
 
 interface SidebarSection {
   title: string;
@@ -15,6 +16,7 @@ interface SidebarSection {
     label: string;
     to: string;
     comingSoon?: boolean;
+    premium?: boolean;
   }[];
 }
 
@@ -24,23 +26,23 @@ const sections: SidebarSection[] = [
     items: [
       { icon: User, label: 'My Profile', to: '/account/profile' },
       { icon: MapPin, label: 'Address Book', to: '/account/addresses' },
-      { icon: CreditCard, label: 'My Payment Options', to: '/account/payments' },
-      { icon: Wallet, label: 'Wallet', to: '/account/wallet', comingSoon: true },
+      { icon: CreditCard, label: 'My Payment Options', to: '/account/payments', premium: true },
+      { icon: Wallet, label: 'Wallet', to: '/account/wallet', premium: true },
     ],
   },
   {
     title: 'My Orders',
     items: [
       { icon: Package, label: 'Order History', to: '/account/orders' },
-      { icon: RotateCcw, label: 'My Returns', to: '/account/returns' },
-      { icon: XCircle, label: 'My Cancellations', to: '/account/cancellations' },
+      { icon: RotateCcw, label: 'My Returns', to: '/account/returns', premium: true },
+      { icon: XCircle, label: 'My Cancellations', to: '/account/cancellations', premium: true },
     ],
   },
   {
     title: 'My Engagement',
     items: [
-      { icon: Star, label: 'My Reviews', to: '/account/reviews' },
-      { icon: Bell, label: 'My Notifications', to: '/account/notifications' },
+      { icon: Star, label: 'My Reviews', to: '/account/reviews', premium: true },
+      { icon: Bell, label: 'My Notifications', to: '/account/notifications', premium: true },
       { icon: Heart, label: 'My Wishlist', to: '/wishlist' },
     ],
   },
@@ -49,6 +51,7 @@ const sections: SidebarSection[] = [
 export const AccountSidebar: React.FC = () => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const isPremium = useLicenseStore((s) => s.isPremium);
 
   const handleLogout = () => {
     logout();
@@ -82,9 +85,9 @@ export const AccountSidebar: React.FC = () => {
                   <NavLink
                     to={item.to}
                     className={({ isActive }) =>
-                      `sidebar-link ${isActive && !item.comingSoon ? 'sidebar-link--active' : ''} ${item.comingSoon ? 'opacity-70 pointer-events-none grayscale' : ''}`
+                      `sidebar-link ${isActive && !item.comingSoon && !(item.premium && !isPremium) ? 'sidebar-link--active' : ''} ${item.comingSoon || (item.premium && !isPremium) ? 'opacity-70 pointer-events-none grayscale' : ''}`
                     }
-                    onClick={(e) => item.comingSoon && e.preventDefault()}
+                    onClick={(e) => (item.comingSoon || (item.premium && !isPremium)) && e.preventDefault()}
                   >
                     <item.icon size={17} className="sidebar-link-icon" />
                     <span className="sidebar-link-label flex items-center justify-between">
@@ -92,6 +95,11 @@ export const AccountSidebar: React.FC = () => {
                       {item.comingSoon && (
                         <span className="text-[9px] font-bold uppercase tracking-wider bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-md ml-2 border border-orange-200">
                           Soon
+                        </span>
+                      )}
+                      {item.premium && !isPremium && (
+                        <span className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded-md ml-2 border border-amber-200">
+                          <Lock size={9} /> Premium
                         </span>
                       )}
                     </span>
