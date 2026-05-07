@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Deluxe Playpen",
+    "brand": "LittleOrbit",
+    "category": "Gear",
+    "price": 149.99,
+    "tags": ["playpen", "babygear", "safety", "vibrant", "portable"],
+    "image": "playpen.png"
+  },
+  {
+    "name": "Educational Baby Mat",
+    "brand": "CloudSoft Kids",
+    "category": "Toys",
+    "price": 59.99,
+    "tags": ["babymat", "educational", "toys", "nursery", "softplay"],
+    "image": "baby_mat.png"
+  },
+  {
+    "name": "Breathable Guard Rail",
+    "brand": "SafeHaven",
+    "category": "Safety",
+    "price": 39.99,
+    "tags": ["safety", "bedguard", "babybedding", "protection", "toddler"],
+    "image": "guard_rail.png"
+  },
+  {
+    "name": "Nordic Baby Swing",
+    "brand": "OrbitDesign",
+    "category": "Gear",
+    "price": 189.99,
+    "tags": ["babyswing", "nordicdesign", "premium", "babygear", "nursery"],
+    "image": "baby_swing.png"
+  },
+  {
+    "name": "Modern Safety Gate",
+    "brand": "GuardPro",
+    "category": "Safety",
+    "price": 79.99,
+    "tags": ["safetygate", "homesafety", "toddler", "staircase", "security"],
+    "image": "safety_gate.png"
+  }
+]

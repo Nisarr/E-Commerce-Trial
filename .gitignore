@@ -1,13 +1,17 @@
 # Dependencies
 node_modules/
-garbage/
+
+# Secrets
+.env*
+.dev.vars
+env/
+keys/
 
 # Build output
 dist/
 
 # Cloudflare
 .wrangler/
-.dev.vars
 
 # Local DB
 *.db

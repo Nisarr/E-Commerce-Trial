@@ -1,0 +1,72 @@
+[
+  {
+    "name": "Luxury Wooden Baby Playpen",
+    "category": "Playpens",
+    "price": 12500,
+    "tags": ["wooden", "playpen", "nursery", "safe", "premium"],
+    "image": "wooden_baby_playpen_1777915597040.png"
+  },
+  {
+    "name": "Soft Foam Play Mat",
+    "category": "Play Mats",
+    "price": 3200,
+    "tags": ["mat", "foam", "soft", "pastel", "crawling"],
+    "image": "soft_play_mat_1777915618432.png"
+  },
+  {
+    "name": "Interactive Activity Center",
+    "category": "Toys",
+    "price": 4500,
+    "tags": ["toy", "wooden", "interactive", "learning", "colorful"],
+    "image": "interactive_activity_center_1777915634045.png"
+  },
+  {
+    "name": "Portable Travel Cot",
+    "category": "Furniture",
+    "price": 8500,
+    "tags": ["cot", "travel", "portable", "sleep", "gray"],
+    "image": "portable_travel_cot_1777915656203.png"
+  },
+  {
+    "name": "Organic Cotton Baby Swaddle Set",
+    "category": "Clothing",
+    "price": 1800,
+    "tags": ["swaddle", "cotton", "organic", "sleepwear", "prints"],
+    "image": "cotton_baby_swaddle_1777915672963.png"
+  },
+  {
+    "name": "Smart Baby Monitor Camera",
+    "category": "Electronics",
+    "price": 6000,
+    "tags": ["monitor", "camera", "smart", "safety", "wireless"],
+    "image": "smart_baby_monitor_1777915690515.png"
+  },
+  {
+    "name": "Ergonomic Baby Carrier",
+    "category": "Travel & Gear",
+    "price": 5500,
+    "tags": ["carrier", "ergonomic", "travel", "mesh", "navy"],
+    "image": "ergonomic_baby_carrier_1777915707897.png"
+  },
+  {
+    "name": "Silicone Feeding Set",
+    "category": "Feeding",
+    "price": 2200,
+    "tags": ["feeding", "silicone", "plate", "bowl", "spoon", "sage"],
+    "image": "silicone_feeding_set_1777915726831.png"
+  },
+  {
+    "name": "Musical Crib Mobile",
+    "category": "Accessories",
+    "price": 2800,
+    "tags": ["mobile", "musical", "crib", "felt", "animals"],
+    "image": "musical_crib_mobile_1777915742334.png"
+  },
+  {
+    "name": "Lightweight Foldable Baby Stroller",
+    "category": "Strollers",
+    "price": 18500,
+    "tags": ["stroller", "foldable", "lightweight", "travel", "black"],
+    "image": "foldable_baby_stroller_1777915756711.png"
+  }
+]
