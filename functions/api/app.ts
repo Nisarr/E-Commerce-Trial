@@ -6,7 +6,8 @@ import { Hono } from "hono";
 import { handle } from "hono/cloudflare-pages";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import { drizzle } from "drizzle-orm/libsql";
+import { drizzle as drizzleLibSQL } from "drizzle-orm/libsql";
+import { drizzle as drizzleD1 } from "drizzle-orm/d1";
 import { createClient } from "@libsql/client";
 import * as schema from "../../backend/server/db/schema";
 
@@ -54,17 +55,24 @@ app.use("*", async (c, next) => {
     return await next();
   }
 
-  const url = c.env.TURSO_URL;
-  const authToken = c.env.TURSO_AUTH_TOKEN;
-
-  if (!url || !authToken) {
-    console.error("TURSO_URL or TURSO_AUTH_TOKEN not found in environment");
-    return await next();
-  }
-
   try {
-    const client = createClient({ url, authToken });
-    c.set("db", drizzle(client, { schema }));
+    // 1. Try Cloudflare D1 first (Native & Cloudflare Friendly)
+    if (c.env.DB) {
+      c.set("db", drizzleD1(c.env.DB, { schema }) as any);
+      return await next();
+    }
+
+    // 2. Fallback to Turso/LibSQL
+    const url = c.env.TURSO_URL;
+    const authToken = c.env.TURSO_AUTH_TOKEN;
+
+    if (url && authToken) {
+      const client = createClient({ url, authToken });
+      c.set("db", drizzleLibSQL(client, { schema }) as any);
+      return await next();
+    }
+
+    console.error("No database connection configured (D1 or Turso)");
     await next();
   } catch (error: any) {
     console.error("DB Initialization Error:", error);
