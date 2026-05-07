@@ -1,0 +1,348 @@
+# 🏪 PlayPen House — Trial vs Premium Feature Categorization
+
+> **Complete deep analysis** of every feature in the codebase, categorized into **Trial (Free)** and **Premium (Locked)** tiers for a subscription-based trial version.
+
+---
+
+## 📋 Guiding Principles
+
+The trial version should let a store owner **explore the platform** and perform basic store operations:
+- ✅ **Trial**: Add/manage products, browse the storefront, process basic orders
+- 🔒 **Premium**: Advanced business tools, analytics, marketing, customer engagement, and scaling features
+
+---
+
+## 🗂️ COMPLETE FEATURE INVENTORY
+
+### 1. Admin Authentication & Access
+
+| Feature | Tier | Rationale |
+|---------|------|-----------|
+| Admin Login (password-protected panel) | ✅ **Trial** | Essential to access any admin functionality |
+| Admin Logout | ✅ **Trial** | Basic session management |
+| Admin Sidebar Navigation | ✅ **Trial** | Core UI navigation (premium tabs show lock icon) |
+| Admin Navbar | ✅ **Trial** | Core UI component |
+| Theme Toggle (Light/Dark) | ✅ **Trial** | Basic UI preference |
+
+---
+
+### 2. Admin Dashboard (`/adm/dashboard`)
+
+| Feature | Tier | Rationale |
+|---------|------|-----------|
+| Basic Welcome Screen | ✅ **Trial** | Simple landing view |
+| Quick Stats Cards (Products, Categories, Orders count) | ✅ **Trial** | Basic counts only |
+| Revenue Analytics (Total Revenue, Monthly Revenue Charts) | 🔒 **Premium** | Advanced financial analytics |
+| Timeline/Date Range Filtering (7d, 1m, 3m, custom, lifetime) | 🔒 **Premium** | Advanced analytics filtering |
+| Order Status Breakdown (pie/bar chart) | 🔒 **Premium** | Advanced order analytics |
+| Low Stock Alerts | 🔒 **Premium** | Inventory intelligence |
+| Recent Orders Table | 🔒 **Premium** | Quick operational overview |
+
+**Trial Dashboard**: Shows product count, category count, and a basic order count only. All charts, revenue, and alerts are blurred/locked with an "Upgrade to Premium" overlay.
+
+---
+
+### 3. Product Management (`/adm/products`)
+
+| Feature | Tier | Rationale |
+|---------|------|-----------|
+| View Product List | ✅ **Trial** | Core feature |
+| Add New Product (with image upload via ImgBB) | ✅ **Trial** | Core feature |
+| Edit Product | ✅ **Trial** | Core feature |
+| Delete Product | ✅ **Trial** | Core feature |
+| Product Search/Filter in admin | ✅ **Trial** | Basic usability |
+| **Product Limit** | ✅ **Trial** (max **20 products**) | Trial restriction — unlimited in Premium |
+| Product Buyers List (`/adm/products/:id/buyers`) | 🔒 **Premium** | Advanced sales tracking |
+
+---
+
+### 4. Category Management (`/adm/categories`)
+
+| Feature | Tier | Rationale |
+|---------|------|-----------|
+| View Category List | ✅ **Trial** | Core feature |
+| Add New Category (with image, featured toggle) | ✅ **Trial** | Core feature |
+| Edit Category | ✅ **Trial** | Core feature |
+| Delete Category | ✅ **Trial** | Core feature |
+| **Category Limit** | ✅ **Trial** (max **5 categories**) | Trial restriction — unlimited in Premium |
+
+---
+
+### 5. Order Management (`/adm/orders`)
+
+| Feature | Tier | Rationale |
+|---------|------|-----------|
+| View All Orders (list view) | ✅ **Trial** | Core order fulfillment |
+| View Order Details (items, address, timeline) | ✅ **Trial** | Core order fulfillment |
+| Update Order Status (Pending → Processing → Shipped → Delivered) | ✅ **Trial** | Core order fulfillment |
+| Add Tracking Updates (location, notes) | ✅ **Trial** | Core order fulfillment |
+| Order Search (by invoice ID, customer) | ✅ **Trial** | Basic usability |
+| Order Filters (by status) | ✅ **Trial** | Basic usability |
+| **Order Email Notifications** (send to admin on new order) | 🔒 **Premium** | Automated notifications |
+| **Bulk Order Export** | 🔒 **Premium** | Advanced operations |
+| **Print Invoice / Download PDF** | 🔒 **Premium** | Professional operations |
+
+---
+
+### 6. Banner Management (`/adm/banners`)
+
+| Feature | Tier | Rationale |
+|---------|------|-----------|
+| View Banner List | 🔒 **Premium** | Marketing/promotional feature |
+| Add/Edit/Delete Banners | 🔒 **Premium** | Marketing/promotional feature |
+| Banner Positioning (hero, mid-1, mid-2) | 🔒 **Premium** | Advanced marketing |
+
+---
+
+### 7. Special Offers / Best Selling / New Arrivals Management
+
+| Feature | Tier | Rationale |
+|---------|------|-----------|
+| Special Offer Manager (`/adm/special-offers`) | 🔒 **Premium** | Marketing — countdown offers |
+| Best Selling Manager (`/adm/best-selling`) | 🔒 **Premium** | Marketing curation |
+| New Arrival Manager (`/adm/new-arrivals`) | 🔒 **Premium** | Marketing curation |
+| Tag Sync (auto-assign best-selling/new-arrival tags) | 🔒 **Premium** | Automated marketing |
+
+---
+
+### 8. Customer Management (`/adm/customers`)
+
+| Feature | Tier | Rationale |
+|---------|------|-----------|
+| View Customer List | 🔒 **Premium** | CRM feature |
+| Search Customers | 🔒 **Premium** | CRM feature |
+| View Customer Details (orders, reviews, status) | 🔒 **Premium** | CRM feature |
+| Block/Unblock Customers | 🔒 **Premium** | CRM feature |
+| Customer Verification Toggle | 🔒 **Premium** | CRM feature |
+
+---
+
+### 9. Coupon Management (`/adm/coupons`)
+
+| Feature | Tier | Rationale |
+|---------|------|-----------|
+| View Coupon List | 🔒 **Premium** | Marketing feature |
+| Create/Edit/Delete Coupons | 🔒 **Premium** | Marketing feature |
+| Coupon Validation API | 🔒 **Premium** | Marketing feature |
+| Discount Types (percentage, fixed) | 🔒 **Premium** | Marketing feature |
+| Coupon Usage Limits & Expiry | 🔒 **Premium** | Marketing feature |
+
+---
+
+### 10. Review Moderation (`/adm/reviews`)
+
+| Feature | Tier | Rationale |
+|---------|------|-----------|
+| View All Reviews | 🔒 **Premium** | Engagement management |
+| Approve/Reject/Flag Reviews | 🔒 **Premium** | Engagement management |
+| Delete Reviews | 🔒 **Premium** | Engagement management |
+
+---
+
+### 11. Return & Cancellation Management (`/adm/returns`)
+
+| Feature | Tier | Rationale |
+|---------|------|-----------|
+| View Return/Cancellation Requests | 🔒 **Premium** | Advanced operations |
+| Approve/Reject Returns | 🔒 **Premium** | Advanced operations |
+| Admin Notes on Returns | 🔒 **Premium** | Advanced operations |
+
+---
+
+### 12. Notification Management (`/adm/notifications`)
+
+| Feature | Tier | Rationale |
+|---------|------|-----------|
+| Push Notifications Dashboard | 🔒 **Premium** | Marketing & CRM |
+| Send Notifications to Users | 🔒 **Premium** | Marketing & CRM |
+| Notification History | 🔒 **Premium** | Marketing & CRM |
+
+---
+
+### 13. Popup Manager (`/adm/popup`)
+
+| Feature | Tier | Rationale |
+|---------|------|-----------|
+| Configure Popup Settings | 🔒 **Premium** | Marketing feature |
+| Enable/Disable Popup on storefront | 🔒 **Premium** | Marketing feature |
+| Customize Popup Content & Image | 🔒 **Premium** | Marketing feature |
+
+---
+
+### 14. Admin Settings (`/adm/settings`)
+
+| Feature | Tier | Rationale |
+|---------|------|-----------|
+| Image Upload Test (ImgBB) | ✅ **Trial** | Needed for product management |
+| Email Notification Configuration | 🔒 **Premium** | Advanced notification system |
+| Test Email Sending | 🔒 **Premium** | Advanced notification system |
+| Payment Settings (bKash/Nagad numbers) | 🔒 **Premium** | Advanced payment configuration |
+
+---
+
+### 15. System Operations
+
+| Feature | Tier | Rationale |
+|---------|------|-----------|
+| Update/Refresh Cache | 🔒 **Premium** | Infrastructure control |
+| System Health Endpoint | ✅ **Trial** | Basic operability |
+
+---
+
+### 16. Customer-Facing Storefront
+
+| Feature | Tier | Rationale |
+|---------|------|-----------|
+| Homepage (Hero, Categories, Trending, Best Selling, etc.) | ✅ **Trial** | Core storefront |
+| Product Listing / Shop Page | ✅ **Trial** | Core storefront |
+| Product Detail Page | ✅ **Trial** | Core storefront |
+| Category Browsing | ✅ **Trial** | Core storefront |
+| Product Search | ✅ **Trial** | Core storefront |
+| Shopping Cart (add/remove/update) | ✅ **Trial** | Core commerce |
+| Checkout & Place Order (COD) | ✅ **Trial** | Core commerce |
+| User Registration & Login | ✅ **Trial** | Core user flow |
+| Wishlist | ✅ **Trial** | Core shopping experience |
+| Breadcrumbs | ✅ **Trial** | Basic navigation |
+| Mobile Bottom Nav | ✅ **Trial** | Core responsive UI |
+| Navbar & Footer | ✅ **Trial** | Core layout |
+| Quick View Modal | ✅ **Trial** | Core UX |
+| Recently Viewed Products | ✅ **Trial** | Core UX |
+| Special Offers / Countdown Display | 🔒 **Premium** | Tied to premium offer management |
+| Popup Display on Frontend | 🔒 **Premium** | Tied to premium popup management |
+| Promo Banners on Homepage | 🔒 **Premium** | Tied to premium banner management |
+
+---
+
+### 17. User Account Panel
+
+| Feature | Tier | Rationale |
+|---------|------|-----------|
+| Account Dashboard | ✅ **Trial** | Core user feature |
+| Order History | ✅ **Trial** | Core order tracking |
+| Order Details Modal (tracking timeline) | ✅ **Trial** | Core order tracking |
+| My Profile (edit name/phone) | ✅ **Trial** | Core account mgmt |
+| Address Book (CRUD) | ✅ **Trial** | Core account mgmt |
+| My Reviews | 🔒 **Premium** | Engagement feature |
+| My Returns | 🔒 **Premium** | Tied to premium returns management |
+| My Cancellations | 🔒 **Premium** | Tied to premium returns management |
+| Wallet Page | 🔒 **Premium** | Financial feature |
+| Payment Options | 🔒 **Premium** | Financial feature |
+| My Notifications | 🔒 **Premium** | Tied to premium notifications |
+| Forgot/Reset Password | ✅ **Trial** | Core security |
+
+---
+
+### 18. Backend API Routes
+
+| Route Module | Tier | Rationale |
+|-------------|------|-----------|
+| `/api/v1/auth/*` | ✅ **Trial** | Core auth |
+| `/api/v1/products/*` | ✅ **Trial** | Core product CRUD |
+| `/api/v1/categories/*` | ✅ **Trial** | Core category CRUD |
+| `/api/v1/orders/*` (create, list, update status) | ✅ **Trial** | Core order operations |
+| `/api/v1/users/*` | ✅ **Trial** | Core user operations |
+| `/api/v1/addresses/*` | ✅ **Trial** | Core address CRUD |
+| `/api/v1/bulk/home` | ✅ **Trial** | Core homepage data |
+| `/api/v1/bulk/user` | ✅ **Trial** | Core user bulk data |
+| `/api/v1/banners/*` | 🔒 **Premium** | Marketing |
+| `/api/v1/coupons/*` | 🔒 **Premium** | Marketing |
+| `/api/v1/reviews/*` | 🔒 **Premium** | Engagement management |
+| `/api/v1/returns/*` | 🔒 **Premium** | Advanced operations |
+| `/api/v1/wallet/*` | 🔒 **Premium** | Financial feature |
+| `/api/v1/notifications/*` | 🔒 **Premium** | CRM |
+| `/api/v1/dashboard/stats` | 🔒 **Premium** | Analytics |
+| `/api/v1/popup/*` | 🔒 **Premium** | Marketing |
+| `/api/v1/settings/*` | 🔒 **Premium** (partial — ImgBB test is Trial) | Configuration |
+| `/api/v1/system/refresh-cache` | 🔒 **Premium** | Infrastructure |
+
+---
+
+## 📊 SUMMARY TABLE
+
+| Category | Trial Features | Premium Features |
+|----------|:-:|:-:|
+| **Admin Auth & Navigation** | 5 | 0 |
+| **Dashboard** | 2 | 5 |
+| **Product Management** | 5 + (20 limit) | 1 |
+| **Category Management** | 4 + (5 limit) | 0 |
+| **Order Management** | 6 | 3 |
+| **Banner Management** | 0 | 3 |
+| **Marketing (Offers/Best/New)** | 0 | 4 |
+| **Customer Management** | 0 | 5 |
+| **Coupon Management** | 0 | 5 |
+| **Review Moderation** | 0 | 3 |
+| **Returns Management** | 0 | 3 |
+| **Notification Management** | 0 | 3 |
+| **Popup Manager** | 0 | 3 |
+| **Admin Settings** | 1 | 3 |
+| **Storefront (Customer)** | 14 | 3 |
+| **User Account Panel** | 6 | 5 |
+| **System Operations** | 1 | 1 |
+| **TOTAL** | **~44** | **~50** |
+
+---
+
+## 🎯 VISUAL OVERVIEW
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        ADMIN PANEL SIDEBAR                         │
+├────────────────────────┬────────────────────────────────────────────┤
+│  ✅ TRIAL (Unlocked)   │  🔒 PREMIUM (Locked)                     │
+│                        │                                            │
+│  • Dashboard (basic)   │  • Dashboard (analytics, charts, revenue) │
+│  • Products (≤20)      │  • Banners                                │
+│  • Categories (≤5)     │  • Special Offers                         │
+│  • Orders (full CRUD)  │  • Best Selling                           │
+│  • Settings (ImgBB)    │  • New Arrivals                           │
+│                        │  • Customers                              │
+│                        │  • Notifications                          │
+│                        │  • Reviews                                │
+│                        │  • Returns                                │
+│                        │  • Coupons                                │
+│                        │  • Popup Manager                          │
+│                        │  • Settings (Email, Payments)             │
+│                        │  • Product Buyers                         │
+├────────────────────────┴────────────────────────────────────────────┤
+│                         STOREFRONT                                  │
+├────────────────────────┬────────────────────────────────────────────┤
+│  ✅ TRIAL (Unlocked)   │  🔒 PREMIUM (Locked)                     │
+│                        │                                            │
+│  • Homepage            │  • Promo Banners                          │
+│  • Shop/Search/Browse  │  • Special Offer Countdown                │
+│  • Product Details     │  • Popup Overlay                          │
+│  • Cart & Checkout     │                                            │
+│  • Wishlist            │                                            │
+│  • User Registration   │                                            │
+│  • Account Dashboard   │                                            │
+│  • Order History       │                                            │
+│  • Address Book        │                                            │
+│  • Profile Management  │                                            │
+│  • Recently Viewed     │                                            │
+└────────────────────────┴────────────────────────────────────────────┘
+```
+
+---
+
+## ⚠️ Trial Version Restrictions Summary
+
+| Restriction | Trial Limit | Premium |
+|------------|:-----------:|:-------:|
+| Products | Max **20** | Unlimited |
+| Categories | Max **5** | Unlimited |
+| Orders | Unlimited ✅ | Unlimited |
+| Banners | ❌ Locked | Unlimited |
+| Coupons | ❌ Locked | Unlimited |
+| Customer CRM | ❌ Locked | Full Access |
+| Analytics Dashboard | Basic counts only | Full charts + revenue |
+| Marketing Tools | ❌ Locked | Full Access |
+| Email Notifications | ❌ Locked | Full Access |
+| Return Management | ❌ Locked | Full Access |
+
+---
+
+> [!IMPORTANT]
+> This categorization ensures the trial version is **fully functional for a small store owner to explore and test** — they can add products, set up categories, and process orders. All **advanced marketing, CRM, analytics, and scaling tools** are locked behind Premium to incentivize upgrade.
+
+> [!NOTE]
+> The storefront remains mostly functional in Trial mode so customers can still shop. Only promotional widgets (banners, popups, special offers) that require premium admin features are hidden on the storefront.
