@@ -96,6 +96,10 @@ api.get = (async function cachedGet(url: string, config?: { params?: Record<stri
     throw err;
   });
 
+  // Suppress unhandled rejection on the detached tracking promise.
+  // The caller handles errors via responsePromise (returned below).
+  dataPromise.catch(() => {});
+
   setInflight(cacheKey, dataPromise);
 
   return responsePromise;

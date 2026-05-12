@@ -60,14 +60,19 @@ export const AdminIndex: React.FC = () => {
 
   const fetchData = useCallback(async () => {
     try {
-      const [banners, categories, productsResponse] = await Promise.all([
+      const results = await Promise.allSettled([
         getBanners(),
         getCategories(false, true),
         getProducts({})
       ]);
+
+      const banners = results[0].status === 'fulfilled' ? results[0].value : [];
+      const categories = results[1].status === 'fulfilled' ? results[1].value : [];
+      const productsResponse = results[2].status === 'fulfilled' ? results[2].value : { items: [] };
+
       setData({
-        banners: banners,
-        categories: categories,
+        banners,
+        categories,
         products: productsResponse.items
       });
 
