@@ -60,7 +60,7 @@ export const PremiumGate: React.FC<PremiumGateProps> = ({
   return (
     <div className="relative min-h-[60vh]">
       {/* Blurred, non-interactive content (visible to attract the client) */}
-      <div className="opacity-[0.55] pointer-events-none select-none blur-[1px]">
+      <div className="opacity-[0.6] pointer-events-none select-none blur-[0.9px]">
         {children}
       </div>
 
@@ -69,7 +69,7 @@ export const PremiumGate: React.FC<PremiumGateProps> = ({
         <div className="relative flex flex-col items-center text-center px-8 py-10 md:px-12 md:py-14 bg-[var(--adm-card-bg)]/90 backdrop-blur-xl rounded-[2.5rem] border-2 border-amber-200/40 shadow-2xl shadow-amber-200/20 max-w-md mx-4 animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-700">
           {/* Decorative glow */}
           <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-32 h-12 bg-amber-400/20 rounded-full blur-2xl" />
-          
+
           {/* Crown Icon */}
           <div className="w-20 h-20 bg-gradient-to-br from-amber-100 via-orange-50 to-amber-50 rounded-[1.5rem] flex items-center justify-center mb-6 shadow-xl shadow-amber-200/40 border-2 border-amber-200/30">
             <Crown size={38} className="text-amber-500" strokeWidth={2} />
@@ -123,11 +123,10 @@ export const TrialLimitBanner: React.FC<{
 
   return (
     <div
-      className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl border-2 text-[12px] font-bold mb-6 animate-in fade-in slide-in-from-top-2 duration-500 ${
-        isAtLimit
-          ? 'bg-red-50 border-red-200 text-red-700'
-          : 'bg-amber-50 border-amber-200 text-amber-700'
-      }`}
+      className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl border-2 text-[12px] font-bold mb-6 animate-in fade-in slide-in-from-top-2 duration-500 ${isAtLimit
+        ? 'bg-red-50 border-red-200 text-red-700'
+        : 'bg-amber-50 border-amber-200 text-amber-700'
+        }`}
     >
       {isAtLimit ? (
         <Lock size={15} className="text-red-500 flex-shrink-0" />
@@ -160,9 +159,8 @@ export const TrialLimitBanner: React.FC<{
         )}
       </span>
       <span
-        className={`text-[10px] font-black px-2 py-1 rounded-lg ${
-          isAtLimit ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'
-        }`}
+        className={`text-[10px] font-black px-2 py-1 rounded-lg ${isAtLimit ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'
+          }`}
       >
         {current}/{max}
       </span>
