@@ -156,66 +156,10 @@ v1.use("*", async (c, next) => {
   await next();
 });
 
-// ─── Premium Feature Guard Middleware (Orbit SaaS) ────────
-// Blocks access to premium-only API routes in trial mode.
-// Verifies license via Orbit SaaS API (cached per-request lifecycle).
 
-const PREMIUM_BLOCKED_ROUTES = [
-  "/api/v1/banners",
-  "/api/v1/coupons",
-  "/api/v1/wallet",
-  "/api/v1/popup",
-];
+// ─── Premium routes are now individually stubbed at router level ──
+// No centralized premiumGuard needed — each router returns 403 for mutations.
 
-const PREMIUM_GET_BLOCKED = [
-  "/api/v1/dashboard/stats",
-  "/api/v1/bulk/admin",
-];
-
-let _premiumCache: { value: boolean; ts: number } | null = null;
-const PREMIUM_CACHE_TTL = 300_000; // 5 minutes
-
-async function checkPremiumLicense(licenseKey: string): Promise<boolean> {
-  if (_premiumCache && Date.now() - _premiumCache.ts < PREMIUM_CACHE_TTL) {
-    return _premiumCache.value;
-  }
-  try {
-    const res = await fetch("https://api.orbitsaas.cloud/license/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-License-Key": licenseKey },
-      body: JSON.stringify({ timestamp: Date.now() }),
-    });
-    const isPremium = res.ok ? ((await res.json()) as any).isPremium === true : false;
-    _premiumCache = { value: isPremium, ts: Date.now() };
-    return isPremium;
-  } catch {
-    // Network error → default to trial (safe fallback)
-    _premiumCache = { value: false, ts: Date.now() };
-    return false;
-  }
-}
-
-v1.use("*", async (c, next) => {
-  const path = c.req.path;
-  const method = c.req.method;
-
-  const isBlockedMutation = PREMIUM_BLOCKED_ROUTES.some(r => path.startsWith(r));
-  const isBlockedGet = method === "GET" && PREMIUM_GET_BLOCKED.some(r => path.startsWith(r));
-
-  if (!isBlockedMutation && !isBlockedGet) return await next();
-
-  // Check license
-  const licenseKey = c.env.LICENSE_KEY || "";
-  const isPremium = await checkPremiumLicense(licenseKey);
-
-  if (isPremium) return await next();
-
-  return c.json({
-    error: "PremiumRequired",
-    message: "This feature requires a Premium subscription. Contact Orbit SaaS to upgrade.",
-    upgradeUrl: "https://orbitsaas.cloud/"
-  }, 403);
-});
 
 // Mount Sub-routers
 v1.route("/auth", authRouter);

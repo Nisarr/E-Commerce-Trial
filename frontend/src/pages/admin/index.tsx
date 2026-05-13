@@ -1,29 +1,18 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { getProducts, getCategories, getBanners, createBanner, updateBanner, deleteBanner, createProduct, updateProduct, deleteProduct, createCategory, updateCategory, deleteCategory } from '../../services/api';
+import { getProducts, getCategories, getBanners, createProduct, updateProduct, deleteProduct, createCategory, updateCategory, deleteCategory } from '../../services/api';
 import type { Product, Category, Banner } from '../../types';
 import { Sidebar } from './Sidebar';
 import { AdminNavbar } from './AdminNavbar';
-import { BannerManager } from './BannerManager';
 import { CategoryManager } from './CategoryManager';
 import { ProductManager } from './ProductManager';
 import { OrderManager } from './OrderManager';
 import { AdminSettings } from './Settings';
 import { AdminLogin } from './Login';
 import { AdminDashboard } from './Dashboard';
-import { CustomerManager } from './CustomerManager';
-import { ReviewModeration } from './ReviewModeration';
-import { CouponManager } from './CouponManager';
-import { ReturnManager } from './ReturnManager';
-import { SpecialOfferManager } from './SpecialOfferManager';
-import { BestSellingManager } from './BestSellingManager';
-import { NewArrivalManager } from './NewArrivalManager';
-import { NotificationManager } from './NotificationManager';
-import { ProductBuyers } from './ProductBuyers';
-import { PopupManager } from './PopupManager';
+import { BannerPreview, CouponPreview, CustomerPreview, ReviewPreview, SpecialOfferPreview, PopupPreview, DashboardPreview, NotificationPreview, ReturnPreview, BestSellingPreview, NewArrivalPreview, ProductBuyersPreview } from './previews';
 import { useAuthStore } from '../../store/authStore';
-import { useLicenseStore } from '../../store/licenseStore';
-import { BannerModal } from '../../components/admin/BannerModal';
+// BannerModal removed — banners are premium-only
 import { ProductModal } from '../../components/admin/ProductModal';
 import { CategoryModal } from '../../components/admin/CategoryModal';
 import { useUIStore } from '../../store/uiStore';
@@ -54,7 +43,6 @@ export const AdminIndex: React.FC = () => {
   });
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
@@ -88,8 +76,7 @@ export const AdminIndex: React.FC = () => {
     const timeout = setTimeout(() => {
       fetchData();
     }, 0);
-    // Verify license with Orbit SaaS on admin mount
-    useLicenseStore.getState().verify();
+
     return () => clearTimeout(timeout);
   }, [isAdmin, fetchData]);
 
@@ -113,14 +100,7 @@ export const AdminIndex: React.FC = () => {
     };
   }, [isAdmin, adminTheme]);
 
-  const handleSaveBanner = async (bannerData: Omit<Banner, 'id'>) => {
-    if (editingBanner) {
-      await updateBanner(editingBanner.id, bannerData);
-    } else {
-      await createBanner(bannerData);
-    }
-    await fetchData();
-  };
+  // Banner CRUD removed — premium feature
 
   const handleSaveProduct = async (productData: Partial<Product>) => {
     try {
@@ -150,14 +130,7 @@ export const AdminIndex: React.FC = () => {
     }
   };
 
-  const handleDeleteBanner = async (id: string) => {
-    try {
-      await deleteBanner(id);
-      await fetchData();
-    } catch {
-      alert('Failed to delete banner');
-    }
-  };
+  // Banner delete removed — premium feature
 
   const handleDeleteProduct = async (id: string) => {
     try {
@@ -177,28 +150,26 @@ export const AdminIndex: React.FC = () => {
     }
   };
 
-  const { isPremium, maxProducts, maxCategories } = useLicenseStore();
+  // Trial limits (hardcoded for trial version)
+  const maxProducts = 20;
+  const maxCategories = 5;
 
   const openAddModal = () => {
     // Enforce trial limits
-    if (!isPremium && (activeTab === 'products' || activeTab === 'inventory') && data.products.length >= maxProducts) {
+    if ((activeTab === 'products' || activeTab === 'inventory') && data.products.length >= maxProducts) {
       toast.error(`Trial limit reached (${maxProducts}/${maxProducts} products). Contact Orbit SaaS to upgrade.`, { icon: '🔒' });
       return;
     }
-    if (!isPremium && activeTab === 'categories' && data.categories.length >= maxCategories) {
+    if (activeTab === 'categories' && data.categories.length >= maxCategories) {
       toast.error(`Trial limit reached (${maxCategories}/${maxCategories} categories). Contact Orbit SaaS to upgrade.`, { icon: '🔒' });
       return;
     }
-    setEditingBanner(null);
     setEditingProduct(null);
     setEditingCategory(null);
     setIsModalOpen(true);
   };
 
-  const openEditBannerModal = (banner: Banner) => {
-    setEditingBanner(banner);
-    setIsModalOpen(true);
-  };
+  // openEditBannerModal removed — premium feature
 
   const openEditProductModal = (product: Product) => {
     setEditingProduct(product);
@@ -224,9 +195,8 @@ export const AdminIndex: React.FC = () => {
 
           <div className="flex-grow flex flex-col min-w-0">
             <AdminNavbar 
-              onAdd={['banners', 'categories', 'products', 'inventory'].includes(activeTab) ? openAddModal : undefined}
+              onAdd={['categories', 'products', 'inventory'].includes(activeTab) ? openAddModal : undefined}
               addLabel={
-                activeTab === 'banners' ? 'Add Banner' :
                 activeTab === 'categories' ? 'Add Category' :
                 (activeTab === 'products' || activeTab === 'inventory') ? 'Add Product' : undefined
               }
@@ -272,7 +242,7 @@ export const AdminIndex: React.FC = () => {
                         }} 
                       />
                     } />
-                    <Route path="banners" element={<PremiumGate><BannerManager banners={data.banners} onEdit={openEditBannerModal} onDelete={handleDeleteBanner} /></PremiumGate>} />
+                    <Route path="banners" element={<PremiumGate><BannerPreview /></PremiumGate>} />
                     <Route path="categories" element={
                       <>
                         <TrialLimitBanner current={data.categories.length} max={maxCategories} label="categories" />
@@ -292,16 +262,17 @@ export const AdminIndex: React.FC = () => {
                       </>
                     } />
                     <Route path="orders" element={<OrderManager />} />
-                    <Route path="customers" element={<PremiumGate><CustomerManager /></PremiumGate>} />
-                    <Route path="notifications" element={<PremiumGate><NotificationManager /></PremiumGate>} />
-                    <Route path="reviews" element={<PremiumGate><ReviewModeration /></PremiumGate>} />
-                    <Route path="coupons" element={<PremiumGate><CouponManager /></PremiumGate>} />
-                    <Route path="returns" element={<PremiumGate><ReturnManager /></PremiumGate>} />
-                    <Route path="special-offers" element={<PremiumGate><SpecialOfferManager /></PremiumGate>} />
-                    <Route path="best-selling" element={<PremiumGate><BestSellingManager /></PremiumGate>} />
-                    <Route path="new-arrivals" element={<PremiumGate><NewArrivalManager /></PremiumGate>} />
-                    <Route path="products/:id/buyers" element={<PremiumGate><ProductBuyers /></PremiumGate>} />
-                    <Route path="popup" element={<PremiumGate><PopupManager /></PremiumGate>} />
+                    <Route path="customers" element={<PremiumGate><CustomerPreview /></PremiumGate>} />
+                    <Route path="notifications" element={<PremiumGate><NotificationPreview /></PremiumGate>} />
+                    <Route path="reviews" element={<PremiumGate><ReviewPreview /></PremiumGate>} />
+                    <Route path="coupons" element={<PremiumGate><CouponPreview /></PremiumGate>} />
+                    <Route path="returns" element={<PremiumGate><ReturnPreview /></PremiumGate>} />
+                    <Route path="special-offers" element={<PremiumGate><SpecialOfferPreview /></PremiumGate>} />
+                    <Route path="best-selling" element={<PremiumGate><BestSellingPreview /></PremiumGate>} />
+                    <Route path="new-arrivals" element={<PremiumGate><NewArrivalPreview /></PremiumGate>} />
+                    <Route path="products/:id/buyers" element={<PremiumGate><ProductBuyersPreview /></PremiumGate>} />
+                    <Route path="popup" element={<PremiumGate><PopupPreview /></PremiumGate>} />
+                    <Route path="analytics" element={<PremiumGate><DashboardPreview /></PremiumGate>} />
                     <Route path="settings" element={<AdminSettings />} />
                     {/* Fallback */}
                     <Route path="*" element={<Navigate to="/adm/dashboard" replace />} />
@@ -311,13 +282,7 @@ export const AdminIndex: React.FC = () => {
             </main>
           </div>
 
-          {isModalOpen && activeTab === 'banners' && (
-            <BannerModal 
-              banner={editingBanner}
-              onClose={() => setIsModalOpen(false)}
-              onSave={handleSaveBanner}
-            />
-          )}
+          {/* BannerModal removed — premium feature */}
 
           {isModalOpen && (activeTab === 'products' || activeTab === 'inventory') && (
             <ProductModal 

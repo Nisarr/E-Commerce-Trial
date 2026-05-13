@@ -4,7 +4,6 @@
 // ═══════════════════════════════════════════════════════════════
 
 import React from 'react';
-import { useLicenseStore } from '../store/licenseStore';
 import { ORBIT_SAAS_URL } from '../utils/featureGate';
 import { Lock, Crown, ExternalLink } from 'lucide-react';
 
@@ -22,18 +21,13 @@ interface PremiumGateProps {
  * - Full-page mode (default): Shows centered upgrade CTA replacing the content
  * - Inline mode: Blurs/disables the content with a small lock badge
  * 
- * In premium mode, children render normally with no wrapper.
+ * Trial version: always shows the locked state (no license check needed).
  */
 export const PremiumGate: React.FC<PremiumGateProps> = ({
   children,
   inline = false,
   fallback,
 }) => {
-  const isPremium = useLicenseStore((s) => s.isPremium);
-
-  // Premium users see everything normally
-  if (isPremium) return <>{children}</>;
-
   // Custom fallback if provided
   if (fallback) return <>{fallback}</>;
 
@@ -113,16 +107,6 @@ export const PremiumGate: React.FC<PremiumGateProps> = ({
 };
 
 /**
- * Hook to check if a feature is accessible.
- * Returns { allowed, isPremium, loading }.
- */
-export function useFeatureGate() {
-  const isPremium = useLicenseStore((s) => s.isPremium);
-  const loading = useLicenseStore((s) => s.loading);
-  return { allowed: isPremium, isPremium, loading };
-}
-
-/**
  * Reusable trial limit warning banner component.
  * Shows when approaching or at the trial limit.
  */
@@ -131,9 +115,6 @@ export const TrialLimitBanner: React.FC<{
   max: number;
   label: string; // e.g. "products" or "categories"
 }> = ({ current, max, label }) => {
-  const isPremium = useLicenseStore((s) => s.isPremium);
-  if (isPremium) return null;
-
   const percentage = (current / max) * 100;
   const isAtLimit = current >= max;
   const isNearLimit = percentage >= 80;

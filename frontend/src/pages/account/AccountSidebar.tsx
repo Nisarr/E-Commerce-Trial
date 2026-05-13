@@ -7,7 +7,6 @@ import {
   Star, Heart, LogOut,
   ShieldCheck, Bell, Lock
 } from 'lucide-react';
-import { useLicenseStore } from '../../store/licenseStore';
 
 interface SidebarSection {
   title: string;
@@ -51,7 +50,7 @@ const sections: SidebarSection[] = [
 export const AccountSidebar: React.FC = () => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
-  const isPremium = useLicenseStore((s) => s.isPremium);
+  const isPremium = false; // Trial version
 
   const handleLogout = () => {
     logout();

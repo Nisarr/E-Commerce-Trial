@@ -22,7 +22,6 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
-import { useLicenseStore } from '../../store/licenseStore';
 import { PREMIUM_SIDEBAR_IDS } from '../../utils/featureGate';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -162,7 +161,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, isOpen, onClose }) 
               <div className="space-y-2">
                 {section.items.map((item) => {
                   const isActive = item.id === activeTab;
-                  const isLocked = PREMIUM_SIDEBAR_IDS.has(item.id) && !useLicenseStore.getState().isPremium;
+                  const isLocked = PREMIUM_SIDEBAR_IDS.has(item.id); // Trial: show lock icon on premium features
                   return (
                     <Link
                       key={item.id}

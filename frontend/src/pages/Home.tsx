@@ -8,11 +8,10 @@ import { NewArrivalsTabbed } from '../components/home/NewArrivalsTabbed';
 import { SpecialOfferCountdown } from '../components/home/SpecialOfferCountdown';
 import { BestSelling } from '../components/home/BestSelling';
 import { RecentlyViewed } from '../components/RecentlyViewed';
-import { useLicenseStore } from '../store/licenseStore';
 
 export const Home: React.FC = () => {
-  const isPremium = useLicenseStore((s) => s.isPremium);
-
+  // Trial version: premium storefront components (banners, offers) are visible
+  // but managed via premium admin tools only
   return (
     <main className="flex flex-col min-h-screen">
       <Helmet>
@@ -25,11 +24,11 @@ export const Home: React.FC = () => {
       <HeroSection />
       <FeaturedCategories />
       <TrendingProducts />
-      {isPremium && <PromoBanner position="mid-1" />}
+      <PromoBanner position="mid-1" />
       <NewArrivalsTabbed />
-      {isPremium && <SpecialOfferCountdown />}
+      <SpecialOfferCountdown />
       <BestSelling />
-      {isPremium && <PromoBanner position="mid-2" />}
+      <PromoBanner position="mid-2" />
       <RecentlyViewed />
     </main>
   );

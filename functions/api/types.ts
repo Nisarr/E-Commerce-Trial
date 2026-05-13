@@ -12,7 +12,6 @@ export type Bindings = {
   ADMIN_NOTIFICATION_EMAIL: string;
   EMAIL_WEBHOOK_SECRET: string;
   NODE_ENV?: string;
-  LICENSE_KEY?: string;
 };
 
 export type Variables = {

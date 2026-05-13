@@ -1,11 +1,12 @@
 import { Hono } from "hono";
-import { eq, desc } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import * as schema from "../../../backend/server/db/schema";
 import type { Bindings, Variables } from "../types";
 import { formatLinks } from "../utils/helpers";
 
 export const couponsRouter = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
+// GET — Read-only list (preview data for trial)
 couponsRouter.get("/", async (c) => {
   const db = c.get("db");
   const rows = await db.query.coupons.findMany({
@@ -17,6 +18,7 @@ couponsRouter.get("/", async (c) => {
   });
 });
 
+// GET — Validate (MUST remain functional for storefront checkout)
 couponsRouter.get("/validate", async (c) => {
   const db = c.get("db");
   const code = c.req.query("code")?.toUpperCase();
@@ -29,113 +31,43 @@ couponsRouter.get("/validate", async (c) => {
   if (!coupon || !coupon.isActive) {
     return c.json({ valid: false, message: "Invalid or expired coupon code." }, 404);
   }
-
-  // Check expiration
   if (coupon.expiresAt && new Date(coupon.expiresAt).getTime() < Date.now()) {
     return c.json({ valid: false, message: "This coupon has expired." });
   }
-
-  // Check start date
   if (coupon.startsAt && new Date(coupon.startsAt).getTime() > Date.now()) {
     return c.json({ valid: false, message: "This coupon is not yet active." });
   }
-
-  // Check usage limit
   if (coupon.usageLimit && (coupon.usedCount ?? 0) >= coupon.usageLimit) {
     return c.json({ valid: false, message: "This coupon has reached its usage limit." });
   }
-
-  // Check minimum order
   if (coupon.minOrderAmount && orderTotal < coupon.minOrderAmount) {
-    return c.json({
-      valid: false,
-      message: `Minimum order amount of ৳${coupon.minOrderAmount.toLocaleString()} required.`,
-    });
+    return c.json({ valid: false, message: `Minimum order amount of ৳${coupon.minOrderAmount.toLocaleString()} required.` });
   }
 
-  // Calculate discount
   let discount = 0;
   if (coupon.type === "percentage") {
     discount = (orderTotal * coupon.value) / 100;
-    if (coupon.maxDiscount && discount > coupon.maxDiscount) {
-      discount = coupon.maxDiscount;
-    }
+    if (coupon.maxDiscount && discount > coupon.maxDiscount) discount = coupon.maxDiscount;
   } else {
     discount = coupon.value;
   }
-  discount = Math.min(discount, orderTotal); // Can't exceed order total
+  discount = Math.min(discount, orderTotal);
 
   return c.json({
     valid: true,
-    coupon: {
-      code: coupon.code,
-      description: coupon.description,
-      type: coupon.type,
-      value: coupon.value,
-    },
+    coupon: { code: coupon.code, description: coupon.description, type: coupon.type, value: coupon.value },
     discount: Math.round(discount * 100) / 100,
     message: `Coupon applied! You save ৳${discount.toLocaleString()}.`,
   });
 });
 
-couponsRouter.post("/", async (c) => {
-  const db = c.get("db");
-  const body = await c.req.json().catch(() => null);
+// MUTATIONS — Premium only (stubbed)
+const premiumStub = (c: any) => c.json({
+  error: "PremiumRequired",
+  message: "This feature requires Premium. Contact Orbit SaaS to upgrade.",
+  upgradeUrl: "https://orbitsaas.cloud/"
+}, 403);
 
-  if (!body?.code || !body?.type || body?.value === undefined) {
-    throw new Error("VAL: Code, type, and value are required.");
-  }
-
-  const id = crypto.randomUUID();
-  await db.insert(schema.coupons).values({
-    id,
-    code: body.code.toUpperCase(),
-    description: body.description || null,
-    type: body.type,
-    value: body.value,
-    minOrderAmount: body.minOrderAmount || 0,
-    maxDiscount: body.maxDiscount || null,
-    usageLimit: body.usageLimit || null,
-    isActive: body.isActive ?? 1,
-    startsAt: body.startsAt ? new Date(body.startsAt) : null,
-    expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
-    createdAt: new Date(),
-  });
-
-  return c.json({ id, message: "Coupon created successfully", _links: formatLinks(c, "/coupons", id) }, 201);
-});
-
-couponsRouter.patch("/:id", async (c) => {
-  const id = c.req.param("id");
-  const db = c.get("db");
-  const body = await c.req.json();
-
-  const [existing] = await db.select().from(schema.coupons).where(eq(schema.coupons.id, id));
-  if (!existing) throw new Error(`Coupon with ID ${id} not found`);
-
-  const updates: Record<string, any> = {};
-  if (body.code !== undefined) updates.code = body.code.toUpperCase();
-  if (body.description !== undefined) updates.description = body.description;
-  if (body.type !== undefined) updates.type = body.type;
-  if (body.value !== undefined) updates.value = body.value;
-  if (body.minOrderAmount !== undefined) updates.minOrderAmount = body.minOrderAmount;
-  if (body.maxDiscount !== undefined) updates.maxDiscount = body.maxDiscount;
-  if (body.usageLimit !== undefined) updates.usageLimit = body.usageLimit;
-  if (body.isActive !== undefined) updates.isActive = body.isActive;
-  if (body.startsAt !== undefined) updates.startsAt = body.startsAt ? new Date(body.startsAt) : null;
-  if (body.expiresAt !== undefined) updates.expiresAt = body.expiresAt ? new Date(body.expiresAt) : null;
-
-  if (Object.keys(updates).length > 0) {
-    await db.update(schema.coupons).set(updates).where(eq(schema.coupons.id, id));
-  }
-
-  return c.json({ message: "Coupon updated successfully", _links: formatLinks(c, "/coupons", id) });
-});
-
-couponsRouter.delete("/:id", async (c) => {
-  const id = c.req.param("id");
-  const db = c.get("db");
-
-  await db.delete(schema.coupons).where(eq(schema.coupons.id, id));
-  return c.json({ message: "Coupon deleted successfully" });
-});
+couponsRouter.post("/", premiumStub);
+couponsRouter.patch("/:id", premiumStub);
+couponsRouter.delete("/:id", premiumStub);
