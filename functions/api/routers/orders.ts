@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { eq, and, desc, or } from "drizzle-orm";
-import { verify } from "hono/jwt";
+import { verify, sign } from "hono/jwt";
 import * as schema from "../../../backend/server/db/schema";
 import type { Bindings, Variables } from "../types";
 import { formatLinks } from "../utils/helpers";
@@ -140,6 +140,66 @@ ordersRouter.post("/", async (c) => {
     }
   }
 
+  let token: string | undefined;
+  let linkedUser: any = null;
+  if (body.createAccount && !userId) {
+    const phone = body.customerPhone;
+    const email = body.customerEmail;
+    const username = email || phone;
+    
+    if (username) {
+      const existing = await db.select().from(schema.users).where(
+        email ? or(eq(schema.users.username, username), eq(schema.users.email, email)) : eq(schema.users.username, username)
+      );
+
+      if (existing.length === 0) {
+        // New account: create user with provided password
+        userId = crypto.randomUUID();
+        const rawPassword = body.accountPassword || phone;
+        const encoder = new TextEncoder();
+        const data = encoder.encode(rawPassword + "playpen-salt-2026");
+        const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const passwordHash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+
+        await db.insert(schema.users).values({
+          id: userId,
+          username: username,
+          email: email || null,
+          phone: phone || null,
+          passwordHash,
+          fullName: body.customerName,
+          isVerified: 1,
+          createdAt: new Date(),
+        });
+
+        const payload = {
+          sub: userId,
+          username: username,
+          email: email || undefined,
+          role: "user",
+          iat: Math.floor(Date.now() / 1000),
+          exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+        };
+        token = await sign(payload, c.env.JWT_SECRET || "fallback-dev-secret-change-me", "HS256");
+        linkedUser = { id: userId, username, fullName: body.customerName, email: email || null, phone: phone || "N/A", role: "user" };
+      } else {
+        // Existing account: bind order to that user and auto-login them
+        userId = existing[0].id;
+        linkedUser = existing[0];
+        const payload = {
+          sub: userId,
+          username: existing[0].username,
+          email: existing[0].email || undefined,
+          role: existing[0].role || "user",
+          iat: Math.floor(Date.now() / 1000),
+          exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+        };
+        token = await sign(payload, c.env.JWT_SECRET || "fallback-dev-secret-change-me", "HS256");
+      }
+    }
+  }
+
   await db.insert(schema.orders).values({
     id,
     invoiceId,
@@ -225,6 +285,15 @@ ordersRouter.post("/", async (c) => {
     id,
     invoiceId,
     message: "Order placed successfully",
+    token,
+    user: token && linkedUser ? {
+      id: linkedUser.id,
+      username: linkedUser.username || body.customerEmail || body.customerPhone,
+      fullName: linkedUser.fullName || body.customerName,
+      email: linkedUser.email || body.customerEmail || null,
+      phone: linkedUser.phone || body.customerPhone || "N/A",
+      role: linkedUser.role || "user"
+    } : undefined,
     _links: formatLinks(c, "/orders", id)
   }, 201);
 });

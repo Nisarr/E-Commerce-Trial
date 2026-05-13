@@ -74,9 +74,9 @@ function App() {
             <Route path="/account/register" element={<UserRegister />} />
             <Route path="/account/forgot-password" element={<ForgotPassword />} />
             <Route path="/account/reset-password" element={<ResetPassword />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<CheckOut />} />
             <Route element={<ProtectedRoute role="user" />}>
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<CheckOut />} />
               <Route path="/wishlist" element={<Wishlist />} />
               <Route path="/account" element={<AccountLayout />}>
                 <Route index element={<AccountDashboard />} />

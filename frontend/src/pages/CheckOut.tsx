@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
 import { getAddresses, getWallet, createOrder, chargeWallet } from '../services/api';
 import type { Address } from '../types';
-import { ShoppingBag, ArrowRight, Loader2, MapPin, ChevronDown, Ticket, X, CheckCircle, Wallet, ArrowLeft } from 'lucide-react';
+import { ShoppingBag, ArrowRight, Loader2, MapPin, ChevronDown, Ticket, X, CheckCircle, Wallet, ArrowLeft, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -50,6 +50,42 @@ export const CheckOut: React.FC = () => {
     customerPhone: '',
     shippingAddress: '',
   });
+
+  const [createAccount, setCreateAccount] = useState(false);
+  const [accountPassword, setAccountPassword] = useState('');
+  const [accountExists, setAccountExists] = useState<boolean | null>(null);
+  const [checkingEmail, setCheckingEmail] = useState(false);
+  const emailCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounced email check for existing account
+  const checkEmailExists = useCallback((email: string) => {
+    if (emailCheckTimer.current) clearTimeout(emailCheckTimer.current);
+    if (!email || !email.includes('@')) {
+      setAccountExists(null);
+      return;
+    }
+    setCheckingEmail(true);
+    emailCheckTimer.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/v1/auth/check-email?email=${encodeURIComponent(email)}`);
+        const data = await res.json();
+        setAccountExists(data.exists);
+      } catch {
+        setAccountExists(null);
+      } finally {
+        setCheckingEmail(false);
+      }
+    }, 500);
+  }, []);
+
+  // Re-check email whenever it changes and createAccount is on
+  useEffect(() => {
+    if (createAccount && formData.customerEmail) {
+      checkEmailExists(formData.customerEmail);
+    } else {
+      setAccountExists(null);
+    }
+  }, [createAccount, formData.customerEmail, checkEmailExists]);
 
   const applyAddress = React.useCallback((addr: Address) => {
     const fullAddress = [addr.address, addr.city, addr.postalCode].filter(Boolean).join(', ');
@@ -164,6 +200,16 @@ export const CheckOut: React.FC = () => {
       return;
     }
 
+    if (createAccount && !formData.customerEmail) {
+      setError('Please enter your email to create an account.');
+      return;
+    }
+
+    if (createAccount && accountExists === false && !accountPassword) {
+      setError('Please set a password to create your account.');
+      return;
+    }
+
     if (paymentMethod !== 'cod' && (!paymentPhone || !paymentTrxId)) {
       setError(`Please provide your ${paymentMethod.toUpperCase()} phone number and Transaction ID.`);
       return;
@@ -186,6 +232,8 @@ export const CheckOut: React.FC = () => {
       const payload = {
         ...formData,
         userId: user?.id || null,
+        createAccount,
+        accountPassword,
         totalAmount: total,
         paymentMethod: useWallet && finalPayable === 0 ? 'wallet' : paymentMethod,
         paymentPhone: paymentMethod !== 'cod' ? paymentPhone : null,
@@ -198,11 +246,27 @@ export const CheckOut: React.FC = () => {
         }))
       };
  
-      await createOrder(payload);
+      const response = await createOrder(payload);
+      
+      // Auto-login if account was created or linked
+      if (response.token && response.user) {
+        useAuthStore.getState().login(response.user.username, response.user.role, response.user, response.token);
+      }
  
       // Only clear selected items from cart
       selectedItems.forEach(item => removeItem(item.product.id));
-      toast.success('Order placed successfully!', {
+
+      // Show appropriate success message
+      const wasAccountLinked = createAccount && accountExists === true && response.token;
+      const wasAccountCreated = createAccount && accountExists === false && response.token;
+      
+      const toastMessage = wasAccountCreated 
+        ? 'Order placed & account created! 🎉' 
+        : wasAccountLinked 
+          ? 'Order placed & linked to your account! 🎉' 
+          : 'Order placed successfully!';
+
+      toast.success(toastMessage, {
         duration: 5000,
         style: {
           background: '#1a2b4b',
@@ -211,7 +275,17 @@ export const CheckOut: React.FC = () => {
           fontWeight: 'bold',
         },
       });
-      navigate('/account', { state: { orderPlaced: true } });
+      // Navigate after successful order
+      if (response.token && response.user) {
+        // User was auto-logged in (created or linked account) — go to order history
+        navigate('/account/orders', { state: { orderPlaced: true } });
+      } else if (useAuthStore.getState().isAuthenticated) {
+        // Already logged-in user — go to order history
+        navigate('/account/orders', { state: { orderPlaced: true } });
+      } else {
+        // Pure guest checkout — go home
+        navigate('/', { state: { orderPlaced: true } });
+      }
     } catch (err: unknown) {
       const msg = (err as Error).message;
       setError(msg);
@@ -344,14 +418,17 @@ export const CheckOut: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-primary mb-1">Email</label>
+                  <label className="block text-sm font-bold text-primary mb-1">Email {!user?.id && createAccount && <span className="text-accent">*</span>}</label>
                   <input 
                     type="email" 
                     name="customerEmail"
                     value={formData.customerEmail}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all"
+                    className={`w-full px-4 py-2.5 rounded-xl bg-gray-50 border focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all ${
+                      !user?.id && createAccount && !formData.customerEmail ? 'border-orange-300 bg-orange-50/30' : 'border-gray-200'
+                    }`}
                     placeholder="john@example.com"
+                    required={createAccount}
                   />
                 </div>
               </div>
@@ -381,6 +458,105 @@ export const CheckOut: React.FC = () => {
                   required
                 />
               </div>
+
+              {!user?.id && (
+                <div className="pt-4 border-t border-gray-100">
+                  <div 
+                    className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
+                      createAccount 
+                        ? 'border-accent/30 bg-gradient-to-r from-accent/5 to-transparent shadow-sm' 
+                        : 'border-gray-100 bg-gray-50/50 hover:bg-gray-50'
+                    }`}
+                  >
+                    <label className="flex items-center justify-between px-4 py-3.5 cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                          createAccount ? 'bg-accent text-white shadow-md shadow-accent/30' : 'bg-gray-100 text-gray-400'
+                        }`}>
+                          <UserPlus size={18} />
+                        </div>
+                        <div>
+                          <span className="font-bold text-primary text-sm block">
+                            Create an account
+                          </span>
+                          <span className="text-[11px] text-muted">
+                            Save your info for faster checkout next time
+                          </span>
+                        </div>
+                      </div>
+                      {/* Toggle Switch */}
+                      <div className="relative flex-shrink-0 ml-3">
+                        <input 
+                          type="checkbox" 
+                          checked={createAccount}
+                          onChange={(e) => setCreateAccount(e.target.checked)}
+                          className="sr-only"
+                        />
+                        <div className={`w-11 h-6 rounded-full transition-all duration-300 ${
+                          createAccount ? 'bg-accent' : 'bg-gray-300'
+                        }`}>
+                          <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300 ${
+                            createAccount ? 'left-[22px]' : 'left-0.5'
+                          }`} />
+                        </div>
+                      </div>
+                    </label>
+                    
+                    {createAccount && (
+                      <div className="px-4 pb-4 space-y-3">
+                        {checkingEmail && (
+                          <div className="flex items-center gap-2 text-xs text-muted py-1">
+                            <Loader2 size={12} className="animate-spin" /> Checking email...
+                          </div>
+                        )}
+
+                        {accountExists === true && (
+                          <div className="flex items-start gap-2.5 px-3.5 py-3 bg-blue-50 border border-blue-200 rounded-xl">
+                            <CheckCircle size={16} className="text-blue-600 flex-shrink-0 mt-0.5" />
+                            <div>
+                              <p className="text-xs font-bold text-blue-800 mb-0.5">
+                                Account found!
+                              </p>
+                              <p className="text-[11px] text-blue-600">
+                                Your order will be linked to your existing account automatically. No password needed.
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {accountExists === false && (
+                          <>
+                            <div className="flex items-start gap-2.5 px-3.5 py-3 bg-green-50 border border-green-200 rounded-xl mb-3">
+                              <UserPlus size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                              <p className="text-[11px] text-green-700">
+                                A new account will be created with your checkout details. Just set a password below.
+                              </p>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-bold text-primary mb-1">Set a Password *</label>
+                              <input 
+                                type="password" 
+                                value={accountPassword}
+                                onChange={(e) => setAccountPassword(e.target.value)}
+                                className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all"
+                                placeholder="Choose a secure password"
+                              />
+                              <p className="text-[11px] text-muted mt-1.5">Use this password to log in later and track your orders.</p>
+                            </div>
+                          </>
+                        )}
+
+                        {accountExists === null && !checkingEmail && !formData.customerEmail && (
+                          <div className="flex items-center gap-2 px-3 py-2.5 bg-orange-50 border border-orange-200 rounded-xl">
+                            <span className="text-orange-500 text-sm">✉️</span>
+                            <p className="text-xs text-orange-700 font-medium">Enter your email above to create or link an account.</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </form>
           </div>
 

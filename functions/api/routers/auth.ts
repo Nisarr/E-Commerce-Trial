@@ -46,6 +46,21 @@ async function generateToken(
   return await sign(payload, secret);
 }
 
+// Lightweight email check for guest checkout account creation
+authRouter.get("/check-email", async (c) => {
+  const db = c.get("db");
+  const email = c.req.query("email");
+
+  if (!email) {
+    return c.json({ exists: false });
+  }
+
+  const [user] = await db.select({ id: schema.users.id }).from(schema.users)
+    .where(eq(schema.users.email, email));
+
+  return c.json({ exists: !!user });
+});
+
 authRouter.post("/register", async (c) => {
   const db = c.get("db");
   const body = await c.req.json().catch(() => null);

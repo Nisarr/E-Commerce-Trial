@@ -42,7 +42,6 @@ export const ProductDetails: React.FC = () => {
   
   const { addItem } = useCart();
   const { toggleItem, isInWishlist } = useWishlist();
-  const { isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
   const addRecentlyViewed = useRecentlyViewedStore((s) => s.addItem);
   const setActiveProductTitle = useUIStore((s) => s.setActiveProductTitle);
@@ -217,12 +216,8 @@ export const ProductDetails: React.FC = () => {
                 )}
                 <button 
                   onClick={() => {
-                    if (!isAuthenticated) {
-                      navigate('/account/login');
-                      return;
-                    }
-                    toggleItem(product);
-                  }}
+                  toggleItem(product);
+                }}
                   className={`absolute top-4 right-4 md:top-6 md:right-6 w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-500 shadow-xl z-10 ${isWishlisted ? 'bg-red-500 text-white scale-110' : 'bg-white/80 text-gray-400 hover:bg-white hover:text-red-500'}`}
                 >
                   <Heart size={20} className="md:w-6 md:h-6" fill={isWishlisted ? "currentColor" : "none"} />
@@ -342,10 +337,6 @@ export const ProductDetails: React.FC = () => {
               
               <button 
                 onClick={() => {
-                  if (!isAuthenticated) {
-                    navigate('/account/login');
-                    return;
-                  }
                   addItem(product);
                   logInteraction(product.id, 'add_to_cart', useAuthStore.getState().user?.id);
                 }}
@@ -357,10 +348,6 @@ export const ProductDetails: React.FC = () => {
  
               <button 
                 onClick={() => {
-                  if (!isAuthenticated) {
-                    navigate('/account/login');
-                    return;
-                  }
                   addItem(product);
                   logInteraction(product.id, 'purchase_intent', useAuthStore.getState().user?.id);
                   navigate('/cart');

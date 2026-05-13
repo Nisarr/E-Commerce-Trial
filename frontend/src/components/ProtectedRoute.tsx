@@ -9,9 +9,14 @@ interface ProtectedRouteProps {
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ role = 'user' }) => {
   const { isAuthenticated, user } = useAuthStore();
 
-  if (!isAuthenticated || (role && user?.role !== role)) {
+  if (!isAuthenticated) {
     const loginPath = role === 'admin' ? '/adm' : '/account/login';
     return <Navigate to={loginPath} replace />;
+  }
+
+  // Admins can access user-level routes, but regular users cannot access admin routes
+  if (role === 'admin' && user?.role !== 'admin') {
+    return <Navigate to="/account/login" replace />;
   }
 
   return <Outlet />;
