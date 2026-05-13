@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, ShoppingCart, Heart, Menu, User, Bell } from 'lucide-react';
+import { Search, ShoppingCart, Heart, User, Bell } from 'lucide-react';
 import { useCart } from '../../hooks/useCart';
 import { useWishlist } from '../../hooks/useWishlist';
 import { MegaMenu } from './MegaMenu.tsx';
@@ -17,7 +17,6 @@ export const Navbar: React.FC = () => {
   const { activeProductTitle } = useUIStore();
   const { data: userData, startPolling } = useUserStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
 
@@ -33,14 +32,8 @@ export const Navbar: React.FC = () => {
     }
   }, [user?.id, user?.username, user?.email, startPolling]);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-    if (!isMenuOpen) setIsMobileSearchOpen(false);
-  };
-
   const toggleSearch = () => {
     setIsMobileSearchOpen(!isMobileSearchOpen);
-    if (!isMobileSearchOpen) setIsMenuOpen(false);
   };
   const { totalItems } = useCart();
   const wishlistItems = useWishlist((state) => state.items);
@@ -87,7 +80,6 @@ export const Navbar: React.FC = () => {
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
       setSuggestions([]);
       setIsMobileSearchOpen(false);
-      setIsMenuOpen(false);
     }
   };
 
@@ -100,12 +92,6 @@ export const Navbar: React.FC = () => {
         <div className="container mx-auto px-4">
           <div className="flex h-14 md:h-16 items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <button 
-                className="lg:hidden text-primary p-2 hover:bg-white/50 rounded-xl transition-colors cursor-pointer"
-                onClick={toggleMenu}
-              >
-                <Menu size={20} />
-              </button>
               <div 
                 onClick={() => navigate('/')}
                 className="flex items-center gap-2.5 group cursor-pointer select-none"
