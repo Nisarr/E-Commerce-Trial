@@ -31,7 +31,7 @@ export type FeatureKey =
   | 'settings.email'
   | 'settings.payments'
   // ── System ───────────────────────────────────
-  | 'system.cache'
+  // (Cache is now available in trial)
   // ── Orders sub-features ──────────────────────
   | 'orders.emailNotify'
   | 'orders.bulkExport'

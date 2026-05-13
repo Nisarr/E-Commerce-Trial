@@ -165,7 +165,6 @@ const PREMIUM_BLOCKED_ROUTES = [
   "/api/v1/coupons",
   "/api/v1/wallet",
   "/api/v1/popup",
-  "/api/v1/system/update-cache",
 ];
 
 const PREMIUM_GET_BLOCKED = [
