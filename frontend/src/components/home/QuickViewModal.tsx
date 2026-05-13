@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, ShoppingCart, Heart, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import toast from 'react-hot-toast';
 import type { Product } from '../../types';
 import { useCart } from '../../hooks/useCart';
 import { useWishlist } from '../../hooks/useWishlist';
@@ -142,6 +143,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
               <button 
                 onClick={() => {
                   for(let i=0; i<quantity; i++) addItem(product);
+                  toast.success('Added to cart successfully!');
                   onClose();
                 }}
                 className="flex-[3] h-14 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-primary-dark transition-all flex items-center justify-center gap-3"

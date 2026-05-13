@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, Eye, Star } from 'lucide-react';
+import toast from 'react-hot-toast';
 import type { Product } from '../../types';
 import { useCart } from '../../hooks/useCart';
 import { useWishlist } from '../../hooks/useWishlist';
@@ -87,6 +88,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <button 
             onClick={() => {
               addItem(product);
+              toast.success('Added to cart successfully!');
             }}
             className="w-full py-3.5 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-primary-dark transition-all flex items-center justify-center gap-2"
           >

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import toast from 'react-hot-toast';
 import { 
   ShoppingCart, Heart, Star, 
   Sparkles, Share2, Send, Link2,
@@ -338,6 +339,7 @@ export const ProductDetails: React.FC = () => {
               <button 
                 onClick={() => {
                   addItem(product);
+                  toast.success('Added to cart successfully!');
                   logInteraction(product.id, 'add_to_cart', useAuthStore.getState().user?.id);
                 }}
                 className="h-10 bg-primary text-white rounded-lg font-black text-[10px] md:text-[8px] uppercase tracking-widest shadow-md shadow-primary/10 hover:bg-primary-dark transition-all flex items-center justify-center gap-1.5 active:scale-95 whitespace-nowrap px-4"
