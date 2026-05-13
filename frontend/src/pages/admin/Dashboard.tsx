@@ -47,23 +47,7 @@ const TIMELINE_OPTIONS: { id: TimelinePreset; label: string }[] = [
   { id: 'custom', label: 'Custom Range' },
 ];
 
-function getDateRange(preset: TimelinePreset): { from: number | null; to: number | null } {
-  if (preset === 'lifetime') return { from: null, to: null };
-  if (preset === 'custom') return { from: null, to: null };
-
-  const now = Date.now();
-  const msDay = 86400000;
-  const map: Record<string, number> = {
-    '7d': 7 * msDay,
-    '1m': 30 * msDay,
-    '2m': 60 * msDay,
-    '3m': 90 * msDay,
-    '4m': 120 * msDay,
-    '6m': 180 * msDay,
-    '1y': 365 * msDay,
-  };
-  return { from: now - (map[preset] || 0), to: now };
-}
+// getDateRange removed because timeline filtering is disabled in trial version
 
 export const AdminDashboard: React.FC<DashboardProps> = () => {
   const [data, setData] = useState<DashboardStats | null>(null);
@@ -72,16 +56,13 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
   const [isTimelineOpen, setIsTimelineOpen] = useState(false);
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
-  const [activeRange, setActiveRange] = useState<{ from: number | null; to: number | null }>({ from: null, to: null });
+  // activeRange state removed for trial version
 
-  const fetchDashboard = useCallback(async (range: { from: number | null; to: number | null }) => {
+  const fetchDashboard = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (range.from) params.set('from', range.from.toString());
-      if (range.to) params.set('to', range.to.toString());
-      const qs = params.toString();
-      const res = await fetch(`/api/v1/dashboard/stats${qs ? `?${qs}` : ''}`);
+      // Premium filtering parameters removed from trial version
+      const res = await fetch(`/api/v1/dashboard/stats`);
       const json = await res.json();
       setData(json);
     } catch {
@@ -93,28 +74,20 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      fetchDashboard(activeRange);
+      fetchDashboard();
     }, 0);
     return () => clearTimeout(timeout);
-  }, [activeRange, fetchDashboard]);
+  }, [fetchDashboard]);
 
   const handleTimelineSelect = (preset: TimelinePreset) => {
     setTimeline(preset);
-    if (preset === 'custom') {
-      // Don't fetch yet — wait for user to submit custom dates
-      setIsTimelineOpen(false);
-      return;
-    }
-    const range = getDateRange(preset);
-    setActiveRange(range);
     setIsTimelineOpen(false);
+    // Premium feature: actual data filtering logic removed in trial version
   };
 
   const applyCustomRange = () => {
     if (!customFrom || !customTo) return;
-    const from = new Date(customFrom).getTime();
-    const to = new Date(customTo).setHours(23, 59, 59, 999);
-    setActiveRange({ from, to });
+    // Premium feature: actual data filtering logic removed in trial version
   };
 
   const getActiveLabel = () => {
@@ -229,7 +202,7 @@ export const AdminDashboard: React.FC<DashboardProps> = () => {
                 Apply
               </button>
               <button
-                onClick={() => { setTimeline('lifetime'); setActiveRange({ from: null, to: null }); setCustomFrom(''); setCustomTo(''); }}
+                onClick={() => { setTimeline('lifetime'); setCustomFrom(''); setCustomTo(''); }}
                 className="p-2.5 text-[var(--adm-text-secondary)] hover:text-[#ff6b6b] transition-colors bg-[var(--adm-bg)] rounded-xl border border-[var(--adm-border)]"
               >
                 <X size={16} />

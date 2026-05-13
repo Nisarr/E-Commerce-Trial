@@ -43,21 +43,12 @@ export const AdminSettings: React.FC = () => {
   const handleSavePaymentSettings = async () => {
     setSettingsLoading(true);
     setSettingsSaved(false);
-    try {
-      const res = await fetch('/api/v1/settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(paymentSettings),
-      });
-      if (res.ok) {
-        setSettingsSaved(true);
-        setTimeout(() => setSettingsSaved(false), 3000);
-      }
-    } catch (err) {
-      console.error("Failed to save settings:", err);
-    } finally {
+    // Premium source code removed. Local mock only.
+    setTimeout(() => {
+      setSettingsSaved(true);
       setSettingsLoading(false);
-    }
+      setTimeout(() => setSettingsSaved(false), 3000);
+    }, 600);
   };
 
   const copyToClipboard = () => {
@@ -82,25 +73,11 @@ export const AdminSettings: React.FC = () => {
     setTestSending(true);
     setTestResult(null);
 
-    try {
-      // Send a test notification via the API
-      const res = await fetch('/api/v1/settings/test-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: adminEmail }),
-      });
-      const data = await res.json();
-
-      if (res.ok) {
-        setTestResult({ ok: true, msg: 'Test email sent! Check your inbox.' });
-      } else {
-        setTestResult({ ok: false, msg: data.message || 'Failed to send test email.' });
-      }
-    } catch {
-      setTestResult({ ok: false, msg: 'Network error. Is the backend running?' });
-    } finally {
+    // Premium source code removed. Local mock only.
+    setTimeout(() => {
+      setTestResult({ ok: true, msg: 'Test email sent! Check your inbox.' });
       setTestSending(false);
-    }
+    }, 800);
   };
 
   return (

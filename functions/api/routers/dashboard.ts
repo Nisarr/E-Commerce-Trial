@@ -29,6 +29,45 @@ dashboardRouter.get("/stats", async (c) => {
     orders: "+15.0%",
   };
 
+  // ordersByStatus
+  const statusRows = await db.select({ 
+    status: schema.orders.status, 
+    count: sql<number>`count(*)` 
+  }).from(schema.orders).groupBy(schema.orders.status);
+  
+  const ordersByStatus = statusRows.reduce((acc: any, row) => { 
+    acc[row.status] = row.count; 
+    return acc; 
+  }, {});
+
+  // lowStockProducts
+  const lowStockProducts = await db.select({ 
+    id: schema.products.id, 
+    title: schema.products.title, 
+    stock: schema.products.stock 
+  }).from(schema.products).where(sql`stock < 10`).limit(5);
+
+  // recentOrders
+  const recentOrders = await db.select({
+    id: schema.orders.id,
+    invoiceId: schema.orders.invoiceId,
+    customerName: schema.orders.customerName,
+    status: schema.orders.status,
+    totalAmount: schema.orders.totalAmount
+  }).from(schema.orders).orderBy(sql`${schema.orders.createdAt} DESC`).limit(5);
+
+  // monthlyRevenue (basic SQLite aggregation for last 6 months)
+  const monthlyRows = await db.select({
+    month: sql<string>`strftime('%Y-%m', datetime(${schema.orders.createdAt} / 1000, 'unixepoch'))`,
+    total: sql<number>`sum(total_amount)`,
+    count: sql<number>`count(*)`
+  }).from(schema.orders)
+    .groupBy(sql`strftime('%Y-%m', datetime(${schema.orders.createdAt} / 1000, 'unixepoch'))`)
+    .orderBy(sql`strftime('%Y-%m', datetime(${schema.orders.createdAt} / 1000, 'unixepoch')) DESC`)
+    .limit(6);
+    
+  const monthlyRevenue = monthlyRows.reverse();
+
   return c.json({
     counts: {
       products: prodCount?.count || 0,
@@ -42,6 +81,10 @@ dashboardRouter.get("/stats", async (c) => {
       currency: "BDT",
     },
     growth,
+    ordersByStatus,
+    lowStockProducts,
+    recentOrders,
+    monthlyRevenue,
     timestamp: new Date().toISOString(),
   });
 });
